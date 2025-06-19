@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
+import FileUpload from './FileUpload';
 
 interface MenuItem {
   id: string;
@@ -44,7 +45,9 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
     is_vegan: false,
     is_gluten_free: false,
     is_nut_free: false,
-    is_active: true
+    is_active: true,
+    image_url: '',
+    model_url: ''
   });
   const [newAllergen, setNewAllergen] = useState('');
   const { toast } = useToast();
@@ -61,7 +64,9 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
         is_vegan: menuItem.is_vegan,
         is_gluten_free: menuItem.is_gluten_free,
         is_nut_free: menuItem.is_nut_free,
-        is_active: menuItem.is_active
+        is_active: menuItem.is_active,
+        image_url: menuItem.image_url || '',
+        model_url: menuItem.model_url || ''
       });
     }
   }, [menuItem]);
@@ -87,6 +92,8 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
         is_gluten_free: formData.is_gluten_free,
         is_nut_free: formData.is_nut_free,
         is_active: formData.is_active,
+        image_url: formData.image_url || null,
+        model_url: formData.model_url || null,
         restaurant_id: restaurantId
       };
 
@@ -201,6 +208,25 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
               value={formData.price}
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
               required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FileUpload
+              bucket="menu-images"
+              currentUrl={formData.image_url}
+              onUpload={(url) => setFormData({ ...formData, image_url: url })}
+              onRemove={() => setFormData({ ...formData, image_url: '' })}
+              label="Menu Item Image"
+              accept="image/*"
+            />
+            <FileUpload
+              bucket="3d-models"
+              currentUrl={formData.model_url}
+              onUpload={(url) => setFormData({ ...formData, model_url: url })}
+              onRemove={() => setFormData({ ...formData, model_url: '' })}
+              label="3D Model"
+              accept=".glb,.gltf,.obj,.fbx"
             />
           </div>
 
