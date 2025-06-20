@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthFormProps {
-  onAuthSuccess: () => void;
+  onAuthSuccess: (user: any) => void;
 }
 
 const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
@@ -40,14 +39,16 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
           description: "We've sent you a confirmation link to complete your registration."
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password
         });
         
         if (error) throw error;
         
-        onAuthSuccess();
+        if (data.user) {
+          onAuthSuccess(data.user);
+        }
       }
     } catch (error: any) {
       toast({
