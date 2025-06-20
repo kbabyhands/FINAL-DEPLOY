@@ -1,10 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import MenuCard from "@/components/MenuCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import DietaryFilter from "@/components/DietaryFilter";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface MenuItem {
   id: string;
@@ -145,11 +147,21 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-12 text-center">
+        <div className="max-w-6xl mx-auto px-4 py-12 text-center relative">
           <h1 className="text-4xl font-bold text-blue-800 mb-4">Our Menu</h1>
           <p className="text-gray-600 text-lg">
             Explore our delicious offerings. Filter by category or dietary needs.
           </p>
+          
+          {/* Admin Link */}
+          <div className="absolute top-4 right-4">
+            <Link to="/admin">
+              <Button variant="outline" size="sm">
+                <Settings className="w-4 h-4 mr-2" />
+                Admin Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
