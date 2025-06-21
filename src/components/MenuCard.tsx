@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Star, MessageSquare } from "lucide-react";
 import ModelViewer from "./ModelViewer";
+import ReviewsSection from "./ReviewsSection";
 
 interface MenuCardProps {
   title: string;
@@ -17,6 +18,7 @@ interface MenuCardProps {
   isNutFree?: boolean;
   imageUrl?: string;
   modelUrl?: string;
+  menuItemId?: string;
 }
 
 const MenuCard = ({ 
@@ -29,9 +31,11 @@ const MenuCard = ({
   isGlutenFree = false,
   isNutFree = false,
   imageUrl,
-  modelUrl
+  modelUrl,
+  menuItemId
 }: MenuCardProps) => {
   const [isModelViewerOpen, setIsModelViewerOpen] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
 
   const handleARView = () => {
     if (modelUrl) {
@@ -111,7 +115,7 @@ const MenuCard = ({
             )}
             
             {/* Price and actions */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <span className="text-xl font-semibold text-gray-800">${price.toFixed(2)}</span>
               <div className="flex gap-2">
                 {modelUrl && (
@@ -129,6 +133,31 @@ const MenuCard = ({
                 </Button>
               </div>
             </div>
+
+            {/* Reviews Toggle */}
+            {menuItemId && (
+              <div className="border-t pt-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowReviews(!showReviews)}
+                  className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  {showReviews ? "Hide Reviews" : "Show Reviews & Ratings"}
+                </Button>
+                
+                {/* Reviews Section */}
+                {showReviews && menuItemId && (
+                  <div className="mt-4 pt-4 border-t">
+                    <ReviewsSection 
+                      menuItemId={menuItemId} 
+                      menuItemTitle={title}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

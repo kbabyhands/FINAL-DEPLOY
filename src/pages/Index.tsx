@@ -184,6 +184,7 @@ const Index = () => {
             {filteredItems.map((item) => (
               <MenuCard
                 key={item.id}
+                menuItemId={item.id}
                 title={item.title}
                 description={item.description || ''}
                 price={item.price}
