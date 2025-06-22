@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { LogOut, Plus } from 'lucide-react';
 import RestaurantProfile from './RestaurantProfile';
+import RestaurantBranding from './RestaurantBranding';
 import MenuItemsList from './MenuItemsList';
 import MenuItemForm from './MenuItemForm';
 import QRCodeGenerator from './QRCodeGenerator';
@@ -16,6 +18,13 @@ interface Restaurant {
   address?: string;
   phone?: string;
   email?: string;
+  logo_url?: string;
+  banner_url?: string;
+  background_color?: string;
+  background_image_url?: string;
+  primary_color?: string;
+  secondary_color?: string;
+  font_family?: string;
 }
 
 interface MenuItem {
@@ -52,7 +61,7 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
 
   const loadRestaurantData = async () => {
     try {
-      // Load restaurant profile
+      // Load restaurant profile with branding data
       const { data: restaurantData, error: restaurantError } = await supabase
         .from('restaurants')
         .select('*')
@@ -136,6 +145,11 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
         ) : (
           <div className="space-y-8">
             <RestaurantProfile
+              restaurant={restaurant}
+              onUpdate={handleRestaurantUpdate}
+            />
+
+            <RestaurantBranding
               restaurant={restaurant}
               onUpdate={handleRestaurantUpdate}
             />

@@ -118,34 +118,55 @@ export type Database = {
       restaurants: {
         Row: {
           address: string | null
+          background_color: string | null
+          background_image_url: string | null
+          banner_url: string | null
           created_at: string
           description: string | null
           email: string | null
+          font_family: string | null
           id: string
+          logo_url: string | null
           name: string
           phone: string | null
+          primary_color: string | null
+          secondary_color: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           address?: string | null
+          background_color?: string | null
+          background_image_url?: string | null
+          banner_url?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
+          font_family?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           phone?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           address?: string | null
+          background_color?: string | null
+          background_image_url?: string | null
+          banner_url?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
+          font_family?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           phone?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
           updated_at?: string
           user_id?: string
         }
