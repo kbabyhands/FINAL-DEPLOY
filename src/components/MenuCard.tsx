@@ -47,9 +47,17 @@ const MenuCard = ({
     <>
       <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-0">
-          {/* Image or 3D Model Display */}
+          {/* Image or 3D Model Display - 3D Model takes priority */}
           <div className="bg-gray-100 h-48 flex flex-col items-center justify-center text-gray-400 relative overflow-hidden">
-            {imageUrl ? (
+            {modelUrl ? (
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-16 h-16 border-2 border-blue-300 rounded-lg flex items-center justify-center mb-2 bg-blue-50">
+                  <div className="w-8 h-8 border border-blue-400 rounded bg-blue-100"></div>
+                </div>
+                <span className="text-sm text-blue-600 font-medium">3D Model Available</span>
+                <span className="text-xs text-gray-500">Click 3D View to explore</span>
+              </div>
+            ) : imageUrl ? (
               <img 
                 src={imageUrl} 
                 alt={title}
@@ -66,14 +74,6 @@ const MenuCard = ({
                   `;
                 }}
               />
-            ) : modelUrl ? (
-              <div className="flex flex-col items-center justify-center">
-                <div className="w-16 h-16 border-2 border-blue-300 rounded-lg flex items-center justify-center mb-2 bg-blue-50">
-                  <div className="w-8 h-8 border border-blue-400 rounded bg-blue-100"></div>
-                </div>
-                <span className="text-sm text-blue-600 font-medium">3D Model Available</span>
-                <span className="text-xs text-gray-500">Click AR to view</span>
-              </div>
             ) : (
               <div className="flex flex-col items-center justify-center">
                 <div className="w-16 h-16 border-2 border-gray-300 rounded-lg flex items-center justify-center mb-2">
