@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Plus } from 'lucide-react';
+import { LogOut, Plus, BarChart3 } from 'lucide-react';
 import RestaurantProfile from './RestaurantProfile';
 import RestaurantBranding from './RestaurantBranding';
 import MenuItemsList from './MenuItemsList';
 import MenuItemForm from './MenuItemForm';
 import QRCodeGenerator from './QRCodeGenerator';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 interface Restaurant {
   id: string;
@@ -52,6 +53,7 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [activeTab, setActiveTab] = useState<'menu' | 'analytics'>('menu');
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -159,32 +161,72 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
               restaurantName={restaurant.name}
             />
 
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Menu Items</CardTitle>
-                    <CardDescription>
-                      Manage your restaurant's menu items
-                    </CardDescription>
+            {/* Tab Navigation */}
+            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+              <button
+                onClick={() => setActiveTab('menu')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'menu'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Menu Management
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                  activeTab === 'analytics'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'menu' ? (
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Menu Items</CardTitle>
+                      <CardDescription>
+                        Manage your restaurant's menu items
+                      </CardDescription>
+                    </div>
+                    <Button onClick={() => setShowMenuForm(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Menu Item
+                    </Button>
                   </div>
-                  <Button onClick={() => setShowMenuForm(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Menu Item
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <MenuItemsList
-                  menuItems={menuItems}
-                  onEdit={(item) => {
-                    setEditingItem(item);
-                    setShowMenuForm(true);
-                  }}
-                  onDelete={loadRestaurantData}
-                />
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent>
+                  <MenuItemsList
+                    menuItems={menuItems}
+                    onEdit={(item) => {
+                      setEditingItem(item);
+                      setShowMenuForm(true);
+                    }}
+                    onDelete={loadRestaurantData}
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Analytics Dashboard</CardTitle>
+                  <CardDescription>
+                    Insights into your menu performance and customer preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AnalyticsDashboard restaurantId={restaurant.id} />
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 
