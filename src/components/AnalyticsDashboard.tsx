@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -107,8 +106,8 @@ const AnalyticsDashboard = ({ restaurantId }: AnalyticsDashboardProps) => {
         
         const cat = categoryMap.get(item.category);
         cat.items.push(item);
-        cat.totalPrice += parseFloat(item.price);
-        
+        cat.totalPrice += item.price; // Fixed: removed parseFloat since price is already a number
+
         const itemReviews = item.menu_item_reviews || [];
         if (itemReviews.length > 0) {
           cat.totalRating += itemReviews.reduce((sum: number, review: any) => sum + review.rating, 0);
@@ -129,7 +128,7 @@ const AnalyticsDashboard = ({ restaurantId }: AnalyticsDashboardProps) => {
           const reviews = item.menu_item_reviews || [];
           return {
             title: item.title,
-            price: parseFloat(item.price),
+            price: item.price, // Fixed: removed parseFloat since price is already a number
             reviewCount: reviews.length,
             avgRating: reviews.length > 0 
               ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / reviews.length 
@@ -156,7 +155,7 @@ const AnalyticsDashboard = ({ restaurantId }: AnalyticsDashboardProps) => {
       ];
 
       menuItems.forEach(item => {
-        const price = parseFloat(item.price);
+        const price = item.price; // Fixed: removed parseFloat since price is already a number
         if (price < 10) priceRanges[0].count++;
         else if (price < 20) priceRanges[1].count++;
         else if (price < 30) priceRanges[2].count++;
