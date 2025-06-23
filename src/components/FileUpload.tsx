@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Upload, X, FileText, Image } from 'lucide-react';
 
 interface FileUploadProps {
-  bucket: 'menu-images' | '3d-models';
+  bucket: 'menu-images' | '3d-models' | 'restaurant-branding';
   currentUrl?: string;
   onUpload: (url: string) => void;
   onRemove: () => void;
@@ -101,10 +101,16 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
   };
 
   const getFileIcon = () => {
-    if (bucket === 'menu-images') {
+    if (bucket === 'menu-images' || bucket === 'restaurant-branding') {
       return <Image className="w-4 h-4" />;
     }
     return <FileText className="w-4 h-4" />;
+  };
+
+  const getFileDescription = () => {
+    if (bucket === 'menu-images') return 'Image uploaded';
+    if (bucket === 'restaurant-branding') return 'Branding asset uploaded';
+    return '3D model uploaded';
   };
 
   return (
@@ -115,7 +121,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
           <div className="flex items-center gap-2 p-3 border rounded-md bg-gray-50">
             {getFileIcon()}
             <span className="text-sm text-gray-600 flex-1">
-              {bucket === 'menu-images' ? 'Image uploaded' : '3D model uploaded'}
+              {getFileDescription()}
             </span>
             <Button
               type="button"
