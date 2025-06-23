@@ -1,16 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Plus, BarChart3 } from 'lucide-react';
 import RestaurantProfile from './RestaurantProfile';
 import RestaurantBranding from './RestaurantBranding';
-import MenuItemsList from './MenuItemsList';
 import MenuItemForm from './MenuItemForm';
 import QRCodeGenerator from './QRCodeGenerator';
-import AnalyticsDashboard from './AnalyticsDashboard';
+import AdminHeader from './admin/AdminHeader';
+import AdminTabNavigation from './admin/AdminTabNavigation';
+import MenuManagementTab from './admin/MenuManagementTab';
+import AnalyticsTab from './admin/AnalyticsTab';
 
 interface Restaurant {
   id: string;
@@ -113,6 +112,15 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
     onSignOut();
   };
 
+  const handleAddMenuItem = () => {
+    setShowMenuForm(true);
+  };
+
+  const handleEditMenuItem = (item: MenuItem) => {
+    setEditingItem(item);
+    setShowMenuForm(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -126,17 +134,7 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">Restaurant Admin</h1>
-            <Button onClick={handleSignOut} variant="outline">
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AdminHeader onSignOut={handleSignOut} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!restaurant ? (
@@ -161,71 +159,20 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
               restaurantName={restaurant.name}
             />
 
-            {/* Tab Navigation */}
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-              <button
-                onClick={() => setActiveTab('menu')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'menu'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Menu Management
-              </button>
-              <button
-                onClick={() => setActiveTab('analytics')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
-                  activeTab === 'analytics'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                Analytics
-              </button>
-            </div>
+            <AdminTabNavigation
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
 
-            {/* Tab Content */}
             {activeTab === 'menu' ? (
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>Menu Items</CardTitle>
-                      <CardDescription>
-                        Manage your restaurant's menu items
-                      </CardDescription>
-                    </div>
-                    <Button onClick={() => setShowMenuForm(true)}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Menu Item
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <MenuItemsList
-                    menuItems={menuItems}
-                    onEdit={(item) => {
-                      setEditingItem(item);
-                      setShowMenuForm(true);
-                    }}
-                    onDelete={loadRestaurantData}
-                  />
-                </CardContent>
-              </Card>
+              <MenuManagementTab
+                menuItems={menuItems}
+                onAddMenuItem={handleAddMenuItem}
+                onEditMenuItem={handleEditMenuItem}
+                onDeleteMenuItem={loadRestaurantData}
+              />
             ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Analytics Dashboard</CardTitle>
-                  <CardDescription>
-                    Insights into your menu performance and customer preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <AnalyticsDashboard restaurantId={restaurant.id} />
-                </CardContent>
-              </Card>
+              <AnalyticsTab restaurantId={restaurant.id} />
             )}
           </div>
         )}
