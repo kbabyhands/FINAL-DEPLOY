@@ -1,177 +1,179 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Star, MessageSquare } from "lucide-react";
-import ModelViewer from "./ModelViewer";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Leaf, Wheat, Shield, Nut } from "lucide-react";
 import ReviewsSection from "./ReviewsSection";
+import ModelViewer from "./ModelViewer";
+import { useMenuItemViews } from "@/hooks/useMenuItemViews";
 
 interface MenuCardProps {
+  menuItemId: string;
   title: string;
   description: string;
   price: number;
-  allergens?: string[];
+  allergens: string[];
   isVegetarian?: boolean;
   isVegan?: boolean;
   isGlutenFree?: boolean;
   isNutFree?: boolean;
   imageUrl?: string;
   modelUrl?: string;
-  menuItemId?: string;
 }
 
 const MenuCard = ({ 
+  menuItemId,
   title, 
   description, 
   price, 
-  allergens = [],
-  isVegetarian = false,
-  isVegan = false,
-  isGlutenFree = false,
-  isNutFree = false,
+  allergens = [], 
+  isVegetarian, 
+  isVegan, 
+  isGlutenFree, 
+  isNutFree,
   imageUrl,
-  modelUrl,
-  menuItemId
+  modelUrl
 }: MenuCardProps) => {
-  const [isModelViewerOpen, setIsModelViewerOpen] = useState(false);
-  const [showReviews, setShowReviews] = useState(false);
+  const { trackView } = useMenuItemViews();
+  const hasTrackedView = useRef(false);
 
-  const handleARView = () => {
-    if (modelUrl) {
-      setIsModelViewerOpen(true);
+  // Track view when component mounts (only once per session)
+  useEffect(() => {
+    if (!hasTrackedView.current) {
+      const timer = setTimeout(() => {
+        trackView(menuItemId);
+        hasTrackedView.current = true;
+      }, 1000); // Wait 1 second to ensure the user actually viewed the item
+
+      return () => clearTimeout(timer);
     }
+  }, [menuItemId, trackView]);
+
+  const getDietaryBadges = () => {
+    const badges = [];
+    if (isVegetarian) badges.push({ icon: Leaf, label: "Vegetarian", color: "bg-green-100 text-green-800" });
+    if (isVegan) badges.push({ icon: Leaf, label: "Vegan", color: "bg-green-200 text-green-900" });
+    if (isGlutenFree) badges.push({ icon: Wheat, label: "Gluten Free", color: "bg-yellow-100 text-yellow-800" });
+    if (isNutFree) badges.push({ icon: Nut, label: "Nut Free", color: "bg-orange-100 text-orange-800" });
+    return badges;
+  };
+
+  const formatAllergens = (allergens: string[]) => {
+    if (!allergens || allergens.length === 0) return "None";
+    return allergens.map(allergen => 
+      allergen.charAt(0).toUpperCase() + allergen.slice(1)
+    ).join(", ");
   };
 
   return (
-    <>
-      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-0">
-          {/* Image or 3D Model Display - 3D Model takes priority */}
-          <div className="bg-gray-100 h-48 flex flex-col items-center justify-center text-gray-400 relative overflow-hidden">
-            {modelUrl ? (
-              <div className="flex flex-col items-center justify-center">
-                <div className="w-16 h-16 border-2 border-blue-300 rounded-lg flex items-center justify-center mb-2 bg-blue-50">
-                  <div className="w-8 h-8 border border-blue-400 rounded bg-blue-100"></div>
-                </div>
-                <span className="text-sm text-blue-600 font-medium">3D Model Available</span>
-                <span className="text-xs text-gray-500">Click 3D View to explore</span>
-              </div>
-            ) : imageUrl ? (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
+          <div className="relative overflow-hidden rounded-t-lg">
+            {imageUrl ? (
               <img 
                 src={imageUrl} 
                 alt={title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  // Fallback to placeholder if image fails to load
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  target.parentElement!.innerHTML = `
-                    <div class="w-16 h-16 border-2 border-gray-300 rounded-lg flex items-center justify-center mb-2">
-                      <div class="w-8 h-8 border border-gray-300 rounded"></div>
-                    </div>
-                    <span class="text-sm">Image unavailable</span>
-                  `;
-                }}
+                className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
               />
             ) : (
-              <div className="flex flex-col items-center justify-center">
-                <div className="w-16 h-16 border-2 border-gray-300 rounded-lg flex items-center justify-center mb-2">
-                  <div className="w-8 h-8 border border-gray-300 rounded"></div>
-                </div>
-                <span className="text-sm">No media available</span>
+              <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                <span className="text-blue-600 text-lg font-semibold">No Image</span>
               </div>
             )}
-            
-            {/* 3D Model Indicator */}
-            {modelUrl && (
-              <div className="absolute top-2 right-2">
-                <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-                  3D
-                </Badge>
-              </div>
-            )}
+            <div className="absolute top-2 right-2">
+              <Badge variant="secondary" className="bg-white/90 text-black font-bold">
+                ${price.toFixed(2)}
+              </Badge>
+            </div>
           </div>
           
-          {/* Content */}
-          <div className="p-4">
-            <h3 className="font-semibold text-lg text-gray-800 mb-2">{title}</h3>
-            <p className="text-gray-600 text-sm mb-3 leading-relaxed line-clamp-3">{description}</p>
+          <CardContent className="p-4">
+            <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
+            <p className="text-gray-600 text-sm mb-3 line-clamp-3">{description}</p>
             
             {/* Dietary badges */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {isVegetarian && <Badge variant="outline" className="text-green-600 border-green-600">🌱 Vegetarian</Badge>}
-              {isVegan && <Badge variant="outline" className="text-green-600 border-green-600">🥬 Vegan</Badge>}
-              {isGlutenFree && <Badge variant="outline" className="text-blue-600 border-blue-600">🌾 Gluten-Free</Badge>}
-              {isNutFree && <Badge variant="outline" className="text-orange-600 border-orange-600">🥜 Nut-Free</Badge>}
-            </div>
-            
-            {/* Allergen warnings */}
-            {allergens.length > 0 && (
-              <div className="flex items-start gap-1 mb-4 text-red-500 text-xs">
-                <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                <span>Contains: {allergens.join(", ")}</span>
-              </div>
-            )}
-            
-            {/* Price and actions */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xl font-semibold text-gray-800">${price.toFixed(2)}</span>
-              <div className="flex gap-2">
-                {modelUrl && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleARView}
-                    className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                  >
-                    3D View
-                  </Button>
-                )}
-                <Button size="sm" className="bg-blue-800 hover:bg-blue-900">
-                  Order Now
-                </Button>
-              </div>
-            </div>
-
-            {/* Reviews Toggle */}
-            {menuItemId && (
-              <div className="border-t pt-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowReviews(!showReviews)}
-                  className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  {showReviews ? "Hide Reviews" : "Show Reviews & Ratings"}
-                </Button>
-                
-                {/* Reviews Section */}
-                {showReviews && menuItemId && (
-                  <div className="mt-4 pt-4 border-t">
-                    <ReviewsSection 
-                      menuItemId={menuItemId} 
-                      menuItemTitle={title}
-                    />
+            <div className="flex flex-wrap gap-1 mb-2">
+              {getDietaryBadges().map((badge, index) => {
+                const IconComponent = badge.icon;
+                return (
+                  <div key={index} className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${badge.color}`}>
+                    <IconComponent className="w-3 h-3" />
+                    <span>{badge.label}</span>
                   </div>
-                )}
-              </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </DialogTrigger>
+      
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
+          <DialogDescription className="text-lg">
+            {description}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Image/Model Section */}
+          <div className="space-y-4">
+            {imageUrl && (
+              <img 
+                src={imageUrl} 
+                alt={title}
+                className="w-full h-64 object-cover rounded-lg"
+              />
             )}
+            
+            {modelUrl && <ModelViewer modelUrl={modelUrl} />}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* 3D Model Viewer Modal */}
-      {modelUrl && (
-        <ModelViewer
-          isOpen={isModelViewerOpen}
-          onClose={() => setIsModelViewerOpen(false)}
-          modelUrl={modelUrl}
-          itemTitle={title}
-        />
-      )}
-    </>
+          
+          {/* Details Section */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <Badge variant="outline" className="text-2xl font-bold px-4 py-2">
+                ${price.toFixed(2)}
+              </Badge>
+            </div>
+            
+            {/* Dietary Information */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-lg">Dietary Information</h4>
+              <div className="flex flex-wrap gap-2">
+                {getDietaryBadges().map((badge, index) => {
+                  const IconComponent = badge.icon;
+                  return (
+                    <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${badge.color}`}>
+                      <IconComponent className="w-4 h-4" />
+                      <span className="font-medium">{badge.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Allergen Information */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-lg flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Allergen Information
+              </h4>
+              <p className="text-gray-700">
+                <strong>Contains:</strong> {formatAllergens(allergens)}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Reviews Section */}
+        <div className="mt-8">
+          <ReviewsSection menuItemId={menuItemId} />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

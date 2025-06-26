@@ -50,6 +50,38 @@ export type Database = {
           },
         ]
       }
+      menu_item_views: {
+        Row: {
+          id: string
+          ip_address: string | null
+          menu_item_id: string
+          user_session: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          ip_address?: string | null
+          menu_item_id: string
+          user_session?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          ip_address?: string | null
+          menu_item_id?: string
+          user_session?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_views_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_items: {
         Row: {
           allergens: string[] | null
@@ -68,6 +100,7 @@ export type Database = {
           restaurant_id: string
           title: string
           updated_at: string
+          view_count: number | null
         }
         Insert: {
           allergens?: string[] | null
@@ -86,6 +119,7 @@ export type Database = {
           restaurant_id: string
           title: string
           updated_at?: string
+          view_count?: number | null
         }
         Update: {
           allergens?: string[] | null
@@ -104,6 +138,7 @@ export type Database = {
           restaurant_id?: string
           title?: string
           updated_at?: string
+          view_count?: number | null
         }
         Relationships: [
           {
