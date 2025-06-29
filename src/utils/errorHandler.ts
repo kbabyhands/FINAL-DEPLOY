@@ -1,5 +1,6 @@
 
 import { useToast } from '@/hooks/use-toast';
+import { logger } from './logger';
 
 export interface AppError {
   message: string;
@@ -15,7 +16,7 @@ export class ErrorHandler {
   }
 
   static handleError(error: unknown, context?: string): AppError {
-    console.error(`Error${context ? ` in ${context}` : ''}:`, error);
+    logger.error(`Error${context ? ` in ${context}` : ''}:`, error);
 
     let appError: AppError;
 

@@ -2,6 +2,7 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 export const useMenuItemViews = () => {
   const { toast } = useToast();
@@ -24,10 +25,12 @@ export const useMenuItemViews = () => {
         });
 
       if (error) {
-        console.error('Error tracking menu item view:', error);
+        logger.error('Error tracking menu item view:', error);
+      } else {
+        logger.debug('Menu item view tracked successfully');
       }
     } catch (error: any) {
-      console.error('Error tracking view:', error);
+      logger.error('Error tracking view:', error);
       // Don't show toast for tracking errors as it would be annoying for users
     }
   }, []);

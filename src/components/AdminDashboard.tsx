@@ -13,6 +13,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useRestaurantData } from '@/hooks/useRestaurantData';
 import { useMenuItems } from '@/hooks/useMenuItems';
 import { Restaurant, MenuItem } from '@/types';
+import { logger } from '@/utils/logger';
 
 const AdminDashboard = () => {
   const [showMenuForm, setShowMenuForm] = useState(false);
@@ -36,6 +37,7 @@ const AdminDashboard = () => {
   } = useMenuItems(restaurant?.id);
 
   const handleRestaurantUpdate = (updatedRestaurant: Restaurant) => {
+    logger.info('Updating restaurant data');
     if (restaurant) {
       updateRestaurant(updatedRestaurant);
     } else {
@@ -44,16 +46,19 @@ const AdminDashboard = () => {
   };
 
   const handleMenuItemSave = () => {
+    logger.info('Menu item saved, refreshing list');
     setShowMenuForm(false);
     setEditingItem(null);
     refreshMenuItems();
   };
 
   const handleAddMenuItem = () => {
+    logger.debug('Adding new menu item');
     setShowMenuForm(true);
   };
 
   const handleEditMenuItem = (item: MenuItem) => {
+    logger.debug('Editing menu item:', item.title);
     setEditingItem(item);
     setShowMenuForm(true);
   };
@@ -120,6 +125,7 @@ const AdminDashboard = () => {
             menuItem={editingItem}
             onSave={handleMenuItemSave}
             onCancel={() => {
+              logger.debug('Menu item form cancelled');
               setShowMenuForm(false);
               setEditingItem(null);
             }}
