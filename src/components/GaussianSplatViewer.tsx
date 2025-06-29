@@ -54,8 +54,12 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
         console.log('Found PLY file in ZIP:', plyFile);
         const plyData = await zipData.files[plyFile].async('blob');
         
-        // Create a blob URL for the extracted PLY file
-        return URL.createObjectURL(plyData);
+        // Create a blob URL with .ply extension hint
+        const plyBlob = new Blob([plyData], { type: 'application/octet-stream' });
+        const blobUrl = URL.createObjectURL(plyBlob);
+        
+        // Return the blob URL with a fake .ply extension to help the library recognize the format
+        return blobUrl + '#' + plyFile;
       } else {
         // Direct PLY file
         console.log('Using direct PLY file');
@@ -84,9 +88,16 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
       containerRef.current.innerHTML = '';
 
       // Process the file (handle ZIP if needed)
-      const processedUrl = await processFile(splatUrl);
+      let processedUrl = await processFile(splatUrl);
+      
+      // If it's a blob URL with hash, extract the original filename to help with format detection
+      let fileName = '';
+      if (processedUrl.includes('#')) {
+        fileName = processedUrl.split('#')[1];
+        processedUrl = processedUrl.split('#')[0];
+      }
 
-      // Create new viewer
+      // Create new viewer with more permissive settings
       const viewer = new Viewer({
         container: containerRef.current,
         gpuAcceleratedSort: true,
@@ -100,14 +111,18 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
 
       viewerRef.current = viewer;
 
-      // Load the splat scene
-      await viewer.addSplatScene(processedUrl, {
+      // Load the splat scene with additional options
+      const sceneOptions = {
         showLoadingUI: true,
         progressiveLoad: true,
         rotation: [0, 0, 0, 1],
         position: [0, 0, 0],
-        scale: [1, 1, 1]
-      });
+        scale: [1, 1, 1],
+        // Add format hint if we have filename
+        ...(fileName && { format: 'ply' })
+      };
+
+      await viewer.addSplatScene(processedUrl, sceneOptions);
 
       // Start the viewer
       viewer.start();
@@ -121,11 +136,24 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
 
     } catch (error) {
       console.error('Error initializing Gaussian Splat viewer:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load 3D model');
+      
+      // More specific error handling
+      let errorMessage = 'Failed to load 3D model. Please try again.';
+      if (error instanceof Error) {
+        if (error.message.includes('File format not supported')) {
+          errorMessage = 'The PLY file format is not supported or corrupted. Please try with a different file.';
+        } else if (error.message.includes('No PLY file found')) {
+          errorMessage = 'No PLY file found in the ZIP archive. Please ensure your ZIP contains a .ply file.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setError(errorMessage);
       
       toast({
         title: "Loading Error",
-        description: "Failed to load the 3D model. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -182,7 +210,7 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
       {error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 rounded-lg z-10">
           <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
-          <p className="text-red-600 text-center px-4">{error}</p>
+          <p className="text-red-600 text-center px-4 max-w-md">{error}</p>
           <Button 
             onClick={initializeViewer} 
             className="mt-4"
