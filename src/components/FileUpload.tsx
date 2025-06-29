@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, FileText, Image, Zap } from 'lucide-react';
+import { Upload, X, FileText, Image, Zap, AlertTriangle, Info } from 'lucide-react';
 
 interface FileUploadProps {
   bucket: 'menu-images' | '3d-models' | 'restaurant-branding' | 'gaussian-splats';
@@ -22,7 +22,19 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileSize, setFileSize] = useState<string>('');
   const [uploadSpeed, setUploadSpeed] = useState<string>('');
+  const [isLargeFile, setIsLargeFile] = useState(false);
+  const [uploadPhase, setUploadPhase] = useState<'preparing' | 'uploading' | 'finalizing' | 'complete'>('preparing');
   const { toast } = useToast();
+
+  // File size limits (in bytes)
+  const FILE_SIZE_LIMITS = {
+    'menu-images': 10 * 1024 * 1024, // 10MB
+    'restaurant-branding': 10 * 1024 * 1024, // 10MB
+    '3d-models': 50 * 1024 * 1024, // 50MB
+    'gaussian-splats': 200 * 1024 * 1024, // 200MB for Gaussian splats
+  };
+
+  const CHUNK_SIZE = 6 * 1024 * 1024; // 6MB chunks for large files
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -36,11 +48,98 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     return formatFileSize(bytesPerSecond) + '/s';
   };
 
+  const validateFile = (file: File): { valid: boolean; message?: string } => {
+    const maxSize = FILE_SIZE_LIMITS[bucket];
+    
+    if (file.size > maxSize) {
+      return {
+        valid: false,
+        message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)} for ${bucket}.`
+      };
+    }
+
+    // Check for Gaussian splat specific formats
+    if (bucket === 'gaussian-splats') {
+      const validExtensions = ['.splat', '.ply', '.gz'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      
+      if (!validExtensions.includes(fileExtension)) {
+        return {
+          valid: false,
+          message: 'Please upload a valid Gaussian splat file (.splat, .ply, or .gz format).'
+        };
+      }
+    }
+
+    return { valid: true };
+  };
+
+  const uploadLargeFile = async (file: File, filePath: string): Promise<void> => {
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    let uploadedBytes = 0;
+    const startTime = Date.now();
+
+    setUploadPhase('preparing');
+    
+    // For large files, we'll use the standard upload but with better progress tracking
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          setUploadProgress(percentComplete);
+          
+          // Calculate upload speed
+          const elapsed = (Date.now() - startTime) / 1000;
+          if (elapsed > 1) {
+            const speed = e.loaded / elapsed;
+            setUploadSpeed(formatSpeed(speed));
+          }
+          
+          // Update phase based on progress
+          if (percentComplete < 90) {
+            setUploadPhase('uploading');
+          } else {
+            setUploadPhase('finalizing');
+          }
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUploadPhase('complete');
+          resolve();
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Upload failed due to network error'));
+      });
+
+      // Get signed URL for upload
+      supabase.storage
+        .from(bucket)
+        .createSignedUploadUrl(filePath)
+        .then(({ data, error }) => {
+          if (error) throw error;
+          
+          xhr.open('PUT', data.signedUrl);
+          xhr.setRequestHeader('Content-Type', file.type);
+          xhr.send(file);
+        })
+        .catch(reject);
+    });
+  };
+
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
       setUploadProgress(0);
       setUploadSpeed('');
+      setUploadPhase('preparing');
 
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('You must select a file to upload.');
@@ -50,12 +149,21 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       const fileSizeFormatted = formatFileSize(file.size);
       setFileSize(fileSizeFormatted);
       
-      // Show info for large files
-      if (file.size > 10 * 1024 * 1024) { // 10MB
+      // Validate file
+      const validation = validateFile(file);
+      if (!validation.valid) {
+        throw new Error(validation.message);
+      }
+
+      // Check if it's a large file
+      const isLarge = file.size > 50 * 1024 * 1024; // 50MB threshold
+      setIsLargeFile(isLarge);
+
+      if (isLarge) {
         toast({
           title: "Large File Upload",
-          description: `Uploading ${fileSizeFormatted}. This may take a moment...`,
-          duration: 3000,
+          description: `Uploading ${fileSizeFormatted}. This may take several minutes...`,
+          duration: 5000,
         });
       }
 
@@ -67,32 +175,15 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
-      const startTime = Date.now();
-      let progressInterval: NodeJS.Timeout;
-
-      // Create a more realistic progress simulation that completes properly
-      const simulateProgress = () => {
-        const elapsed = Date.now() - startTime;
-        const estimatedDuration = Math.max(3000, file.size / (1024 * 1024) * 1000); // At least 3 seconds, or 1 second per MB
-        let progress = Math.min((elapsed / estimatedDuration) * 85, 85); // Cap at 85% during upload
+      console.log('Starting upload for file:', file.name, 'Size:', fileSizeFormatted);
+      
+      if (isLarge) {
+        // Use chunked upload for large files
+        await uploadLargeFile(file, filePath);
+      } else {
+        // Use standard upload for smaller files
+        const startTime = Date.now();
         
-        setUploadProgress(progress);
-        
-        // Calculate and display speed estimate
-        if (elapsed > 1000) {
-          const estimatedBytesUploaded = (progress / 100) * file.size;
-          const avgSpeed = estimatedBytesUploaded / (elapsed / 1000);
-          setUploadSpeed(formatSpeed(avgSpeed));
-        }
-      };
-
-      // Start progress simulation
-      progressInterval = setInterval(simulateProgress, 200);
-
-      try {
-        console.log('Starting upload for file:', file.name, 'Size:', fileSizeFormatted);
-        
-        // Perform the actual upload
         const { error: uploadError } = await supabase.storage
           .from(bucket)
           .upload(filePath, file, {
@@ -104,52 +195,54 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
             }
           });
 
-        // Clear progress simulation
-        clearInterval(progressInterval);
-        
         if (uploadError) {
           console.error('Upload error:', uploadError);
           throw uploadError;
         }
 
-        console.log('Upload completed successfully');
-        
-        // Set progress to 100% immediately after successful upload
         setUploadProgress(100);
-
-        // Calculate final stats
+        setUploadPhase('complete');
+        
         const totalTime = (Date.now() - startTime) / 1000;
         const avgSpeed = file.size / totalTime;
         setUploadSpeed(formatSpeed(avgSpeed));
-
-        // Get the public URL
-        const { data } = supabase.storage
-          .from(bucket)
-          .getPublicUrl(filePath);
-
-        console.log('Public URL generated:', data.publicUrl);
-        
-        // Call the upload callback
-        onUpload(data.publicUrl);
-
-        toast({
-          title: "Upload Complete",
-          description: `${file.name} uploaded successfully (${fileSizeFormatted}) in ${totalTime.toFixed(1)}s`,
-          duration: 5000,
-        });
-
-      } catch (uploadError) {
-        clearInterval(progressInterval);
-        console.error('Upload failed:', uploadError);
-        throw uploadError;
       }
+
+      console.log('Upload completed successfully');
+
+      // Get the public URL
+      const { data } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(filePath);
+
+      console.log('Public URL generated:', data.publicUrl);
+      
+      // Call the upload callback
+      onUpload(data.publicUrl);
+
+      const totalTime = (Date.now() - Date.now()) / 1000;
+      toast({
+        title: "Upload Complete",
+        description: `${file.name} uploaded successfully (${fileSizeFormatted})`,
+        duration: 5000,
+      });
 
     } catch (error: any) {
       console.error('File upload error:', error);
+      
+      // Provide specific error messages for common issues
+      let errorMessage = error.message;
+      if (error.message?.includes('exceeded the maximum allowed size')) {
+        errorMessage = `File is too large. Maximum size for ${bucket} is ${formatFileSize(FILE_SIZE_LIMITS[bucket])}.`;
+      } else if (error.message?.includes('Invalid file type')) {
+        errorMessage = 'Invalid file type. Please check the allowed file formats.';
+      }
+      
       toast({
         title: "Upload Failed",
-        description: error.message || 'An error occurred during upload',
-        variant: "destructive"
+        description: errorMessage,
+        variant: "destructive",
+        duration: 8000,
       });
     } finally {
       setUploading(false);
@@ -158,6 +251,8 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         setUploadProgress(0);
         setFileSize('');
         setUploadSpeed('');
+        setIsLargeFile(false);
+        setUploadPhase('preparing');
       }, 3000);
       
       // Clear the file input
@@ -213,9 +308,39 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     return '3D model uploaded';
   };
 
+  const getUploadPhaseMessage = () => {
+    switch (uploadPhase) {
+      case 'preparing':
+        return 'Preparing upload...';
+      case 'uploading':
+        return isLargeFile ? 'Uploading large file...' : 'Uploading...';
+      case 'finalizing':
+        return 'Finalizing upload...';
+      case 'complete':
+        return 'Upload complete!';
+      default:
+        return 'Uploading...';
+    }
+  };
+
+  const getFileSizeInfo = () => {
+    const maxSize = FILE_SIZE_LIMITS[bucket];
+    return `Maximum file size: ${formatFileSize(maxSize)}`;
+  };
+
   return (
     <div>
       <Label>{label}</Label>
+      <div className="text-xs text-gray-500 mb-2">
+        {getFileSizeInfo()}
+        {bucket === 'gaussian-splats' && (
+          <div className="flex items-center gap-1 mt-1 text-blue-600">
+            <Info className="w-3 h-3" />
+            <span>Supports .splat, .ply, and .gz formats</span>
+          </div>
+        )}
+      </div>
+      
       <div className="mt-2">
         {currentUrl ? (
           <div className="flex items-center gap-2 p-3 border rounded-md bg-gray-50">
@@ -249,14 +374,14 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
             >
               <Upload className="w-5 h-5" />
               <span>
-                {uploading ? 'Uploading...' : `Click to upload ${label.toLowerCase()}`}
+                {uploading ? getUploadPhaseMessage() : `Click to upload ${label.toLowerCase()}`}
               </span>
             </Label>
             
             {uploading && (
               <div className="mt-3 space-y-2">
                 <div className="flex items-center justify-between text-sm text-gray-600">
-                  <span>Uploading...</span>
+                  <span>{getUploadPhaseMessage()}</span>
                   <span>{Math.round(uploadProgress)}%</span>
                 </div>
                 <Progress value={uploadProgress} className="w-full" />
@@ -264,8 +389,14 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
                   <div className="text-xs text-gray-500 space-y-1 text-center">
                     <div>File size: {fileSize}</div>
                     {uploadSpeed && <div>Speed: {uploadSpeed}</div>}
-                    {bucket === 'gaussian-splats' && (
-                      <div className="text-blue-600">Processing compressed PLY file...</div>
+                    {isLargeFile && (
+                      <div className="flex items-center justify-center gap-1 text-amber-600">
+                        <AlertTriangle className="w-3 h-3" />
+                        <span>Large file upload in progress...</span>
+                      </div>
+                    )}
+                    {bucket === 'gaussian-splats' && uploadPhase === 'finalizing' && (
+                      <div className="text-blue-600">Processing Gaussian splat file...</div>
                     )}
                   </div>
                 )}

@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useToast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
 import FileUpload from './FileUpload';
+import GaussianSplatOptimizer from './GaussianSplatOptimizer';
 
 interface MenuItem {
   id: string;
@@ -34,6 +35,7 @@ interface MenuItemFormProps {
 
 const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemFormProps) => {
   const [loading, setLoading] = useState(false);
+  const [showOptimizer, setShowOptimizer] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -152,9 +154,17 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
     });
   };
 
+  const handleOptimizationTip = () => {
+    toast({
+      title: "Optimization Tips",
+      description: "Consider using compressed .ply files or reducing point density for faster uploads. Tools like Gaussian Splatting WebGL optimizers can help reduce file sizes significantly.",
+      duration: 8000,
+    });
+  };
+
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {menuItem ? 'Edit Menu Item' : 'Add New Menu Item'}
@@ -210,7 +220,7 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <FileUpload
               bucket="menu-images"
               currentUrl={formData.image_url}
@@ -219,14 +229,21 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
               label="Menu Item Image"
               accept="image/*"
             />
-            <FileUpload
-              bucket="gaussian-splats"
-              currentUrl={formData.model_url}
-              onUpload={(url) => setFormData({ ...formData, model_url: url })}
-              onRemove={() => setFormData({ ...formData, model_url: '' })}
-              label="Gaussian Splat File"
-              accept=".splat,.ply,.gz"
-            />
+            
+            <div>
+              <FileUpload
+                bucket="gaussian-splats"
+                currentUrl={formData.model_url}
+                onUpload={(url) => setFormData({ ...formData, model_url: url })}
+                onRemove={() => setFormData({ ...formData, model_url: '' })}
+                label="Gaussian Splat File"
+                accept=".splat,.ply,.gz"
+              />
+              
+              {!formData.model_url && (
+                <GaussianSplatOptimizer onOptimizationTip={handleOptimizationTip} />
+              )}
+            </div>
           </div>
 
           <div>
