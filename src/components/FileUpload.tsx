@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,8 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
   const { toast } = useToast();
 
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    let progressInterval: NodeJS.Timeout | null = null;
+    
     try {
       setUploading(true);
       setUploadProgress(0);
@@ -40,14 +41,13 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
-      // Simulate progress updates for better UX
-      const progressInterval = setInterval(() => {
+      // Simulate progress updates for better UX, but allow it to reach higher values
+      progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return prev;
+          if (prev >= 95) {
+            return prev; // Stop at 95% and let completion set it to 100%
           }
-          return prev + Math.random() * 15;
+          return Math.min(prev + Math.random() * 10, 95);
         });
       }, 200);
 
@@ -59,7 +59,11 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
           }
         });
 
-      clearInterval(progressInterval);
+      // Clear interval and set to 100% when upload completes
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
       setUploadProgress(100);
 
       if (uploadError) {
@@ -78,6 +82,12 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         description: "File uploaded successfully"
       });
     } catch (error: any) {
+      // Clear interval on error
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      
       toast({
         title: "Error",
         description: error.message,
@@ -85,7 +95,10 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       });
     } finally {
       setUploading(false);
-      setUploadProgress(0);
+      // Reset progress after a brief delay to show completion
+      setTimeout(() => {
+        setUploadProgress(0);
+      }, 1000);
     }
   };
 
