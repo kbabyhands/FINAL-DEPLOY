@@ -72,44 +72,6 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     return { valid: true };
   };
 
-  const uploadWithChunks = async (file: File, filePath: string): Promise<void> => {
-    const chunkSize = 5 * 1024 * 1024; // 5MB chunks
-    const totalChunks = Math.ceil(file.size / chunkSize);
-    
-    console.log(`Uploading file in ${totalChunks} chunks of ${formatFileSize(chunkSize)} each`);
-    
-    for (let i = 0; i < totalChunks; i++) {
-      const start = i * chunkSize;
-      const end = Math.min(start + chunkSize, file.size);
-      const chunk = file.slice(start, end);
-      
-      const chunkPath = totalChunks > 1 ? `${filePath}_chunk_${i}` : filePath;
-      
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(chunkPath, chunk, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (error) {
-        console.error(`Error uploading chunk ${i}:`, error);
-        throw error;
-      }
-
-      const progress = ((i + 1) / totalChunks) * 90; // Leave 10% for finalization
-      setUploadProgress(progress);
-      
-      console.log(`Uploaded chunk ${i + 1}/${totalChunks} (${Math.round(progress)}%)`);
-    }
-
-    // If we uploaded in chunks, we'd need to combine them on the server side
-    // For now, let's use single upload with better error handling
-    if (totalChunks > 1) {
-      throw new Error('File too large for direct upload. Please use a file smaller than 100MB.');
-    }
-  };
-
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
@@ -156,41 +118,28 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       setUploadPhase('uploading');
       const startTime = Date.now();
       
-      // Try direct upload first, fall back to chunked if it fails
-      try {
-        const { error: uploadError } = await supabase.storage
-          .from(bucket)
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false,
-            metadata: {
-              user_id: userData.user.id,
-              original_name: file.name
-            }
-          });
-
-        if (uploadError) {
-          console.error('Direct upload error:', uploadError);
-          
-          // If it's a size-related error, provide specific guidance
-          if (uploadError.message?.includes('Payload too large') || 
-              uploadError.message?.includes('exceeded the maximum allowed size') ||
-              uploadError.statusCode === '413') {
-            throw new Error(`File size (${fileSizeFormatted}) exceeds Supabase's upload limit. Please compress your file to under 100MB and try again.`);
+      // Try direct upload
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          metadata: {
+            user_id: userData.user.id,
+            original_name: file.name
           }
-          
-          throw uploadError;
-        }
-      } catch (directUploadError: any) {
-        console.error('Direct upload failed:', directUploadError);
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
         
-        // Provide specific error message for size issues
-        if (directUploadError.message?.includes('Payload too large') || 
-            directUploadError.statusCode === '413') {
-          throw new Error(`Upload failed: File size (${fileSizeFormatted}) is too large for direct upload. Please compress your Gaussian splat file to under 100MB and try again.`);
+        // Check for size-related errors in the error message
+        if (uploadError.message?.includes('Payload too large') || 
+            uploadError.message?.includes('exceeded the maximum allowed size')) {
+          throw new Error(`File size (${fileSizeFormatted}) exceeds Supabase's upload limit. Please compress your file to under 100MB and try again.`);
         }
         
-        throw directUploadError;
+        throw uploadError;
       }
 
       setUploadProgress(100);
@@ -224,7 +173,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       // Provide specific error messages for common issues
       let errorMessage = error.message;
       
-      if (error.message?.includes('Payload too large') || error.statusCode === '413') {
+      if (error.message?.includes('Payload too large')) {
         errorMessage = `File too large: Your file (${fileSize}) exceeds the upload limit. Please compress your Gaussian splat file to under 100MB.`;
       } else if (error.message?.includes('exceeded the maximum allowed size')) {
         errorMessage = `File is too large. Maximum size for ${bucket} is ${formatFileSize(FILE_SIZE_LIMITS[bucket])}.`;
