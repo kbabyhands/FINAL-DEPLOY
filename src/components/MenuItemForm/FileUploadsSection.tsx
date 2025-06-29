@@ -26,7 +26,7 @@ const FileUploadsSection = ({
   const handleOptimizationTip = () => {
     toast({
       title: "Optimization Tips",
-      description: "Consider using compressed .ply files or reducing point density for faster uploads. Tools like Gaussian Splatting WebGL optimizers can help reduce file sizes significantly.",
+      description: "Consider using compressed .ply files, .zip archives containing PLY files, or reducing point density for faster uploads. Tools like Gaussian Splatting WebGL optimizers can help reduce file sizes significantly.",
       duration: 8000,
     });
   };
@@ -49,7 +49,7 @@ const FileUploadsSection = ({
           onUpload={onModelUpload}
           onRemove={onModelRemove}
           label="Gaussian Splat File"
-          accept=".splat,.ply,.gz"
+          accept=".splat,.ply,.gz,.zip"
         />
         
         {!modelUrl && (

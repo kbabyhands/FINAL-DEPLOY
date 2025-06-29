@@ -47,14 +47,26 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
 
   // Check for Gaussian splat specific formats
   if (bucket === 'gaussian-splats') {
-    const validExtensions = ['.splat', '.ply', '.gz'];
+    const validExtensions = ['.splat', '.ply', '.gz', '.zip'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     
     if (!validExtensions.includes(fileExtension)) {
       return {
         valid: false,
-        message: 'Please upload a valid Gaussian splat file (.splat, .ply, or .gz format).'
+        message: 'Please upload a valid Gaussian splat file (.splat, .ply, .gz, or .zip format).'
       };
+    }
+
+    // Additional validation for zip files
+    if (fileExtension === '.zip') {
+      // Check if filename suggests it contains PLY files
+      const fileName = file.name.toLowerCase();
+      if (!fileName.includes('ply') && !fileName.includes('splat') && !fileName.includes('gaussian')) {
+        return {
+          valid: false,
+          message: 'ZIP files should contain PLY or Gaussian splat files. Please ensure your compressed file contains the appropriate 3D model data.'
+        };
+      }
     }
   }
 
