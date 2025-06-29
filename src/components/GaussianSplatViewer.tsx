@@ -2,9 +2,10 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import * as THREE from 'three';
+import JSZip from 'jszip';
 
 interface GaussianSplatViewerProps {
   url?: string;
@@ -77,6 +78,37 @@ const GaussianSplatViewer: React.FC<GaussianSplatViewerProps> = ({
   const effectiveUrl = splatUrl || url;
   const isModalMode = isOpen !== undefined;
 
+  const extractZipFile = useCallback(async (arrayBuffer: ArrayBuffer): Promise<ArrayBuffer> => {
+    console.log('Extracting ZIP file...');
+    
+    try {
+      const zip = new JSZip();
+      const zipContent = await zip.loadAsync(arrayBuffer);
+      
+      // Look for PLY files in the ZIP
+      const plyFiles = Object.keys(zipContent.files).filter(filename => 
+        filename.toLowerCase().endsWith('.ply') && !zipContent.files[filename].dir
+      );
+      
+      if (plyFiles.length === 0) {
+        throw new Error('No PLY files found in the ZIP archive');
+      }
+      
+      // Use the first PLY file found
+      const plyFilename = plyFiles[0];
+      console.log('Found PLY file in ZIP:', plyFilename);
+      
+      const plyFile = zipContent.files[plyFilename];
+      const plyArrayBuffer = await plyFile.async('arraybuffer');
+      
+      console.log('Extracted PLY file size:', plyArrayBuffer.byteLength, 'bytes');
+      return plyArrayBuffer;
+    } catch (err) {
+      console.error('Error extracting ZIP file:', err);
+      throw new Error('Failed to extract PLY file from ZIP archive. Please ensure the ZIP contains a valid PLY file.');
+    }
+  }, []);
+
   const loadSplatFile = useCallback(async (fileUrl: string): Promise<SplatData> => {
     console.log('Loading splat file from:', fileUrl);
     
@@ -96,22 +128,24 @@ const GaussianSplatViewer: React.FC<GaussianSplatViewerProps> = ({
       const arrayBuffer = await response.arrayBuffer();
       console.log('Loaded file size:', arrayBuffer.byteLength, 'bytes');
 
-      // Check if it's a ZIP file
-      const isZip = new Uint8Array(arrayBuffer, 0, 4).toString() === '80,75,3,4';
+      // Check if it's a ZIP file by looking at the first 4 bytes
+      const header = new Uint8Array(arrayBuffer, 0, 4);
+      const isZip = header[0] === 0x50 && header[1] === 0x4B && header[2] === 0x03 && header[3] === 0x04;
+      
+      let plyBuffer = arrayBuffer;
       
       if (isZip) {
         console.log('Detected ZIP file, extracting...');
-        // For now, we'll throw an error for ZIP files as they need special handling
-        throw new Error('ZIP files are not currently supported. Please upload a raw PLY file.');
+        plyBuffer = await extractZipFile(arrayBuffer);
       }
 
-      // Try to parse as PLY
-      return parsePlyFile(arrayBuffer);
+      // Parse as PLY
+      return parsePlyFile(plyBuffer);
     } catch (err) {
       console.error('Error loading splat file:', err);
       throw err;
     }
-  }, []);
+  }, [extractZipFile]);
 
   const parsePlyFile = useCallback((buffer: ArrayBuffer): SplatData => {
     console.log('Parsing PLY file...');
@@ -292,6 +326,9 @@ const GaussianSplatViewer: React.FC<GaussianSplatViewerProps> = ({
         <DialogContent className="max-w-4xl w-[90vw] h-[80vh] p-0">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle>{itemTitle ? `3D View - ${itemTitle}` : '3D Model Viewer'}</DialogTitle>
+            <DialogDescription>
+              Interactive 3D model view. Click and drag to rotate, scroll to zoom.
+            </DialogDescription>
           </DialogHeader>
           <div className="flex-1 p-6 pt-4">
             {renderViewer()}
