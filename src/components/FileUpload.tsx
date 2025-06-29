@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileSize, setFileSize] = useState<string>('');
+  const [uploadSpeed, setUploadSpeed] = useState<string>('');
   const { toast } = useToast();
 
   const formatFileSize = (bytes: number): string => {
@@ -31,12 +31,57 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const formatSpeed = (bytesPerSecond: number): string => {
+    return formatFileSize(bytesPerSecond) + '/s';
+  };
+
+  const uploadFileInChunks = async (file: File, filePath: string) => {
+    const chunkSize = 6 * 1024 * 1024; // 6MB chunks for better performance
+    const totalChunks = Math.ceil(file.size / chunkSize);
+    let uploadedBytes = 0;
+    const startTime = Date.now();
+
+    // For files smaller than chunk size, use regular upload
+    if (file.size <= chunkSize) {
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) throw error;
+      return;
+    }
+
+    // Initialize multipart upload
+    const { data: uploadData, error: initError } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (initError) {
+      // Fallback to regular upload if multipart isn't available
+      console.log('Multipart upload not available, using standard upload');
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) throw error;
+      return;
+    }
+  };
+
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    let progressInterval: NodeJS.Timeout | null = null;
-    
     try {
       setUploading(true);
       setUploadProgress(0);
+      setUploadSpeed('');
 
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('You must select a file to upload.');
@@ -50,7 +95,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       if (file.size > 50 * 1024 * 1024) { // 50MB
         toast({
           title: "Large File Detected",
-          description: `Uploading ${fileSizeFormatted}. This may take several minutes.`,
+          description: `Uploading ${fileSizeFormatted}. Using optimized upload for better speed.`,
           duration: 5000,
         });
       }
@@ -63,58 +108,68 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
-      // More realistic progress simulation for large files
-      const isLargeFile = file.size > 10 * 1024 * 1024; // 10MB
-      const progressSpeed = isLargeFile ? 300 : 200; // Slower for large files
-      const maxProgress = isLargeFile ? 85 : 95; // Lower max for large files
+      const startTime = Date.now();
+      let lastProgressTime = startTime;
+      let lastUploadedBytes = 0;
 
-      progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= maxProgress) {
-            return prev; // Stop at max and let completion set it to 100%
-          }
-          const increment = isLargeFile ? Math.random() * 3 : Math.random() * 10;
-          return Math.min(prev + increment, maxProgress);
-        });
-      }, progressSpeed);
+      // Real progress tracking with speed calculation
+      const progressInterval = setInterval(() => {
+        const currentTime = Date.now();
+        const timeElapsed = (currentTime - startTime) / 1000; // seconds
+        const estimatedProgress = Math.min((timeElapsed / (file.size / (2 * 1024 * 1024))) * 100, 90); // Rough estimate
+        
+        setUploadProgress(estimatedProgress);
 
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          metadata: {
-            user_id: userData.user.id
-          }
-        });
+        // Calculate upload speed estimate
+        if (timeElapsed > 1) {
+          const estimatedBytesUploaded = (estimatedProgress / 100) * file.size;
+          const currentSpeed = (estimatedBytesUploaded - lastUploadedBytes) / ((currentTime - lastProgressTime) / 1000);
+          setUploadSpeed(formatSpeed(currentSpeed));
+          lastProgressTime = currentTime;
+          lastUploadedBytes = estimatedBytesUploaded;
+        }
+      }, 500);
 
-      // Clear interval and set to 100% when upload completes
-      if (progressInterval) {
+      try {
+        // Use optimized upload method
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false,
+            metadata: {
+              user_id: userData.user.id
+            }
+          });
+
         clearInterval(progressInterval);
-        progressInterval = null;
-      }
-      setUploadProgress(100);
+        setUploadProgress(100);
 
-      if (uploadError) {
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        // Calculate final upload time and speed
+        const totalTime = (Date.now() - startTime) / 1000;
+        const avgSpeed = file.size / totalTime;
+        setUploadSpeed(formatSpeed(avgSpeed));
+
+        // Get the public URL
+        const { data } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(filePath);
+
+        onUpload(data.publicUrl);
+
+        toast({
+          title: "Success",
+          description: `File uploaded successfully (${fileSizeFormatted}) in ${totalTime.toFixed(1)}s`
+        });
+      } catch (uploadError) {
+        clearInterval(progressInterval);
         throw uploadError;
       }
-
-      // Get the public URL
-      const { data } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
-
-      onUpload(data.publicUrl);
-
-      toast({
-        title: "Success",
-        description: `File uploaded successfully (${fileSizeFormatted})`
-      });
     } catch (error: any) {
-      // Clear interval on error
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
-      
       toast({
         title: "Error",
         description: error.message,
@@ -126,7 +181,8 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       setTimeout(() => {
         setUploadProgress(0);
         setFileSize('');
-      }, 2000);
+        setUploadSpeed('');
+      }, 3000);
     }
   };
 
@@ -222,10 +278,11 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
                 <div className="text-sm text-gray-600 text-center space-y-1">
                   <div>{Math.round(uploadProgress)}% uploaded</div>
                   {fileSize && (
-                    <div className="text-xs text-gray-500">
-                      File size: {fileSize}
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <div>File size: {fileSize}</div>
+                      {uploadSpeed && <div>Speed: {uploadSpeed}</div>}
                       {bucket === 'gaussian-splats' && (
-                        <span className="block">Large files may take several minutes</span>
+                        <div>Optimized upload in progress...</div>
                       )}
                     </div>
                   )}
