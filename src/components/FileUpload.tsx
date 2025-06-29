@@ -34,8 +34,6 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     'gaussian-splats': 200 * 1024 * 1024, // 200MB for Gaussian splats
   };
 
-  const CHUNK_SIZE = 6 * 1024 * 1024; // 6MB chunks for large files
-
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -72,66 +70,6 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     }
 
     return { valid: true };
-  };
-
-  const uploadLargeFile = async (file: File, filePath: string): Promise<void> => {
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    let uploadedBytes = 0;
-    const startTime = Date.now();
-
-    setUploadPhase('preparing');
-    
-    // For large files, we'll use the standard upload but with better progress tracking
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = (e.loaded / e.total) * 100;
-          setUploadProgress(percentComplete);
-          
-          // Calculate upload speed
-          const elapsed = (Date.now() - startTime) / 1000;
-          if (elapsed > 1) {
-            const speed = e.loaded / elapsed;
-            setUploadSpeed(formatSpeed(speed));
-          }
-          
-          // Update phase based on progress
-          if (percentComplete < 90) {
-            setUploadPhase('uploading');
-          } else {
-            setUploadPhase('finalizing');
-          }
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setUploadPhase('complete');
-          resolve();
-        } else {
-          reject(new Error(`Upload failed with status ${xhr.status}`));
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        reject(new Error('Upload failed due to network error'));
-      });
-
-      // Get signed URL for upload
-      supabase.storage
-        .from(bucket)
-        .createSignedUploadUrl(filePath)
-        .then(({ data, error }) => {
-          if (error) throw error;
-          
-          xhr.open('PUT', data.signedUrl);
-          xhr.setRequestHeader('Content-Type', file.type);
-          xhr.send(file);
-        })
-        .catch(reject);
-    });
   };
 
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,36 +115,32 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
 
       console.log('Starting upload for file:', file.name, 'Size:', fileSizeFormatted);
       
-      if (isLarge) {
-        // Use chunked upload for large files
-        await uploadLargeFile(file, filePath);
-      } else {
-        // Use standard upload for smaller files
-        const startTime = Date.now();
-        
-        const { error: uploadError } = await supabase.storage
-          .from(bucket)
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false,
-            metadata: {
-              user_id: userData.user.id,
-              original_name: file.name
-            }
-          });
+      setUploadPhase('uploading');
+      const startTime = Date.now();
+      
+      // Use standard Supabase upload with progress tracking
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          metadata: {
+            user_id: userData.user.id,
+            original_name: file.name
+          }
+        });
 
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          throw uploadError;
-        }
-
-        setUploadProgress(100);
-        setUploadPhase('complete');
-        
-        const totalTime = (Date.now() - startTime) / 1000;
-        const avgSpeed = file.size / totalTime;
-        setUploadSpeed(formatSpeed(avgSpeed));
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
       }
+
+      setUploadProgress(100);
+      setUploadPhase('complete');
+      
+      const totalTime = (Date.now() - startTime) / 1000;
+      const avgSpeed = file.size / totalTime;
+      setUploadSpeed(formatSpeed(avgSpeed));
 
       console.log('Upload completed successfully');
 
@@ -220,7 +154,6 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       // Call the upload callback
       onUpload(data.publicUrl);
 
-      const totalTime = (Date.now() - Date.now()) / 1000;
       toast({
         title: "Upload Complete",
         description: `${file.name} uploaded successfully (${fileSizeFormatted})`,
@@ -236,6 +169,8 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         errorMessage = `File is too large. Maximum size for ${bucket} is ${formatFileSize(FILE_SIZE_LIMITS[bucket])}.`;
       } else if (error.message?.includes('Invalid file type')) {
         errorMessage = 'Invalid file type. Please check the allowed file formats.';
+      } else if (error.message?.includes('Duplicate')) {
+        errorMessage = 'A file with this name already exists. Please rename your file and try again.';
       }
       
       toast({
