@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,16 @@ interface FileUploadProps {
 const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: FileUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [fileSize, setFileSize] = useState<string>('');
   const { toast } = useToast();
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     let progressInterval: NodeJS.Timeout | null = null;
@@ -33,6 +43,18 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       }
 
       const file = event.target.files[0];
+      const fileSizeFormatted = formatFileSize(file.size);
+      setFileSize(fileSizeFormatted);
+      
+      // Show warning for large files
+      if (file.size > 50 * 1024 * 1024) { // 50MB
+        toast({
+          title: "Large File Detected",
+          description: `Uploading ${fileSizeFormatted}. This may take several minutes.`,
+          duration: 5000,
+        });
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
@@ -41,15 +63,20 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
-      // Simulate progress updates for better UX, but allow it to reach higher values
+      // More realistic progress simulation for large files
+      const isLargeFile = file.size > 10 * 1024 * 1024; // 10MB
+      const progressSpeed = isLargeFile ? 300 : 200; // Slower for large files
+      const maxProgress = isLargeFile ? 85 : 95; // Lower max for large files
+
       progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
-          if (prev >= 95) {
-            return prev; // Stop at 95% and let completion set it to 100%
+          if (prev >= maxProgress) {
+            return prev; // Stop at max and let completion set it to 100%
           }
-          return Math.min(prev + Math.random() * 10, 95);
+          const increment = isLargeFile ? Math.random() * 3 : Math.random() * 10;
+          return Math.min(prev + increment, maxProgress);
         });
-      }, 200);
+      }, progressSpeed);
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
@@ -79,7 +106,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
 
       toast({
         title: "Success",
-        description: "File uploaded successfully"
+        description: `File uploaded successfully (${fileSizeFormatted})`
       });
     } catch (error: any) {
       // Clear interval on error
@@ -98,7 +125,8 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       // Reset progress after a brief delay to show completion
       setTimeout(() => {
         setUploadProgress(0);
-      }, 1000);
+        setFileSize('');
+      }, 2000);
     }
   };
 
@@ -191,8 +219,16 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
             {uploading && (
               <div className="mt-3 space-y-2">
                 <Progress value={uploadProgress} className="w-full" />
-                <div className="text-sm text-gray-600 text-center">
-                  {Math.round(uploadProgress)}% uploaded
+                <div className="text-sm text-gray-600 text-center space-y-1">
+                  <div>{Math.round(uploadProgress)}% uploaded</div>
+                  {fileSize && (
+                    <div className="text-xs text-gray-500">
+                      File size: {fileSize}
+                      {bucket === 'gaussian-splats' && (
+                        <span className="block">Large files may take several minutes</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
