@@ -37,7 +37,7 @@ const AdminDashboard = () => {
   } = useMenuItems(restaurant?.id);
 
   const handleRestaurantUpdate = (updatedRestaurant: Restaurant) => {
-    logger.info('Updating restaurant data');
+    logger.info('Restaurant data update requested');
     if (restaurant) {
       updateRestaurant(updatedRestaurant);
     } else {
@@ -53,12 +53,12 @@ const AdminDashboard = () => {
   };
 
   const handleAddMenuItem = () => {
-    logger.debug('Adding new menu item');
+    logger.debug('Opening new menu item form');
     setShowMenuForm(true);
   };
 
   const handleEditMenuItem = (item: MenuItem) => {
-    logger.debug('Editing menu item:', item.title);
+    logger.debug('Opening edit form for menu item:', item.title);
     setEditingItem(item);
     setShowMenuForm(true);
   };

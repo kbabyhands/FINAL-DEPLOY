@@ -1,11 +1,11 @@
 
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
+import { useErrorHandler } from '@/utils/errorHandler';
 
 export const useMenuItemViews = () => {
-  const { toast } = useToast();
+  const { handleSupabaseError } = useErrorHandler();
 
   const trackView = useCallback(async (menuItemId: string) => {
     try {
@@ -14,6 +14,7 @@ export const useMenuItemViews = () => {
       if (!sessionId) {
         sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         sessionStorage.setItem('menu_session_id', sessionId);
+        logger.debug('Generated new session ID for menu tracking');
       }
 
       const { error } = await supabase
@@ -25,6 +26,8 @@ export const useMenuItemViews = () => {
         });
 
       if (error) {
+        // Don't use handleSupabaseError here as it shows toast notifications
+        // and tracking errors shouldn't be intrusive to users
         logger.error('Error tracking menu item view:', error);
       } else {
         logger.debug('Menu item view tracked successfully');

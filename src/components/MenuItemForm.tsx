@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,9 @@ import { useToast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
 import FileUpload from './FileUpload';
 import GaussianSplatOptimizer from './GaussianSplatOptimizer';
+import { validateMenuItemData, sanitizeInput, sanitizeNumericInput, ValidationError } from '@/utils/validation';
+import { logger } from '@/utils/logger';
+import { useErrorHandler } from '@/utils/errorHandler';
 
 interface MenuItem {
   id: string;
@@ -35,7 +39,7 @@ interface MenuItemFormProps {
 
 const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemFormProps) => {
   const [loading, setLoading] = useState(false);
-  const [showOptimizer, setShowOptimizer] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -52,9 +56,11 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
   });
   const [newAllergen, setNewAllergen] = useState('');
   const { toast } = useToast();
+  const { handleSupabaseError } = useErrorHandler();
 
   useEffect(() => {
     if (menuItem) {
+      logger.debug('Loading menu item for editing:', menuItem.title);
       setFormData({
         title: menuItem.title,
         description: menuItem.description || '',
@@ -69,25 +75,68 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
         image_url: menuItem.image_url || '',
         model_url: menuItem.model_url || ''
       });
+    } else {
+      logger.debug('Creating new menu item form');
     }
   }, [menuItem]);
 
+  const getFieldError = (fieldName: string): string | undefined => {
+    return validationErrors.find(error => error.field === fieldName)?.message;
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    let processedValue = value;
+    
+    if (field === 'price') {
+      // Allow decimal input for price
+      processedValue = value;
+    } else {
+      processedValue = sanitizeInput(value);
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
+    
+    // Clear validation errors for this field when user starts typing
+    if (validationErrors.some(error => error.field === field)) {
+      setValidationErrors(prev => prev.filter(error => error.field !== field));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prepare validation data
+    const validationData = {
+      ...formData,
+      price: parseFloat(formData.price) || 0
+    };
+    
+    // Validate form data
+    const validation = validateMenuItemData(validationData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors below",
+        variant: "destructive"
+      });
+      logger.warn('Menu item form validation failed:', validation.errors);
+      return;
+    }
+
     setLoading(true);
+    setValidationErrors([]);
+    logger.info(menuItem ? 'Updating menu item' : 'Creating new menu item');
 
     try {
-      const price = parseFloat(formData.price);
-      if (isNaN(price)) {
-        throw new Error('Please enter a valid price');
-      }
-
+      const price = sanitizeNumericInput(formData.price);
+      
       const menuItemData = {
-        title: formData.title,
-        description: formData.description || null,
+        title: sanitizeInput(formData.title),
+        description: formData.description ? sanitizeInput(formData.description) : null,
         price,
-        category: formData.category,
-        allergens: formData.allergens,
+        category: sanitizeInput(formData.category),
+        allergens: formData.allergens.map(allergen => sanitizeInput(allergen)),
         is_vegetarian: formData.is_vegetarian,
         is_vegan: formData.is_vegan,
         is_gluten_free: formData.is_gluten_free,
@@ -100,24 +149,30 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
 
       if (menuItem) {
         // Update existing item
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('menu_items')
           .update(menuItemData)
-          .eq('id', menuItem.id);
+          .eq('id', menuItem.id)
+          .select()
+          .single();
 
         if (error) throw error;
-
+        logger.info('Menu item updated successfully:', data.title);
+        
         toast({
           title: "Success",
           description: "Menu item updated successfully"
         });
       } else {
         // Create new item
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('menu_items')
-          .insert([menuItemData]);
+          .insert([menuItemData])
+          .select()
+          .single();
 
         if (error) throw error;
+        logger.info('Menu item created successfully:', data.title);
 
         toast({
           title: "Success",
@@ -127,27 +182,26 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
 
       onSave();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      handleSupabaseError(error, menuItem ? 'menu item update' : 'menu item creation');
     } finally {
       setLoading(false);
     }
   };
 
   const addAllergen = () => {
-    if (newAllergen.trim() && !formData.allergens.includes(newAllergen.trim())) {
+    const sanitizedAllergen = sanitizeInput(newAllergen.trim());
+    if (sanitizedAllergen && !formData.allergens.includes(sanitizedAllergen)) {
+      logger.debug('Adding allergen:', sanitizedAllergen);
       setFormData({
         ...formData,
-        allergens: [...formData.allergens, newAllergen.trim()]
+        allergens: [...formData.allergens, sanitizedAllergen]
       });
       setNewAllergen('');
     }
   };
 
   const removeAllergen = (allergen: string) => {
+    logger.debug('Removing allergen:', allergen);
     setFormData({
       ...formData,
       allergens: formData.allergens.filter(a => a !== allergen)
@@ -181,19 +235,27 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) => handleInputChange('title', e.target.value)}
                 required
+                className={getFieldError('title') ? 'border-red-500' : ''}
               />
+              {getFieldError('title') && (
+                <p className="text-sm text-red-500 mt-1">{getFieldError('title')}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="category">Category *</Label>
               <Input
                 id="category"
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) => handleInputChange('category', e.target.value)}
                 placeholder="e.g., Appetizer, Main Course, Dessert"
                 required
+                className={getFieldError('category') ? 'border-red-500' : ''}
               />
+              {getFieldError('category') && (
+                <p className="text-sm text-red-500 mt-1">{getFieldError('category')}</p>
+              )}
             </div>
           </div>
 
@@ -202,9 +264,13 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
             <Input
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Describe your menu item"
+              className={getFieldError('description') ? 'border-red-500' : ''}
             />
+            {getFieldError('description') && (
+              <p className="text-sm text-red-500 mt-1">{getFieldError('description')}</p>
+            )}
           </div>
 
           <div>
@@ -215,9 +281,13 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
               step="0.01"
               min="0"
               value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              onChange={(e) => handleInputChange('price', e.target.value)}
               required
+              className={getFieldError('price') ? 'border-red-500' : ''}
             />
+            {getFieldError('price') && (
+              <p className="text-sm text-red-500 mt-1">{getFieldError('price')}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-4">
@@ -297,6 +367,9 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
                 Add
               </Button>
             </div>
+            {getFieldError('allergens') && (
+              <p className="text-sm text-red-500 mt-1">{getFieldError('allergens')}</p>
+            )}
             {formData.allergens.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {formData.allergens.map((allergen) => (
