@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Viewer } from '@mkkellogg/gaussian-splats-3d';
 import JSZip from 'jszip';
@@ -52,18 +51,18 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
         }
         
         console.log('Found PLY file in ZIP:', plyFile);
-        const plyData = await zipData.files[plyFile].async('arrayBuffer');
+        const plyData = await zipData.files[plyFile].async('uint8array');
         
-        // Create a proper blob with PLY MIME type and create a blob URL with .ply extension
+        // Create a proper blob with PLY MIME type
         const plyBlob = new Blob([plyData], { 
           type: 'model/ply' 
         });
         
-        // Create blob URL and add .ply extension as fragment
+        // Create blob URL
         const blobUrl = URL.createObjectURL(plyBlob);
         
         // The library needs to see .ply in the URL, so we'll create a data URL instead
-        const base64Data = btoa(String.fromCharCode(...new Uint8Array(plyData)));
+        const base64Data = btoa(String.fromCharCode(...plyData));
         const dataUrl = `data:model/ply;base64,${base64Data}`;
         
         console.log('Created data URL for PLY file');
