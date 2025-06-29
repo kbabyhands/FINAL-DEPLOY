@@ -31,6 +31,13 @@ export const formatSpeed = (bytesPerSecond: number): string => {
 export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucket']): FileValidationResult => {
   const maxSize = FILE_SIZE_LIMITS[bucket];
   
+  console.log('Validating file:', {
+    fileName: file.name,
+    fileSize: file.size,
+    maxSize: maxSize,
+    bucket: bucket
+  });
+  
   if (file.size > maxSize) {
     if (bucket === 'gaussian-splats') {
       return {
@@ -50,6 +57,8 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
     const validExtensions = ['.splat', '.ply', '.gz', '.zip'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     
+    console.log('Checking file extension:', fileExtension, 'against valid extensions:', validExtensions);
+    
     if (!validExtensions.includes(fileExtension)) {
       return {
         valid: false,
@@ -57,19 +66,16 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
       };
     }
 
-    // Additional validation for zip files
+    // More lenient validation for zip files - just check if it's a zip
     if (fileExtension === '.zip') {
-      // Check if filename suggests it contains PLY files
-      const fileName = file.name.toLowerCase();
-      if (!fileName.includes('ply') && !fileName.includes('splat') && !fileName.includes('gaussian')) {
-        return {
-          valid: false,
-          message: 'ZIP files should contain PLY or Gaussian splat files. Please ensure your compressed file contains the appropriate 3D model data.'
-        };
-      }
+      console.log('ZIP file detected - validation passed');
+      // Don't be too strict about filename validation for ZIP files
+      // The server will handle the actual content validation
+      return { valid: true };
     }
   }
 
+  console.log('File validation passed');
   return { valid: true };
 };
 

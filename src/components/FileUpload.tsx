@@ -41,15 +41,26 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       const fileSizeFormatted = formatFileSize(file.size);
       setFileSize(fileSizeFormatted);
       
+      console.log('Starting file upload process:', {
+        fileName: file.name,
+        fileSize: fileSizeFormatted,
+        fileType: file.type,
+        bucket: bucket
+      });
+
       // Validate file
       const validation = validateFile(file, bucket);
       if (!validation.valid) {
+        console.error('File validation failed:', validation.message);
         throw new Error(validation.message);
       }
+
+      console.log('File validation passed');
 
       // Server-side size check for Supabase limitations
       const SUPABASE_UPLOAD_LIMIT = 50 * 1024 * 1024; // 50MB is the practical limit
       if (file.size > SUPABASE_UPLOAD_LIMIT) {
+        console.error('File size exceeds Supabase limit:', file.size, 'vs', SUPABASE_UPLOAD_LIMIT);
         if (bucket === 'gaussian-splats') {
           throw new Error(`File size (${fileSizeFormatted}) exceeds Supabase's upload limit of ${formatFileSize(SUPABASE_UPLOAD_LIMIT)}. For Gaussian splat files, please:\n\n1. Use PLY compression tools to reduce file size\n2. Create ZIP archives of PLY files for better compression\n3. Reduce point density in your 3D scanning software\n4. Consider splitting large scenes into smaller sections\n\nTarget file size should be under 50MB for reliable uploads.`);
         } else {
@@ -69,25 +80,47 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         });
       }
 
-      // Special handling for ZIP files
+      // Get file extension and create appropriate filename
       const fileExt = file.name.split('.').pop()?.toLowerCase();
-      let fileName = `${Math.random()}.${fileExt}`;
+      console.log('File extension detected:', fileExt);
+      
+      let fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       
       // Add descriptive prefix for ZIP files containing PLY data
       if (fileExt === 'zip' && bucket === 'gaussian-splats') {
-        fileName = `compressed-ply-${Math.random()}.zip`;
+        fileName = `compressed-ply-${Date.now()}-${Math.random().toString(36).substring(2)}.zip`;
+        console.log('ZIP file detected for Gaussian splats, using descriptive filename:', fileName);
       }
       
-      const filePath = `${fileName}`;
+      const filePath = fileName;
 
       // Get current user
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('Auth error:', userError);
+        throw new Error('Authentication failed. Please sign in and try again.');
+      }
+      if (!userData.user) {
+        console.error('No authenticated user found');
+        throw new Error('User not authenticated. Please sign in and try again.');
+      }
 
-      console.log('Starting upload for file:', file.name, 'Size:', fileSizeFormatted);
+      console.log('User authenticated:', userData.user.id);
+      console.log('Starting upload for file:', file.name, 'Size:', fileSizeFormatted, 'Path:', filePath);
       
       setUploadPhase('uploading');
       const startTime = Date.now();
+      
+      // Create metadata object
+      const metadata = {
+        user_id: userData.user.id,
+        original_name: file.name,
+        file_type: fileExt || 'unknown',
+        is_compressed: fileExt === 'zip' || fileExt === 'gz',
+        upload_timestamp: new Date().toISOString()
+      };
+
+      console.log('Upload metadata:', metadata);
       
       // Upload with optimized settings for large files
       const { error: uploadError } = await supabase.storage
@@ -95,20 +128,21 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-          metadata: {
-            user_id: userData.user.id,
-            original_name: file.name,
-            file_type: fileExt,
-            is_compressed: fileExt === 'zip' || fileExt === 'gz'
-          }
+          metadata: metadata
         });
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        console.error('Upload error details:', {
+          message: uploadError.message,
+          status: uploadError.status,
+          statusCode: uploadError.statusCode,
+          error: uploadError
+        });
         
         // Enhanced error handling for server limitations
         if (uploadError.message?.includes('Payload too large') || 
-            uploadError.message?.includes('exceeded the maximum allowed size')) {
+            uploadError.message?.includes('exceeded the maximum allowed size') ||
+            uploadError.message?.includes('413')) {
           if (bucket === 'gaussian-splats') {
             throw new Error(`Server upload limit exceeded (${fileSizeFormatted}). Supabase has a ${formatFileSize(SUPABASE_UPLOAD_LIMIT)} upload limit.\n\nTo fix this:\n• Use PLY compression tools\n• Create ZIP archives of PLY files\n• Reduce point cloud density\n• Split large models into sections\n• Target files under 50MB`);
           } else {
@@ -116,7 +150,22 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
           }
         }
         
-        throw uploadError;
+        // Handle authentication errors
+        if (uploadError.message?.includes('JWT') || uploadError.message?.includes('auth')) {
+          throw new Error('Authentication error. Please sign out and sign back in, then try again.');
+        }
+        
+        // Handle bucket/permission errors
+        if (uploadError.message?.includes('not found') || uploadError.message?.includes('bucket')) {
+          throw new Error(`Storage bucket "${bucket}" not found or not accessible. Please contact support.`);
+        }
+        
+        // Handle file type errors
+        if (uploadError.message?.includes('Invalid file type') || uploadError.message?.includes('not allowed')) {
+          throw new Error('File type not allowed. Please check that your ZIP file contains PLY or Gaussian splat data.');
+        }
+        
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
       setUploadProgress(100);
@@ -126,7 +175,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       const avgSpeed = file.size / totalTime;
       setUploadSpeed(formatSpeed(avgSpeed));
 
-      console.log('Upload completed successfully');
+      console.log('Upload completed successfully in', totalTime, 'seconds');
 
       // Get the public URL
       const { data } = supabase.storage
@@ -145,21 +194,27 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       });
 
     } catch (error: any) {
-      console.error('File upload error:', error);
+      console.error('File upload error details:', {
+        message: error.message,
+        stack: error.stack,
+        error: error
+      });
       
       // Provide specific error messages for common issues
       let errorMessage = error.message;
       
-      if (error.message?.includes('Payload too large')) {
+      if (error.message?.includes('Payload too large') || error.message?.includes('413')) {
         if (bucket === 'gaussian-splats') {
           errorMessage = `Upload failed: File too large (${fileSize})\n\nSupabase has a 50MB upload limit. For Gaussian splats:\n• Compress with PLY tools\n• Create ZIP archives\n• Reduce point density\n• Split large models\n• Target under 50MB`;
         } else {
           errorMessage = `Upload failed: File too large (${fileSize}). Please compress to under 50MB.`;
         }
       } else if (error.message?.includes('Invalid file type')) {
-        errorMessage = 'Invalid file type. Please check the allowed file formats.';
+        errorMessage = 'Invalid file type. Please ensure your ZIP file contains PLY or Gaussian splat data.';
       } else if (error.message?.includes('Duplicate')) {
         errorMessage = 'A file with this name already exists. Please rename your file and try again.';
+      } else if (error.message?.includes('auth') || error.message?.includes('JWT')) {
+        errorMessage = 'Authentication error. Please sign out and sign back in, then try uploading again.';
       }
       
       toast({
