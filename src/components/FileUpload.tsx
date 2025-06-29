@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Label } from '@/components/ui/label';
@@ -48,8 +47,8 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         throw new Error(validation.message);
       }
 
-      // Check if it's a large file
-      const isLarge = file.size > 50 * 1024 * 1024; // 50MB threshold
+      // Check if it's a large file (over 50MB threshold for progress indication)
+      const isLarge = file.size > 50 * 1024 * 1024;
       setIsLargeFile(isLarge);
 
       if (isLarge) {
@@ -73,7 +72,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       setUploadPhase('uploading');
       const startTime = Date.now();
       
-      // Try direct upload
+      // Enhanced upload with better error handling for Gaussian splats
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
@@ -88,10 +87,14 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       if (uploadError) {
         console.error('Upload error:', uploadError);
         
-        // Check for size-related errors in the error message
+        // Enhanced error handling for Gaussian splat files
         if (uploadError.message?.includes('Payload too large') || 
             uploadError.message?.includes('exceeded the maximum allowed size')) {
-          throw new Error(`File size (${fileSizeFormatted}) exceeds Supabase's upload limit. Please compress your file to under 100MB and try again.`);
+          if (bucket === 'gaussian-splats') {
+            throw new Error(`File size (${fileSizeFormatted}) exceeds the server upload limit. For Gaussian splat files over 200MB, please compress your file using tools like PLY compression or reduce point density.`);
+          } else {
+            throw new Error(`File size (${fileSizeFormatted}) exceeds the upload limit. Please compress your file and try again.`);
+          }
         }
         
         throw uploadError;
@@ -129,9 +132,11 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       let errorMessage = error.message;
       
       if (error.message?.includes('Payload too large')) {
-        errorMessage = `File too large: Your file (${fileSize}) exceeds the upload limit. Please compress your Gaussian splat file to under 100MB.`;
-      } else if (error.message?.includes('exceeded the maximum allowed size')) {
-        errorMessage = `File is too large. Maximum size for ${bucket} is ${formatFileSize(100 * 1024 * 1024)}.`;
+        if (bucket === 'gaussian-splats') {
+          errorMessage = `File too large: Your Gaussian splat file (${fileSize}) exceeds the server limit. Please compress your file to under 200MB using PLY compression or reduce point density.`;
+        } else {
+          errorMessage = `File too large: Your file (${fileSize}) exceeds the upload limit. Please compress your file.`;
+        }
       } else if (error.message?.includes('Invalid file type')) {
         errorMessage = 'Invalid file type. Please check the allowed file formats.';
       } else if (error.message?.includes('Duplicate')) {

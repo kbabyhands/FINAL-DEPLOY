@@ -8,12 +8,12 @@ interface FileUploadValidatorProps {
   bucket: 'menu-images' | '3d-models' | 'restaurant-branding' | 'gaussian-splats';
 }
 
-// File size limits (in bytes) - adjusted for Supabase limits
+// File size limits (in bytes) - adjusted for Gaussian splat uploads
 const FILE_SIZE_LIMITS = {
   'menu-images': 10 * 1024 * 1024, // 10MB
   'restaurant-branding': 10 * 1024 * 1024, // 10MB
   '3d-models': 50 * 1024 * 1024, // 50MB
-  'gaussian-splats': 100 * 1024 * 1024, // Reduced to 100MB due to Supabase limits
+  'gaussian-splats': 200 * 1024 * 1024, // Increased to 200MB for Gaussian splat files
 };
 
 export const formatFileSize = (bytes: number): string => {
