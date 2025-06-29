@@ -8,6 +8,19 @@ interface FileUploadInfoProps {
 }
 
 const FileUploadInfo = ({ bucket }: FileUploadInfoProps) => {
+  const getSpecificInfo = () => {
+    switch (bucket) {
+      case 'gaussian-splats':
+        return (
+          <div className="text-xs text-blue-600 mt-1">
+            Supports PLY files and ZIP archives containing PLY files
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="text-xs text-gray-500 mb-2">
       <div className="flex items-center gap-1 text-amber-600 mb-1">
@@ -15,6 +28,7 @@ const FileUploadInfo = ({ bucket }: FileUploadInfoProps) => {
         <span>Server upload limit: 50MB (Supabase limitation)</span>
       </div>
       {getFileSizeInfo(bucket)}
+      {getSpecificInfo()}
     </div>
   );
 };
