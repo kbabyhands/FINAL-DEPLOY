@@ -85,6 +85,12 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
   const parseSplatData = async (buffer: ArrayBuffer): Promise<Float32Array> => {
     const uint8Array = new Uint8Array(buffer);
     
+    // Check if it's a ZIP file first
+    if (isZipFile(uint8Array)) {
+      console.log('Detected ZIP file format, extracting...');
+      return await parseZipFile(buffer);
+    }
+    
     // Check if it's a PLY file
     const headerSample = new TextDecoder().decode(uint8Array.slice(0, 100));
     console.log('File header sample:', headerSample.substring(0, 50));
@@ -95,6 +101,69 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
     } else {
       console.log('Assuming binary splat file format');
       return parseBinarySplatFile(buffer);
+    }
+  };
+
+  const isZipFile = (uint8Array: Uint8Array): boolean => {
+    // ZIP files start with PK (0x504B)
+    return uint8Array.length >= 4 && 
+           uint8Array[0] === 0x50 && 
+           uint8Array[1] === 0x4B &&
+           (uint8Array[2] === 0x03 || uint8Array[2] === 0x05 || uint8Array[2] === 0x07);
+  };
+
+  const parseZipFile = async (buffer: ArrayBuffer): Promise<Float32Array> => {
+    console.log('Parsing ZIP file...');
+    
+    try {
+      // Simple ZIP parsing - look for PLY file entries
+      const uint8Array = new Uint8Array(buffer);
+      const dataView = new DataView(buffer);
+      
+      let offset = 0;
+      const files: { name: string; data: Uint8Array }[] = [];
+      
+      // Find local file headers (0x504B0304)
+      while (offset < uint8Array.length - 30) {
+        const signature = dataView.getUint32(offset, true);
+        
+        if (signature === 0x04034b50) { // Local file header signature
+          const fileNameLength = dataView.getUint16(offset + 26, true);
+          const extraFieldLength = dataView.getUint16(offset + 28, true);
+          const compressedSize = dataView.getUint32(offset + 18, true);
+          
+          const fileNameStart = offset + 30;
+          const fileName = new TextDecoder().decode(uint8Array.slice(fileNameStart, fileNameStart + fileNameLength));
+          
+          console.log('Found file in ZIP:', fileName, 'size:', compressedSize);
+          
+          if (fileName.toLowerCase().endsWith('.ply')) {
+            const dataStart = fileNameStart + fileNameLength + extraFieldLength;
+            const fileData = uint8Array.slice(dataStart, dataStart + compressedSize);
+            
+            console.log('Extracting PLY file:', fileName);
+            files.push({ name: fileName, data: fileData });
+          }
+          
+          offset = fileNameStart + fileNameLength + extraFieldLength + compressedSize;
+        } else {
+          offset++;
+        }
+      }
+      
+      if (files.length === 0) {
+        throw new Error('No PLY files found in ZIP archive');
+      }
+      
+      // Use the first PLY file found
+      const plyFile = files[0];
+      console.log('Processing PLY file from ZIP:', plyFile.name);
+      
+      return parsePLYFile(plyFile.data.buffer);
+      
+    } catch (error) {
+      console.error('Error parsing ZIP file:', error);
+      throw new Error('Failed to extract PLY file from ZIP archive');
     }
   };
 
