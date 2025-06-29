@@ -99,8 +99,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         
         // Enhanced error handling for server limitations
         if (uploadError.message?.includes('Payload too large') || 
-            uploadError.message?.includes('exceeded the maximum allowed size') ||
-            uploadError.statusCode === '413') {
+            uploadError.message?.includes('exceeded the maximum allowed size')) {
           if (bucket === 'gaussian-splats') {
             throw new Error(`Server upload limit exceeded (${fileSizeFormatted}). Supabase has a ${formatFileSize(SUPABASE_UPLOAD_LIMIT)} upload limit.\n\nTo fix this:\n• Use PLY compression tools\n• Reduce point cloud density\n• Split large models into sections\n• Target files under 50MB`);
           } else {
@@ -142,7 +141,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       // Provide specific error messages for common issues
       let errorMessage = error.message;
       
-      if (error.message?.includes('Payload too large') || error.message?.includes('413')) {
+      if (error.message?.includes('Payload too large')) {
         if (bucket === 'gaussian-splats') {
           errorMessage = `Upload failed: File too large (${fileSize})\n\nSupabase has a 50MB upload limit. For Gaussian splats:\n• Compress with PLY tools\n• Reduce point density\n• Split large models\n• Target under 50MB`;
         } else {
