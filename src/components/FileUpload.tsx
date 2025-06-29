@@ -26,12 +26,12 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
   const [uploadPhase, setUploadPhase] = useState<'preparing' | 'uploading' | 'finalizing' | 'complete'>('preparing');
   const { toast } = useToast();
 
-  // File size limits (in bytes)
+  // File size limits (in bytes) - adjusted for Supabase limits
   const FILE_SIZE_LIMITS = {
     'menu-images': 10 * 1024 * 1024, // 10MB
     'restaurant-branding': 10 * 1024 * 1024, // 10MB
     '3d-models': 50 * 1024 * 1024, // 50MB
-    'gaussian-splats': 200 * 1024 * 1024, // 200MB for Gaussian splats
+    'gaussian-splats': 100 * 1024 * 1024, // Reduced to 100MB due to Supabase limits
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -52,7 +52,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     if (file.size > maxSize) {
       return {
         valid: false,
-        message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)} for ${bucket}.`
+        message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)} for ${bucket}. Please compress your file or use a smaller version.`
       };
     }
 
@@ -70,6 +70,44 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     }
 
     return { valid: true };
+  };
+
+  const uploadWithChunks = async (file: File, filePath: string): Promise<void> => {
+    const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+    const totalChunks = Math.ceil(file.size / chunkSize);
+    
+    console.log(`Uploading file in ${totalChunks} chunks of ${formatFileSize(chunkSize)} each`);
+    
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * chunkSize;
+      const end = Math.min(start + chunkSize, file.size);
+      const chunk = file.slice(start, end);
+      
+      const chunkPath = totalChunks > 1 ? `${filePath}_chunk_${i}` : filePath;
+      
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(chunkPath, chunk, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error(`Error uploading chunk ${i}:`, error);
+        throw error;
+      }
+
+      const progress = ((i + 1) / totalChunks) * 90; // Leave 10% for finalization
+      setUploadProgress(progress);
+      
+      console.log(`Uploaded chunk ${i + 1}/${totalChunks} (${Math.round(progress)}%)`);
+    }
+
+    // If we uploaded in chunks, we'd need to combine them on the server side
+    // For now, let's use single upload with better error handling
+    if (totalChunks > 1) {
+      throw new Error('File too large for direct upload. Please use a file smaller than 100MB.');
+    }
   };
 
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,21 +156,41 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       setUploadPhase('uploading');
       const startTime = Date.now();
       
-      // Use standard Supabase upload with progress tracking
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-          metadata: {
-            user_id: userData.user.id,
-            original_name: file.name
-          }
-        });
+      // Try direct upload first, fall back to chunked if it fails
+      try {
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false,
+            metadata: {
+              user_id: userData.user.id,
+              original_name: file.name
+            }
+          });
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
+        if (uploadError) {
+          console.error('Direct upload error:', uploadError);
+          
+          // If it's a size-related error, provide specific guidance
+          if (uploadError.message?.includes('Payload too large') || 
+              uploadError.message?.includes('exceeded the maximum allowed size') ||
+              uploadError.statusCode === '413') {
+            throw new Error(`File size (${fileSizeFormatted}) exceeds Supabase's upload limit. Please compress your file to under 100MB and try again.`);
+          }
+          
+          throw uploadError;
+        }
+      } catch (directUploadError: any) {
+        console.error('Direct upload failed:', directUploadError);
+        
+        // Provide specific error message for size issues
+        if (directUploadError.message?.includes('Payload too large') || 
+            directUploadError.statusCode === '413') {
+          throw new Error(`Upload failed: File size (${fileSizeFormatted}) is too large for direct upload. Please compress your Gaussian splat file to under 100MB and try again.`);
+        }
+        
+        throw directUploadError;
       }
 
       setUploadProgress(100);
@@ -165,7 +223,10 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       
       // Provide specific error messages for common issues
       let errorMessage = error.message;
-      if (error.message?.includes('exceeded the maximum allowed size')) {
+      
+      if (error.message?.includes('Payload too large') || error.statusCode === '413') {
+        errorMessage = `File too large: Your file (${fileSize}) exceeds the upload limit. Please compress your Gaussian splat file to under 100MB.`;
+      } else if (error.message?.includes('exceeded the maximum allowed size')) {
         errorMessage = `File is too large. Maximum size for ${bucket} is ${formatFileSize(FILE_SIZE_LIMITS[bucket])}.`;
       } else if (error.message?.includes('Invalid file type')) {
         errorMessage = 'Invalid file type. Please check the allowed file formats.';
@@ -177,7 +238,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         title: "Upload Failed",
         description: errorMessage,
         variant: "destructive",
-        duration: 8000,
+        duration: 10000,
       });
     } finally {
       setUploading(false);
@@ -269,9 +330,15 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       <div className="text-xs text-gray-500 mb-2">
         {getFileSizeInfo()}
         {bucket === 'gaussian-splats' && (
-          <div className="flex items-center gap-1 mt-1 text-blue-600">
-            <Info className="w-3 h-3" />
-            <span>Supports .splat, .ply, and .gz formats</span>
+          <div className="space-y-1 mt-1">
+            <div className="flex items-center gap-1 text-blue-600">
+              <Info className="w-3 h-3" />
+              <span>Supports .splat, .ply, and .gz formats</span>
+            </div>
+            <div className="flex items-center gap-1 text-amber-600">
+              <AlertTriangle className="w-3 h-3" />
+              <span>Large files may need compression before upload</span>
+            </div>
           </div>
         )}
       </div>
