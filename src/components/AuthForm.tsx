@@ -1,63 +1,33 @@
+
 import React, { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-interface AuthFormProps {
-  onAuthSuccess: (user: any) => void;
-}
-
-const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
+const AuthForm = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { signIn, signUp, loading } = useAuth();
   const { toast } = useToast();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      if (isSignUp) {
-        const redirectUrl = `${window.location.origin}/`;
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl
-          }
-        });
-        
-        if (error) throw error;
-        
+    if (isSignUp) {
+      const { error } = await signUp(email, password);
+      
+      if (!error) {
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your registration."
         });
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        
-        if (error) throw error;
-        
-        if (data.user) {
-          onAuthSuccess(data.user);
-        }
       }
-    } catch (error: any) {
-      toast({
-        title: "Authentication Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
+    } else {
+      await signIn(email, password);
     }
   };
 

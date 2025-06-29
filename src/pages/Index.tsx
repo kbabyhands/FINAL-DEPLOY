@@ -6,35 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import { Link } from "react-router-dom";
-
-interface MenuItem {
-  id: string;
-  title: string;
-  description?: string;
-  price: number;
-  category: string;
-  allergens: string[];
-  is_vegetarian: boolean;
-  is_vegan: boolean;
-  is_gluten_free: boolean;
-  is_nut_free: boolean;
-  image_url?: string;
-  model_url?: string;
-  is_active: boolean;
-}
-
-interface Restaurant {
-  id: string;
-  name: string;
-  description?: string;
-  logo_url?: string;
-  banner_url?: string;
-  background_color?: string;
-  background_image_url?: string;
-  primary_color?: string;
-  secondary_color?: string;
-  font_family?: string;
-}
+import { MenuItem, Restaurant, Category, DietaryFilters } from "@/types";
+import { useErrorHandler } from "@/utils/errorHandler";
 
 // Placeholder menu items for demonstration with proper UUID format
 const placeholderMenuItems: MenuItem[] = [
@@ -50,7 +23,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_gluten_free: false,
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400&h=300&fit=crop",
-    is_active: true
+    is_active: true,
+    restaurant_id: "your_restaurant_id"
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440002",
@@ -64,7 +38,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_gluten_free: true,
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop",
-    is_active: true
+    is_active: true,
+    restaurant_id: "your_restaurant_id"
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440003",
@@ -78,7 +53,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_gluten_free: true,
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
-    is_active: true
+    is_active: true,
+    restaurant_id: "your_restaurant_id"
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440004",
@@ -92,7 +68,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_gluten_free: false,
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
-    is_active: true
+    is_active: true,
+    restaurant_id: "your_restaurant_id"
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440005",
@@ -106,7 +83,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_gluten_free: false,
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&h=300&fit=crop",
-    is_active: true
+    is_active: true,
+    restaurant_id: "your_restaurant_id"
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440006",
@@ -120,7 +98,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_gluten_free: false,
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop",
-    is_active: true
+    is_active: true,
+    restaurant_id: "your_restaurant_id"
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440007",
@@ -134,7 +113,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_gluten_free: false,
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop",
-    is_active: true
+    is_active: true,
+    restaurant_id: "your_restaurant_id"
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440008",
@@ -148,13 +128,14 @@ const placeholderMenuItems: MenuItem[] = [
     is_gluten_free: true,
     is_nut_free: false,
     image_url: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=400&h=300&fit=crop",
-    is_active: true
+    is_active: true,
+    restaurant_id: "your_restaurant_id"
   }
 ];
 
 const Index = () => {
   const [activeCategory, setActiveCategory] = useState("all");
-  const [dietaryFilters, setDietaryFilters] = useState({
+  const [dietaryFilters, setDietaryFilters] = useState<DietaryFilters>({
     vegetarian: false,
     vegan: false,
     glutenFree: false,
@@ -162,11 +143,12 @@ const Index = () => {
   });
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [categories, setCategories] = useState([
+  const [categories, setCategories] = useState<Category[]>([
     { id: "all", name: "All", icon: "🍽️" }
   ]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { handleSupabaseError } = useErrorHandler();
 
   useEffect(() => {
     loadData();
@@ -201,7 +183,7 @@ const Index = () => {
       
       // Extract unique categories and create category filter options
       const uniqueCategories = [...new Set(itemsToShow.map(item => item.category))];
-      const categoryOptions = [
+      const categoryOptions: Category[] = [
         { id: "all", name: "All", icon: "🍽️" },
         ...uniqueCategories.map(category => ({
           id: category,
@@ -211,15 +193,11 @@ const Index = () => {
       ];
       setCategories(categoryOptions);
     } catch (error: any) {
-      toast({
-        title: "Error loading menu",
-        description: error.message,
-        variant: "destructive"
-      });
+      handleSupabaseError(error, 'loading menu');
       // Fall back to placeholder items on error
       setMenuItems(placeholderMenuItems);
       const uniqueCategories = [...new Set(placeholderMenuItems.map(item => item.category))];
-      const categoryOptions = [
+      const categoryOptions: Category[] = [
         { id: "all", name: "All", icon: "🍽️" },
         ...uniqueCategories.map(category => ({
           id: category,

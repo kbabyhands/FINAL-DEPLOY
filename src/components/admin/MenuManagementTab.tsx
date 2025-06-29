@@ -4,22 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 import MenuItemsList from '../MenuItemsList';
-
-interface MenuItem {
-  id: string;
-  title: string;
-  description?: string;
-  price: number;
-  category: string;
-  allergens: string[];
-  is_vegetarian: boolean;
-  is_vegan: boolean;
-  is_gluten_free: boolean;
-  is_nut_free: boolean;
-  model_url?: string;
-  image_url?: string;
-  is_active: boolean;
-}
+import { MenuItem } from '@/types';
 
 interface MenuManagementTabProps {
   menuItems: MenuItem[];

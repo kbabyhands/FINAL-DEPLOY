@@ -3,36 +3,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AuthForm from '@/components/AuthForm';
 import AdminDashboard from '@/components/AdminDashboard';
+import { useAuth } from '@/hooks/useAuth';
 
 const Admin = () => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading, initialized } = useAuth();
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    };
-
-    checkUser();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleSignOut = () => {
-    setUser(null);
-  };
-
-  if (loading) {
+  if (loading || !initialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -41,10 +17,10 @@ const Admin = () => {
   }
 
   if (!user) {
-    return <AuthForm onAuthSuccess={(user) => setUser(user)} />;
+    return <AuthForm />;
   }
 
-  return <AdminDashboard onSignOut={handleSignOut} />;
+  return <AdminDashboard />;
 };
 
 export default Admin;
