@@ -2,12 +2,18 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { X } from 'lucide-react';
 import * as THREE from 'three';
 
 interface GaussianSplatViewerProps {
-  url: string;
+  url?: string;
   width?: number;
   height?: number;
+  isOpen?: boolean;
+  onClose?: () => void;
+  splatUrl?: string;
+  itemTitle?: string;
 }
 
 interface SplatData {
@@ -57,11 +63,19 @@ const SplatRenderer: React.FC<{ splatData: SplatData | null }> = ({ splatData })
 const GaussianSplatViewer: React.FC<GaussianSplatViewerProps> = ({
   url,
   width = 400,
-  height = 300
+  height = 300,
+  isOpen,
+  onClose,
+  splatUrl,
+  itemTitle
 }) => {
   const [splatData, setSplatData] = useState<SplatData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use splatUrl if provided (for modal mode), otherwise use url (for inline mode)
+  const effectiveUrl = splatUrl || url;
+  const isModalMode = isOpen !== undefined;
 
   const loadSplatFile = useCallback(async (fileUrl: string): Promise<SplatData> => {
     console.log('Loading splat file from:', fileUrl);
@@ -173,18 +187,18 @@ const GaussianSplatViewer: React.FC<GaussianSplatViewerProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!url) {
+    if (!effectiveUrl) {
       setSplatData(null);
       setError(null);
       return;
     }
 
-    console.log('Starting to load Gaussian splat from URL:', url);
+    console.log('Starting to load Gaussian splat from URL:', effectiveUrl);
     setLoading(true);
     setError(null);
     setSplatData(null);
 
-    loadSplatFile(url)
+    loadSplatFile(effectiveUrl)
       .then((data) => {
         console.log('Successfully loaded splat data:', data.count, 'points');
         setSplatData(data);
@@ -198,76 +212,97 @@ const GaussianSplatViewer: React.FC<GaussianSplatViewerProps> = ({
       .finally(() => {
         setLoading(false);
       });
-  }, [url, loadSplatFile]);
+  }, [effectiveUrl, loadSplatFile]);
 
-  if (!url) {
-    return (
-      <div 
-        className="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg"
-        style={{ width, height }}
-      >
-        <p className="text-gray-500 text-sm">No 3D model available</p>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div 
-        className="flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg"
-        style={{ width, height }}
-      >
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-          <p className="text-gray-600 text-sm">Loading 3D model...</p>
+  const renderViewer = () => {
+    if (!effectiveUrl) {
+      return (
+        <div 
+          className="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg"
+          style={{ width, height }}
+        >
+          <p className="text-gray-500 text-sm">No 3D model available</p>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return (
-      <div 
-        className="flex items-center justify-center bg-red-50 border border-red-200 rounded-lg p-4"
-        style={{ width, height }}
-      >
-        <div className="text-center">
-          <p className="text-red-600 text-sm font-medium mb-1">Failed to load 3D model</p>
-          <p className="text-red-500 text-xs">{error}</p>
+    if (loading) {
+      return (
+        <div 
+          className="flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg"
+          style={{ width, height }}
+        >
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            <p className="text-gray-600 text-sm">Loading 3D model...</p>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (!splatData) {
+    if (error) {
+      return (
+        <div 
+          className="flex items-center justify-center bg-red-50 border border-red-200 rounded-lg p-4"
+          style={{ width, height }}
+        >
+          <div className="text-center">
+            <p className="text-red-600 text-sm font-medium mb-1">Failed to load 3D model</p>
+            <p className="text-red-500 text-xs">{error}</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (!splatData) {
+      return (
+        <div 
+          className="flex items-center justify-center bg-gray-100 border border-gray-200 rounded-lg"
+          style={{ width, height }}
+        >
+          <p className="text-gray-500 text-sm">No model data available</p>
+        </div>
+      );
+    }
+
     return (
       <div 
-        className="flex items-center justify-center bg-gray-100 border border-gray-200 rounded-lg"
+        className="border border-gray-200 rounded-lg overflow-hidden bg-black"
         style={{ width, height }}
       >
-        <p className="text-gray-500 text-sm">No model data available</p>
+        <Canvas
+          camera={{ position: [0, 0, 5], fov: 50 }}
+          onCreated={({ gl }) => {
+            gl.setClearColor('#000000');
+          }}
+        >
+          <OrbitControls enableDamping dampingFactor={0.05} />
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} />
+          <SplatRenderer splatData={splatData} />
+        </Canvas>
       </div>
+    );
+  };
+
+  // If used as a modal
+  if (isModalMode) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl w-[90vw] h-[80vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>{itemTitle ? `3D View - ${itemTitle}` : '3D Model Viewer'}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 p-6 pt-4">
+            {renderViewer()}
+          </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 
-  return (
-    <div 
-      className="border border-gray-200 rounded-lg overflow-hidden bg-black"
-      style={{ width, height }}
-    >
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 50 }}
-        onCreated={({ gl }) => {
-          gl.setClearColor('#000000');
-        }}
-      >
-        <OrbitControls enableDamping dampingFactor={0.05} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <SplatRenderer splatData={splatData} />
-      </Canvas>
-    </div>
-  );
+  // If used as inline component
+  return renderViewer();
 };
 
 export default GaussianSplatViewer;
