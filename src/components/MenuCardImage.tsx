@@ -1,6 +1,6 @@
 
 import React from "react";
-import GaussianSplatViewer from "./GaussianSplatViewer";
+import ThreeDModelViewer from "./ThreeDModelViewer";
 
 interface MenuCardImageProps {
   imageUrl?: string;
@@ -23,8 +23,8 @@ const MenuCardImage = ({ imageUrl, splatUrl, title }: MenuCardImageProps) => {
       {splatUrl && (
         <div className="w-full">
           <h4 className="text-sm font-medium text-gray-700 mb-2">3D Model</h4>
-          <GaussianSplatViewer
-            splatUrl={splatUrl}
+          <ThreeDModelViewer
+            modelUrl={splatUrl}
             title={title}
             className="rounded-lg border"
           />
