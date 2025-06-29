@@ -6,22 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Edit, Trash2, Eye, EyeOff } from 'lucide-react';
-
-interface MenuItem {
-  id: string;
-  title: string;
-  description?: string;
-  price: number;
-  category: string;
-  allergens: string[];
-  is_vegetarian: boolean;
-  is_vegan: boolean;
-  is_gluten_free: boolean;
-  is_nut_free: boolean;
-  model_url?: string;
-  image_url?: string;
-  is_active: boolean;
-}
+import { MenuItem } from '@/types';
 
 interface MenuItemsListProps {
   menuItems: MenuItem[];

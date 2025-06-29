@@ -10,44 +10,9 @@ import AdminHeader from './admin/AdminHeader';
 import AdminTabNavigation from './admin/AdminTabNavigation';
 import MenuManagementTab from './admin/MenuManagementTab';
 import AnalyticsTab from './admin/AnalyticsTab';
+import { Restaurant, MenuItem } from '@/types';
 
-interface Restaurant {
-  id: string;
-  name: string;
-  description?: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-  logo_url?: string;
-  banner_url?: string;
-  background_color?: string;
-  background_image_url?: string;
-  primary_color?: string;
-  secondary_color?: string;
-  font_family?: string;
-}
-
-interface MenuItem {
-  id: string;
-  title: string;
-  description?: string;
-  price: number;
-  category: string;
-  allergens: string[];
-  is_vegetarian: boolean;
-  is_vegan: boolean;
-  is_gluten_free: boolean;
-  is_nut_free: boolean;
-  model_url?: string;
-  image_url?: string;
-  is_active: boolean;
-}
-
-interface AdminDashboardProps {
-  onSignOut: () => void;
-}
-
-const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
+const AdminDashboard = () => {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [showMenuForm, setShowMenuForm] = useState(false);
@@ -107,11 +72,6 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
     loadRestaurantData();
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    onSignOut();
-  };
-
   const handleAddMenuItem = () => {
     setShowMenuForm(true);
   };
@@ -134,7 +94,7 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminHeader onSignOut={handleSignOut} />
+      <AdminHeader />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!restaurant ? (
