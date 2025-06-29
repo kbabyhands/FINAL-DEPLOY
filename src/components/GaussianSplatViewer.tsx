@@ -1,606 +1,272 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { X, RotateCcw, ZoomIn, ZoomOut, Move3D } from 'lucide-react';
+
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
 
 interface GaussianSplatViewerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  splatUrl: string;
-  itemTitle: string;
+  url: string;
+  width?: number;
+  height?: number;
 }
 
-const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianSplatViewerProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [splatData, setSplatData] = useState<Float32Array | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
-  const [camera, setCamera] = useState({
-    x: 0,
-    y: 0,
-    z: 5,
-    rotationX: 0,
-    rotationY: 0,
-    zoom: 1
-  });
-  const [isDragging, setIsDragging] = useState(false);
-  const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+interface SplatData {
+  positions: Float32Array;
+  colors: Float32Array;
+  count: number;
+}
 
-  const addDebugInfo = (message: string) => {
-    console.log('[GaussianSplatViewer]', message);
-    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
-  };
+const SplatRenderer: React.FC<{ splatData: SplatData | null }> = ({ splatData }) => {
+  const meshRef = useRef<THREE.Points>(null);
+  const { scene } = useThree();
 
   useEffect(() => {
-    if (!isOpen || !canvasRef.current) return;
+    if (!splatData || !meshRef.current) return;
 
-    const canvas = canvasRef.current;
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    console.log('Creating splat geometry with', splatData.count, 'points');
 
-    // Reset debug info
-    setDebugInfo([]);
-    addDebugInfo('Dialog opened, starting load process');
-    loadGaussianSplat();
-  }, [isOpen, splatUrl]);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(splatData.positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(splatData.colors, 3));
 
-  const loadGaussianSplat = async () => {
-    addDebugInfo(`Starting to load file from: ${splatUrl}`);
+    const material = new THREE.PointsMaterial({
+      size: 0.01,
+      vertexColors: true,
+      sizeAttenuation: true,
+    });
+
+    meshRef.current.geometry = geometry;
+    meshRef.current.material = material;
+
+    // Center the geometry
+    geometry.computeBoundingSphere();
+    if (geometry.boundingSphere) {
+      const center = geometry.boundingSphere.center;
+      geometry.translate(-center.x, -center.y, -center.z);
+    }
+
+    return () => {
+      geometry.dispose();
+      material.dispose();
+    };
+  }, [splatData]);
+
+  return splatData ? <points ref={meshRef} /> : null;
+};
+
+const GaussianSplatViewer: React.FC<GaussianSplatViewerProps> = ({
+  url,
+  width = 400,
+  height = 300
+}) => {
+  const [splatData, setSplatData] = useState<SplatData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadSplatFile = useCallback(async (fileUrl: string): Promise<SplatData> => {
+    console.log('Loading splat file from:', fileUrl);
     
     try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Check if URL is valid
-      if (!splatUrl || splatUrl.trim() === '') {
-        throw new Error('No file URL provided');
-      }
+      const response = await fetch(fileUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/octet-stream, */*',
+        },
+        mode: 'cors',
+      });
 
-      addDebugInfo('Fetching file...');
-      const response = await fetch(splatUrl);
-      addDebugInfo(`Fetch response status: ${response.status}`);
-      
       if (!response.ok) {
-        throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const arrayBuffer = await response.arrayBuffer();
-      addDebugInfo(`Loaded file, size: ${arrayBuffer.byteLength} bytes`);
+      console.log('Loaded file size:', arrayBuffer.byteLength, 'bytes');
 
-      if (arrayBuffer.byteLength === 0) {
-        throw new Error('File is empty');
+      // Check if it's a ZIP file
+      const isZip = new Uint8Array(arrayBuffer, 0, 4).toString() === '80,75,3,4';
+      
+      if (isZip) {
+        console.log('Detected ZIP file, extracting...');
+        // For now, we'll throw an error for ZIP files as they need special handling
+        throw new Error('ZIP files are not currently supported. Please upload a raw PLY file.');
       }
 
-      // Try to parse the data
-      addDebugInfo('Attempting to parse file data...');
-      const parsedData = await parseFileData(arrayBuffer);
-      addDebugInfo(`Parsed data points: ${parsedData.length / 6}`);
-      
-      if (parsedData.length === 0) {
-        throw new Error('No valid point data found in the file');
-      }
-      
-      setSplatData(parsedData);
-      addDebugInfo('Rendering point cloud...');
-      renderPointCloud(parsedData);
-      setIsLoading(false);
-      addDebugInfo('Load process completed successfully');
-      
-    } catch (err: any) {
-      console.error('Error loading file:', err);
-      addDebugInfo(`Error: ${err.message}`);
-      setError(err.message || 'Failed to load 3D model file');
-      setIsLoading(false);
+      // Try to parse as PLY
+      return parsePlyFile(arrayBuffer);
+    } catch (err) {
+      console.error('Error loading splat file:', err);
+      throw err;
     }
-  };
+  }, []);
 
-  const parseFileData = async (buffer: ArrayBuffer): Promise<Float32Array> => {
-    const uint8Array = new Uint8Array(buffer);
+  const parsePlyFile = useCallback((buffer: ArrayBuffer): SplatData => {
+    console.log('Parsing PLY file...');
     
-    // Check first few bytes
-    const firstBytes = Array.from(uint8Array.slice(0, 10)).map(b => b.toString(16).padStart(2, '0')).join(' ');
-    addDebugInfo(`First 10 bytes: ${firstBytes}`);
-    
-    // Check if it's a ZIP file (starts with PK)
-    if (uint8Array.length >= 4 && uint8Array[0] === 0x50 && uint8Array[1] === 0x4B) {
-      addDebugInfo('Detected ZIP file format');
-      try {
-        return await extractFromZip(buffer);
-      } catch (zipError) {
-        addDebugInfo(`ZIP extraction failed: ${zipError}`);
-        throw new Error('Failed to extract PLY file from ZIP archive. The ZIP file may be corrupted or use unsupported compression.');
-      }
-    }
-    
-    // Check if it's a PLY file
-    const textSample = new TextDecoder().decode(uint8Array.slice(0, 200));
-    addDebugInfo(`File header sample: "${textSample.substring(0, 50)}"`);
-    
-    if (textSample.toLowerCase().includes('ply')) {
-      addDebugInfo('Detected PLY file format');
-      return parsePLYFile(buffer);
-    }
-    
-    // Try as binary point cloud data
-    addDebugInfo('Attempting to parse as binary point cloud...');
-    return parseBinaryPointCloud(buffer);
-  };
-
-  const extractFromZip = async (buffer: ArrayBuffer): Promise<Float32Array> => {
-    addDebugInfo('Extracting ZIP file...');
-    const uint8Array = new Uint8Array(buffer);
-    const dataView = new DataView(buffer);
-    
-    // Simple ZIP extraction - look for local file header
-    for (let i = 0; i < uint8Array.length - 30; i++) {
-      // Check for local file header signature (0x504B0304)
-      if (uint8Array[i] === 0x50 && uint8Array[i + 1] === 0x4B && 
-          uint8Array[i + 2] === 0x03 && uint8Array[i + 3] === 0x04) {
+    try {
+      const text = new TextDecoder().decode(buffer);
+      const lines = text.split('\n');
+      
+      let vertexCount = 0;
+      let headerEndIndex = -1;
+      let properties: string[] = [];
+      
+      // Parse header
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
         
-        addDebugInfo(`Found local file header at position: ${i}`);
-        
-        const compressionMethod = dataView.getUint16(i + 8, true);
-        const compressedSize = dataView.getUint32(i + 18, true);
-        const uncompressedSize = dataView.getUint32(i + 22, true);
-        const fileNameLength = dataView.getUint16(i + 26, true);
-        const extraFieldLength = dataView.getUint16(i + 28, true);
-        
-        addDebugInfo(`File info: compression=${compressionMethod}, compressedSize=${compressedSize}, uncompressedSize=${uncompressedSize}`);
-        
-        const fileNameStart = i + 30;
-        const fileName = new TextDecoder().decode(uint8Array.slice(fileNameStart, fileNameStart + fileNameLength));
-        
-        addDebugInfo(`Found file: ${fileName}`);
-        
-        if (fileName.toLowerCase().endsWith('.ply')) {
-          const dataStart = fileNameStart + fileNameLength + extraFieldLength;
-          
-          if (compressionMethod === 0) { // No compression
-            addDebugInfo('Extracting uncompressed PLY file');
-            const fileData = uint8Array.slice(dataStart, dataStart + compressedSize);
-            return parsePLYFile(fileData.buffer);
-          } else {
-            throw new Error('Compressed ZIP files are not supported. Please upload an uncompressed ZIP or raw PLY file.');
+        if (line.startsWith('element vertex')) {
+          vertexCount = parseInt(line.split(' ')[2]);
+          console.log('Found', vertexCount, 'vertices in PLY header');
+        } else if (line.startsWith('property')) {
+          const parts = line.split(' ');
+          if (parts.length >= 3) {
+            properties.push(parts[2]);
           }
+        } else if (line === 'end_header') {
+          headerEndIndex = i;
+          break;
         }
       }
-    }
-    
-    throw new Error('No PLY files found in ZIP archive');
-  };
+      
+      if (headerEndIndex === -1 || vertexCount === 0) {
+        throw new Error('Invalid PLY file: missing header or vertex count');
+      }
 
-  const parsePLYFile = (buffer: ArrayBuffer): Float32Array => {
-    addDebugInfo(`Parsing PLY file, buffer size: ${buffer.byteLength}`);
-    const text = new TextDecoder().decode(buffer);
-    const lines = text.split('\n');
-    
-    addDebugInfo(`PLY file has ${lines.length} lines`);
-    
-    let vertexCount = 0;
-    let headerEnd = 0;
-    let hasColors = false;
-    let properties: string[] = [];
-    
-    // Parse header
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim().toLowerCase();
+      console.log('PLY properties:', properties);
       
-      if (line.startsWith('element vertex')) {
-        vertexCount = parseInt(line.split(' ')[2]);
-        addDebugInfo(`Vertex count: ${vertexCount}`);
-      }
+      const positions = new Float32Array(vertexCount * 3);
+      const colors = new Float32Array(vertexCount * 3);
       
-      if (line.startsWith('property')) {
-        properties.push(line);
-        if (line.includes('red') || line.includes('green') || line.includes('blue')) {
-          hasColors = true;
-        }
-      }
-      
-      if (line === 'end_header') {
-        headerEnd = i + 1;
-        addDebugInfo(`Header ends at line: ${headerEnd}`);
-        break;
-      }
-    }
-    
-    addDebugInfo(`Properties: ${properties.join(', ')}`);
-    addDebugInfo(`Has colors: ${hasColors}`);
-    
-    if (vertexCount === 0) {
-      throw new Error('Invalid PLY file: no vertices found');
-    }
-    
-    // Parse vertex data
-    const points = new Float32Array(vertexCount * 6); // x, y, z, r, g, b
-    let validPoints = 0;
-    
-    for (let i = 0; i < vertexCount && (headerEnd + i) < lines.length; i++) {
-      const line = lines[headerEnd + i].trim();
-      if (!line) continue;
-      
-      const values = line.split(/\s+/).map(parseFloat);
-      
-      if (values.length >= 3 && !values.slice(0, 3).some(isNaN)) {
-        const idx = validPoints * 6;
+      // Parse vertex data
+      let vertexIndex = 0;
+      for (let i = headerEndIndex + 1; i < lines.length && vertexIndex < vertexCount; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
         
-        // Position
-        points[idx] = values[0];
-        points[idx + 1] = values[1];
-        points[idx + 2] = values[2];
+        const values = line.split(/\s+/).map(v => parseFloat(v));
+        if (values.length < 6) continue; // Need at least x,y,z,r,g,b
         
-        // Colors
-        if (hasColors && values.length >= 6) {
-          // Normalize colors if they're in 0-255 range
-          points[idx + 3] = values[3] > 1 ? values[3] / 255 : values[3];
-          points[idx + 4] = values[4] > 1 ? values[4] / 255 : values[4];
-          points[idx + 5] = values[5] > 1 ? values[5] / 255 : values[5];
-        } else {
-          // Default colors based on position
-          points[idx + 3] = Math.random() * 0.5 + 0.5; // Bright red
-          points[idx + 4] = Math.random() * 0.5 + 0.5; // Bright green  
-          points[idx + 5] = Math.random() * 0.5 + 0.5; // Bright blue
-        }
+        // Position (x, y, z)
+        positions[vertexIndex * 3] = values[0];
+        positions[vertexIndex * 3 + 1] = values[1];
+        positions[vertexIndex * 3 + 2] = values[2];
         
-        validPoints++;
+        // Color (r, g, b) - normalize from 0-255 to 0-1
+        colors[vertexIndex * 3] = (values[3] || 255) / 255;
+        colors[vertexIndex * 3 + 1] = (values[4] || 255) / 255;
+        colors[vertexIndex * 3 + 2] = (values[5] || 255) / 255;
+        
+        vertexIndex++;
       }
+      
+      console.log('Successfully parsed', vertexIndex, 'vertices from PLY');
+      
+      return {
+        positions,
+        colors,
+        count: vertexIndex
+      };
+    } catch (err) {
+      console.error('Error parsing PLY file:', err);
+      throw new Error('Failed to parse PLY file. Please ensure it\'s a valid ASCII PLY format.');
     }
-    
-    addDebugInfo(`Successfully parsed ${validPoints} points from PLY`);
-    
-    if (validPoints === 0) {
-      throw new Error('No valid vertex data found in PLY file');
-    }
-    
-    return points.slice(0, validPoints * 6);
-  };
+  }, []);
 
-  const parseBinaryPointCloud = (buffer: ArrayBuffer): Float32Array => {
-    addDebugInfo('Parsing as binary point cloud...');
-    
-    // Try a simple approach: assume 12 bytes per point (3 floats for x,y,z)
-    const pointSize = 12;
-    const pointCount = Math.floor(buffer.byteLength / pointSize);
-    
-    addDebugInfo(`Attempting to parse ${pointCount} points with ${pointSize} bytes each`);
-    
-    if (pointCount === 0) {
-      throw new Error('Buffer too small for binary point cloud');
-    }
-    
-    const dataView = new DataView(buffer);
-    const points = new Float32Array(pointCount * 6);
-    let validPoints = 0;
-    
-    for (let i = 0; i < pointCount; i++) {
-      const offset = i * pointSize;
-      
-      try {
-        const x = dataView.getFloat32(offset, true);
-        const y = dataView.getFloat32(offset + 4, true);
-        const z = dataView.getFloat32(offset + 8, true);
-        
-        // Check if coordinates are reasonable
-        if (!isNaN(x) && !isNaN(y) && !isNaN(z) && 
-            Math.abs(x) < 1000 && Math.abs(y) < 1000 && Math.abs(z) < 1000) {
-          
-          const idx = validPoints * 6;
-          points[idx] = x;
-          points[idx + 1] = y;
-          points[idx + 2] = z;
-          points[idx + 3] = Math.random();
-          points[idx + 4] = Math.random();
-          points[idx + 5] = Math.random();
-          validPoints++;
-        }
-      } catch (e) {
-        continue;
-      }
-    }
-    
-    addDebugInfo(`Parsed ${validPoints} valid points from binary data`);
-    
-    if (validPoints === 0) {
-      throw new Error('No valid points found in binary data');
-    }
-    
-    return points.slice(0, validPoints * 6);
-  };
-
-  const renderPointCloud = (data: Float32Array) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    
-    if (!canvas || !ctx || !data) {
-      addDebugInfo('Cannot render: missing canvas or context or data');
+  useEffect(() => {
+    if (!url) {
+      setSplatData(null);
+      setError(null);
       return;
     }
 
-    addDebugInfo(`Rendering ${data.length / 6} points on ${canvas.width}x${canvas.height} canvas`);
+    console.log('Starting to load Gaussian splat from URL:', url);
+    setLoading(true);
+    setError(null);
+    setSplatData(null);
 
-    // Clear canvas with dark background
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    loadSplatFile(url)
+      .then((data) => {
+        console.log('Successfully loaded splat data:', data.count, 'points');
+        setSplatData(data);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error('Failed to load splat:', err);
+        setError(err.message || 'Failed to load 3D model');
+        setSplatData(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [url, loadSplatFile]);
 
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const pointCount = data.length / 6;
+  if (!url) {
+    return (
+      <div 
+        className="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg"
+        style={{ width, height }}
+      >
+        <p className="text-gray-500 text-sm">No 3D model available</p>
+      </div>
+    );
+  }
 
-    // Find bounds for better centering
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
-    let minZ = Infinity, maxZ = -Infinity;
-    
-    for (let i = 0; i < pointCount; i++) {
-      const x = data[i * 6];
-      const y = data[i * 6 + 1];
-      const z = data[i * 6 + 2];
-      
-      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
-      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
-      minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
-    }
-    
-    addDebugInfo(`Bounds: X[${minX.toFixed(2)}, ${maxX.toFixed(2)}] Y[${minY.toFixed(2)}, ${maxY.toFixed(2)}] Z[${minZ.toFixed(2)}, ${maxZ.toFixed(2)}]`);
-    
-    const scaleX = canvas.width / (maxX - minX || 1);
-    const scaleY = canvas.height / (maxY - minY || 1);
-    const scale = Math.min(scaleX, scaleY) * 0.8 * camera.zoom;
+  if (loading) {
+    return (
+      <div 
+        className="flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg"
+        style={{ width, height }}
+      >
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600 text-sm">Loading 3D model...</p>
+        </div>
+      </div>
+    );
+  }
 
-    let renderedCount = 0;
+  if (error) {
+    return (
+      <div 
+        className="flex items-center justify-center bg-red-50 border border-red-200 rounded-lg p-4"
+        style={{ width, height }}
+      >
+        <div className="text-center">
+          <p className="text-red-600 text-sm font-medium mb-1">Failed to load 3D model</p>
+          <p className="text-red-500 text-xs">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
-    // Render points
-    for (let i = 0; i < pointCount; i++) {
-      const baseIndex = i * 6;
-      
-      let x = data[baseIndex] - (minX + maxX) / 2;
-      let y = data[baseIndex + 1] - (minY + maxY) / 2;
-      let z = data[baseIndex + 2] - (minZ + maxZ) / 2;
-      
-      // Apply camera rotation
-      const rotatedX = Math.cos(camera.rotationY) * x - Math.sin(camera.rotationY) * z;
-      const rotatedZ = Math.sin(camera.rotationY) * x + Math.cos(camera.rotationY) * z;
-      const rotatedY = Math.cos(camera.rotationX) * y - Math.sin(camera.rotationX) * rotatedZ;
-      
-      // Project to screen
-      const screenX = centerX + rotatedX * scale;
-      const screenY = centerY - rotatedY * scale;
-      
-      // Skip points outside canvas
-      if (screenX < -5 || screenX > canvas.width + 5 || screenY < -5 || screenY > canvas.height + 5) {
-        continue;
-      }
-      
-      // Point size based on depth
-      const depth = Math.max(0.1, 1 + rotatedZ);
-      const pointSize = Math.max(1, 3 / depth);
-      
-      // Color
-      const r = Math.floor(data[baseIndex + 3] * 255);
-      const g = Math.floor(data[baseIndex + 4] * 255);
-      const b = Math.floor(data[baseIndex + 5] * 255);
-      
-      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-      ctx.beginPath();
-      ctx.arc(screenX, screenY, pointSize, 0, Math.PI * 2);
-      ctx.fill();
-      
-      renderedCount++;
-    }
-
-    addDebugInfo(`Rendered ${renderedCount} visible points`);
-
-    // Add info overlay
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.font = '14px Arial';
-    ctx.fillText(`${pointCount} points (${renderedCount} visible)`, 20, 30);
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setLastMousePos({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-
-    const deltaX = e.clientX - lastMousePos.x;
-    const deltaY = e.clientY - lastMousePos.y;
-
-    setCamera(prev => ({
-      ...prev,
-      rotationY: prev.rotationY + deltaX * 0.01,
-      rotationX: prev.rotationX + deltaY * 0.01
-    }));
-
-    setLastMousePos({ x: e.clientX, y: e.clientY });
-    
-    if (splatData) {
-      renderPointCloud(splatData);
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const zoomDelta = e.deltaY > 0 ? 0.9 : 1.1;
-    
-    setCamera(prev => ({
-      ...prev,
-      zoom: Math.max(0.1, Math.min(3, prev.zoom * zoomDelta))
-    }));
-
-    if (splatData) {
-      renderPointCloud(splatData);
-    }
-  };
-
-  const resetView = () => {
-    setCamera({
-      x: 0,
-      y: 0,
-      z: 5,
-      rotationX: 0,
-      rotationY: 0,
-      zoom: 1
-    });
-
-    if (splatData) {
-      renderPointCloud(splatData);
-    }
-  };
-
-  const zoomIn = () => {
-    setCamera(prev => ({
-      ...prev,
-      zoom: Math.min(3, prev.zoom * 1.2)
-    }));
-
-    if (splatData) {
-      renderPointCloud(splatData);
-    }
-  };
-
-  const zoomOut = () => {
-    setCamera(prev => ({
-      ...prev,
-      zoom: Math.max(0.1, prev.zoom * 0.8)
-    }));
-
-    if (splatData) {
-      renderPointCloud(splatData);
-    }
-  };
+  if (!splatData) {
+    return (
+      <div 
+        className="flex items-center justify-center bg-gray-100 border border-gray-200 rounded-lg"
+        style={{ width, height }}
+      >
+        <p className="text-gray-500 text-sm">No model data available</p>
+      </div>
+    );
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-        <DialogHeader className="p-6 pb-0">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold">{itemTitle} - 3D View</DialogTitle>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-          <DialogDescription className="sr-only">
-            Interactive 3D viewer for {itemTitle}. Use mouse to rotate and scroll to zoom.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="relative">
-          <div className="h-[500px] w-full bg-gray-900 relative overflow-hidden">
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                <div className="text-white text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                  <p>Loading 3D model...</p>
-                  <p className="text-sm text-gray-400 mt-2">Processing point cloud data...</p>
-                </div>
-              </div>
-            )}
-            
-            {error && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                <div className="text-red-400 text-center max-w-md p-4">
-                  <p className="text-lg mb-2">⚠️ Error Loading 3D Model</p>
-                  <p className="text-sm mb-4">{error}</p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={loadGaussianSplat}
-                    className="text-white border-white hover:bg-white hover:text-black"
-                  >
-                    Try Again
-                  </Button>
-                  
-                  {/* Debug Info */}
-                  <div className="mt-4 text-left">
-                    <p className="text-xs text-gray-500 mb-2">Debug Information:</p>
-                    <div className="text-xs text-gray-400 max-h-32 overflow-y-auto">
-                      {debugInfo.map((info, index) => (
-                        <div key={index}>{info}</div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <canvas
-              ref={canvasRef}
-              className="w-full h-full cursor-grab active:cursor-grabbing"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onWheel={handleWheel}
-              style={{ display: isLoading || error ? 'none' : 'block' }}
-            />
-          </div>
-          
-          {/* Control buttons */}
-          <div className="absolute bottom-4 right-4 flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={resetView}
-              className="bg-white/90 hover:bg-white"
-              title="Reset view"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={zoomIn}
-              className="bg-white/90 hover:bg-white"
-              title="Zoom in"
-            >
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={zoomOut}
-              className="bg-white/90 hover:bg-white"
-              title="Zoom out"
-            >
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-          </div>
-          
-          {/* Instructions */}
-          <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-sm">
-            <p className="flex items-center gap-2">
-              <Move3D className="w-4 h-4" />
-              Drag to rotate • Scroll to zoom
-            </p>
-          </div>
-        </div>
-        
-        <div className="p-6 pt-4">
-          <p className="text-gray-600 text-sm text-center">
-            Interactive 3D point cloud viewer. Drag to rotate and scroll to zoom for a better perspective.
-          </p>
-          
-          {/* Debug Panel */}
-          {debugInfo.length > 0 && (
-            <div className="mt-4 p-3 bg-gray-100 rounded-lg">
-              <p className="text-xs font-medium text-gray-700 mb-2">Loading Progress:</p>
-              <div className="text-xs text-gray-600 max-h-24 overflow-y-auto">
-                {debugInfo.slice(-5).map((info, index) => (
-                  <div key={index}>{info}</div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+    <div 
+      className="border border-gray-200 rounded-lg overflow-hidden bg-black"
+      style={{ width, height }}
+    >
+      <Canvas
+        camera={{ position: [0, 0, 5], fov: 50 }}
+        onCreated={({ gl }) => {
+          gl.setClearColor('#000000');
+        }}
+      >
+        <OrbitControls enableDamping dampingFactor={0.05} />
+        <ambientLight intensity={0.5} />
+        <pointLight position={[10, 10, 10]} />
+        <SplatRenderer splatData={splatData} />
+      </Canvas>
+    </div>
   );
 };
 
