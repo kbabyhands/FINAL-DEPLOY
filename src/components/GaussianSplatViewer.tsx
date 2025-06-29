@@ -15,6 +15,7 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [splatData, setSplatData] = useState<Float32Array | null>(null);
   const [camera, setCamera] = useState({
     x: 0,
     y: 0,
@@ -30,14 +31,9 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
     if (!isOpen || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Set canvas size
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    // Load and render Gaussian splat
     loadGaussianSplat();
   }, [isOpen, splatUrl]);
 
@@ -45,68 +41,212 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
     try {
       setIsLoading(true);
       setError(null);
-
-      // For now, we'll create a placeholder visualization
-      // In a real implementation, you'd load and parse the actual splat file
-      const canvas = canvasRef.current;
-      const ctx = canvas?.getContext('2d');
       
-      if (!canvas || !ctx) return;
+      console.log('Loading Gaussian splat from:', splatUrl);
 
-      // Simulate loading time
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Fetch the splat file
+      const response = await fetch(splatUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch splat file: ${response.status} ${response.statusText}`);
+      }
 
-      // Create a placeholder 3D-like visualization
-      renderSplatVisualization(ctx, canvas.width, canvas.height);
+      const arrayBuffer = await response.arrayBuffer();
+      console.log('Loaded splat file, size:', arrayBuffer.byteLength, 'bytes');
+
+      // Check if it's a ZIP file
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const isZip = uint8Array[0] === 0x50 && uint8Array[1] === 0x4B; // PK signature
+      
+      let splatBuffer: ArrayBuffer;
+      
+      if (isZip) {
+        console.log('Detected ZIP file, attempting to extract...');
+        // For ZIP files, we'll try to extract the content
+        // This is a simplified approach - in production you'd use a proper ZIP library
+        try {
+          splatBuffer = await extractFromZip(arrayBuffer);
+        } catch (zipError) {
+          console.error('ZIP extraction failed:', zipError);
+          throw new Error('Unable to extract PLY data from ZIP file. Please ensure the ZIP contains a valid PLY file.');
+        }
+      } else {
+        splatBuffer = arrayBuffer;
+      }
+
+      // Parse the splat data
+      const parsedData = await parseSplatData(splatBuffer);
+      setSplatData(parsedData);
+      
+      // Render the splat data
+      renderGaussianSplat(parsedData);
       
       setIsLoading(false);
-    } catch (err) {
-      setError('Failed to load Gaussian splat file');
+    } catch (err: any) {
+      console.error('Error loading Gaussian splat:', err);
+      setError(err.message || 'Failed to load Gaussian splat file');
       setIsLoading(false);
     }
   };
 
-  const renderSplatVisualization = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+  const extractFromZip = async (zipBuffer: ArrayBuffer): Promise<ArrayBuffer> => {
+    // This is a simplified ZIP extraction for demonstration
+    // In a real implementation, you'd use a proper ZIP library like JSZip
+    throw new Error('ZIP extraction not yet implemented. Please upload a .ply or .splat file directly.');
+  };
+
+  const parseSplatData = async (buffer: ArrayBuffer): Promise<Float32Array> => {
+    const uint8Array = new Uint8Array(buffer);
+    
+    // Check if it's a PLY file
+    const header = new TextDecoder().decode(uint8Array.slice(0, 100));
+    
+    if (header.includes('ply')) {
+      console.log('Parsing PLY file...');
+      return parsePLYFile(buffer);
+    } else {
+      console.log('Parsing as binary splat file...');
+      return parseBinarySplatFile(buffer);
+    }
+  };
+
+  const parsePLYFile = (buffer: ArrayBuffer): Float32Array => {
+    const text = new TextDecoder().decode(buffer);
+    const lines = text.split('\n');
+    
+    let vertexCount = 0;
+    let headerEnd = 0;
+    let inHeader = true;
+    
+    // Parse header
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith('element vertex')) {
+        vertexCount = parseInt(line.split(' ')[2]);
+      }
+      if (line === 'end_header') {
+        headerEnd = i + 1;
+        inHeader = false;
+        break;
+      }
+    }
+    
+    console.log('PLY vertex count:', vertexCount);
+    
+    if (vertexCount === 0) {
+      throw new Error('Invalid PLY file: no vertices found');
+    }
+    
+    // Parse vertex data (simplified - assumes x, y, z, r, g, b format)
+    const points = new Float32Array(vertexCount * 6); // x, y, z, r, g, b
+    
+    for (let i = 0; i < vertexCount && (headerEnd + i) < lines.length; i++) {
+      const line = lines[headerEnd + i].trim();
+      if (!line) continue;
+      
+      const values = line.split(/\s+/).map(parseFloat);
+      if (values.length >= 3) {
+        const baseIndex = i * 6;
+        points[baseIndex] = values[0];     // x
+        points[baseIndex + 1] = values[1]; // y
+        points[baseIndex + 2] = values[2]; // z
+        points[baseIndex + 3] = values[3] / 255 || 1; // r
+        points[baseIndex + 4] = values[4] / 255 || 1; // g
+        points[baseIndex + 5] = values[5] / 255 || 1; // b
+      }
+    }
+    
+    return points;
+  };
+
+  const parseBinarySplatFile = (buffer: ArrayBuffer): Float32Array => {
+    // For binary .splat files, each point is typically 32 bytes
+    // This is a simplified parser
+    const pointSize = 32; // bytes per point
+    const pointCount = Math.floor(buffer.byteLength / pointSize);
+    const points = new Float32Array(pointCount * 6);
+    
+    const dataView = new DataView(buffer);
+    
+    for (let i = 0; i < pointCount; i++) {
+      const offset = i * pointSize;
+      const pointIndex = i * 6;
+      
+      try {
+        points[pointIndex] = dataView.getFloat32(offset, true);         // x
+        points[pointIndex + 1] = dataView.getFloat32(offset + 4, true); // y
+        points[pointIndex + 2] = dataView.getFloat32(offset + 8, true); // z
+        points[pointIndex + 3] = Math.random();                         // r (fallback)
+        points[pointIndex + 4] = Math.random();                         // g (fallback)
+        points[pointIndex + 5] = Math.random();                         // b (fallback)
+      } catch (e) {
+        console.warn('Error parsing point', i, ':', e);
+      }
+    }
+    
+    return points;
+  };
+
+  const renderGaussianSplat = (data: Float32Array) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    
+    if (!canvas || !ctx || !data) return;
+
     // Clear canvas
     ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Create a 3D-like point cloud visualization
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const numPoints = 5000;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const pointCount = data.length / 6;
+    
+    console.log('Rendering', pointCount, 'points');
 
-    for (let i = 0; i < numPoints; i++) {
-      // Generate pseudo-3D points
-      const angle1 = (Math.PI * 2 * i) / numPoints;
-      const angle2 = Math.sin(i * 0.01) + camera.rotationY;
-      const radius = 100 + Math.sin(i * 0.02) * 50;
+    // Render points
+    for (let i = 0; i < pointCount; i++) {
+      const baseIndex = i * 6;
       
-      const x = centerX + Math.cos(angle1) * radius * Math.cos(angle2) * camera.zoom;
-      const y = centerY + Math.sin(angle1) * radius * Math.sin(camera.rotationX) * camera.zoom;
-      const z = Math.sin(angle2) * radius;
+      const x = data[baseIndex];
+      const y = data[baseIndex + 1];
+      const z = data[baseIndex + 2];
+      const r = data[baseIndex + 3];
+      const g = data[baseIndex + 4];
+      const b = data[baseIndex + 5];
       
-      // Color based on depth
-      const depth = (z + 150) / 300;
-      const red = Math.floor(255 * Math.max(0, depth));
-      const green = Math.floor(255 * Math.max(0, 1 - Math.abs(depth - 0.5) * 2));
-      const blue = Math.floor(255 * Math.max(0, 1 - depth));
+      // Apply camera transformations
+      const rotatedX = Math.cos(camera.rotationY) * x - Math.sin(camera.rotationY) * z;
+      const rotatedZ = Math.sin(camera.rotationY) * x + Math.cos(camera.rotationY) * z;
+      const rotatedY = Math.cos(camera.rotationX) * y - Math.sin(camera.rotationX) * rotatedZ;
       
-      // Size based on depth
-      const size = Math.max(1, 3 * depth * camera.zoom);
+      // Project 3D to 2D
+      const scale = (5 + rotatedZ) * camera.zoom * 20;
+      const screenX = centerX + rotatedX * scale;
+      const screenY = centerY - rotatedY * scale;
+      
+      // Skip points outside canvas
+      if (screenX < 0 || screenX > canvas.width || screenY < 0 || screenY > canvas.height) {
+        continue;
+      }
+      
+      // Calculate point size based on distance
+      const depth = Math.max(0.1, 5 + rotatedZ);
+      const pointSize = Math.max(0.5, (2 * camera.zoom) / depth);
+      
+      // Set color
+      const red = Math.floor(Math.max(0, Math.min(255, r * 255)));
+      const green = Math.floor(Math.max(0, Math.min(255, g * 255)));
+      const blue = Math.floor(Math.max(0, Math.min(255, b * 255)));
       
       ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
       ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.arc(screenX, screenY, pointSize, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Add some UI indicators
+    // Add UI overlay
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.font = '16px Arial';
-    ctx.fillText('Gaussian Splat Visualization', 20, 30);
-    ctx.font = '12px Arial';
-    ctx.fillText('Drag to rotate • Scroll to zoom', 20, 50);
+    ctx.fillText(`Gaussian Splat: ${pointCount} points`, 20, 30);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -129,10 +269,8 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
     setLastMousePos({ x: e.clientX, y: e.clientY });
     
     // Re-render with new camera position
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) {
-      renderSplatVisualization(ctx, canvas.width, canvas.height);
+    if (splatData) {
+      renderGaussianSplat(splatData);
     }
   };
 
@@ -150,10 +288,8 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
     }));
 
     // Re-render with new zoom
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) {
-      renderSplatVisualization(ctx, canvas.width, canvas.height);
+    if (splatData) {
+      renderGaussianSplat(splatData);
     }
   };
 
@@ -167,10 +303,8 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
       zoom: 1
     });
 
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) {
-      renderSplatVisualization(ctx, canvas.width, canvas.height);
+    if (splatData) {
+      renderGaussianSplat(splatData);
     }
   };
 
@@ -180,10 +314,8 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
       zoom: Math.min(3, prev.zoom * 1.2)
     }));
 
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) {
-      renderSplatVisualization(ctx, canvas.width, canvas.height);
+    if (splatData) {
+      renderGaussianSplat(splatData);
     }
   };
 
@@ -193,10 +325,8 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
       zoom: Math.max(0.1, prev.zoom * 0.8)
     }));
 
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) {
-      renderSplatVisualization(ctx, canvas.width, canvas.height);
+    if (splatData) {
+      renderGaussianSplat(splatData);
     }
   };
 
@@ -213,22 +343,30 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
         </DialogHeader>
         
         <div className="relative">
-          {/* Canvas for Gaussian Splat */}
           <div className="h-[500px] w-full bg-gray-900 relative overflow-hidden">
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
                 <div className="text-white text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                  <p>Loading 3D dish view...</p>
+                  <p>Loading 3D model...</p>
+                  <p className="text-sm text-gray-400 mt-2">Processing Gaussian splat data...</p>
                 </div>
               </div>
             )}
             
             {error && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                <div className="text-red-400 text-center">
-                  <p className="text-lg mb-2">⚠️ Error Loading</p>
-                  <p className="text-sm">{error}</p>
+                <div className="text-red-400 text-center max-w-md p-4">
+                  <p className="text-lg mb-2">⚠️ Error Loading 3D Model</p>
+                  <p className="text-sm mb-4">{error}</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={loadGaussianSplat}
+                    className="text-white border-white hover:bg-white hover:text-black"
+                  >
+                    Try Again
+                  </Button>
                 </div>
               </div>
             )}
@@ -287,7 +425,7 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
         
         <div className="p-6 pt-4">
           <p className="text-gray-600 text-sm text-center">
-            Interactive 3D view of the dish. Drag to rotate and scroll to zoom for a better perspective.
+            Interactive 3D view of the Gaussian splat model. Drag to rotate and scroll to zoom for a better perspective.
           </p>
         </div>
       </DialogContent>
