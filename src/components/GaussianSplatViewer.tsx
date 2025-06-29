@@ -52,14 +52,22 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
         }
         
         console.log('Found PLY file in ZIP:', plyFile);
-        const plyData = await zipData.files[plyFile].async('blob');
+        const plyData = await zipData.files[plyFile].async('arrayBuffer');
         
-        // Create a blob URL with .ply extension hint
-        const plyBlob = new Blob([plyData], { type: 'application/octet-stream' });
+        // Create a proper blob with PLY MIME type and create a blob URL with .ply extension
+        const plyBlob = new Blob([plyData], { 
+          type: 'model/ply' 
+        });
+        
+        // Create blob URL and add .ply extension as fragment
         const blobUrl = URL.createObjectURL(plyBlob);
         
-        // Return the blob URL with a fake .ply extension to help the library recognize the format
-        return blobUrl + '#' + plyFile;
+        // The library needs to see .ply in the URL, so we'll create a data URL instead
+        const base64Data = btoa(String.fromCharCode(...new Uint8Array(plyData)));
+        const dataUrl = `data:model/ply;base64,${base64Data}`;
+        
+        console.log('Created data URL for PLY file');
+        return dataUrl;
       } else {
         // Direct PLY file
         console.log('Using direct PLY file');
@@ -88,14 +96,9 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
       containerRef.current.innerHTML = '';
 
       // Process the file (handle ZIP if needed)
-      let processedUrl = await processFile(splatUrl);
+      const processedUrl = await processFile(splatUrl);
       
-      // If it's a blob URL with hash, extract the original filename to help with format detection
-      let fileName = '';
-      if (processedUrl.includes('#')) {
-        fileName = processedUrl.split('#')[1];
-        processedUrl = processedUrl.split('#')[0];
-      }
+      console.log('Processed URL:', processedUrl.substring(0, 100) + '...');
 
       // Create new viewer with more permissive settings
       const viewer = new Viewer({
@@ -117,9 +120,7 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
         progressiveLoad: true,
         rotation: [0, 0, 0, 1],
         position: [0, 0, 0],
-        scale: [1, 1, 1],
-        // Add format hint if we have filename
-        ...(fileName && { format: 'ply' })
+        scale: [1, 1, 1]
       };
 
       await viewer.addSplatScene(processedUrl, sceneOptions);
