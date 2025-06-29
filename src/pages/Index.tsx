@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import MenuCard from "@/components/MenuCard";
-import CategoryFilter from "@/components/CategoryFilter";
-import DietaryFilter from "@/components/DietaryFilter";
+import SortingFilterDropdown from "@/components/SortingFilterDropdown";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
@@ -375,14 +373,11 @@ const Index = () => {
 
       {/* Filters */}
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <CategoryFilter
+        <SortingFilterDropdown
           categories={categories}
           activeCategory={activeCategory}
           onCategoryChange={handleCategoryChange}
-        />
-        
-        <DietaryFilter
-          filters={dietaryFilters}
+          dietaryFilters={dietaryFilters}
           onFilterChange={handleFilterChange}
         />
 
