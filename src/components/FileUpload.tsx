@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X, FileText, Image, Zap } from 'lucide-react';
 
@@ -18,11 +19,13 @@ interface FileUploadProps {
 
 const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: FileUploadProps) => {
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
 
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
+      setUploadProgress(0);
 
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('You must select a file to upload.');
@@ -37,6 +40,17 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
+      // Simulate progress updates for better UX
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + Math.random() * 15;
+        });
+      }, 200);
+
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
@@ -44,6 +58,9 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
             user_id: userData.user.id
           }
         });
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
 
       if (uploadError) {
         throw uploadError;
@@ -68,6 +85,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       });
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -149,13 +167,22 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
             />
             <Label
               htmlFor={`file-upload-${bucket}`}
-              className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-gray-400 transition-colors"
+              className={`flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-gray-400 transition-colors ${uploading ? 'pointer-events-none opacity-60' : ''}`}
             >
               <Upload className="w-5 h-5" />
               <span>
                 {uploading ? 'Uploading...' : `Click to upload ${label.toLowerCase()}`}
               </span>
             </Label>
+            
+            {uploading && (
+              <div className="mt-3 space-y-2">
+                <Progress value={uploadProgress} className="w-full" />
+                <div className="text-sm text-gray-600 text-center">
+                  {Math.round(uploadProgress)}% uploaded
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
