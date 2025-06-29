@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import MenuCard from "@/components/MenuCard";
@@ -36,10 +37,10 @@ interface Restaurant {
   font_family?: string;
 }
 
-// Placeholder menu items for demonstration
+// Placeholder menu items for demonstration with proper UUID format
 const placeholderMenuItems: MenuItem[] = [
   {
-    id: "placeholder-1",
+    id: "550e8400-e29b-41d4-a716-446655440001",
     title: "Classic Caesar Salad",
     description: "Fresh romaine lettuce, parmesan cheese, croutons, and our signature Caesar dressing",
     price: 12.99,
@@ -53,7 +54,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_active: true
   },
   {
-    id: "placeholder-2",
+    id: "550e8400-e29b-41d4-a716-446655440002",
     title: "Grilled Salmon",
     description: "Atlantic salmon grilled to perfection, served with roasted vegetables and lemon butter sauce",
     price: 24.99,
@@ -67,7 +68,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_active: true
   },
   {
-    id: "placeholder-3",
+    id: "550e8400-e29b-41d4-a716-446655440003",
     title: "Vegan Buddha Bowl",
     description: "Quinoa, roasted chickpeas, avocado, sweet potato, and tahini dressing",
     price: 16.99,
@@ -81,7 +82,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_active: true
   },
   {
-    id: "placeholder-4",
+    id: "550e8400-e29b-41d4-a716-446655440004",
     title: "Chocolate Lava Cake",
     description: "Warm chocolate cake with a molten center, served with vanilla ice cream",
     price: 8.99,
@@ -95,7 +96,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_active: true
   },
   {
-    id: "placeholder-5",
+    id: "550e8400-e29b-41d4-a716-446655440005",
     title: "Margherita Pizza",
     description: "Traditional pizza with fresh mozzarella, tomato sauce, and basil",
     price: 18.99,
@@ -109,7 +110,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_active: true
   },
   {
-    id: "placeholder-6",
+    id: "550e8400-e29b-41d4-a716-446655440006",
     title: "Craft Beer Selection",
     description: "Local craft beer rotating selection - ask your server for today's options",
     price: 6.99,
@@ -122,7 +123,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_active: true
   },
   {
-    id: "placeholder-7",
+    id: "550e8400-e29b-41d4-a716-446655440007",
     title: "Truffle Pasta",
     description: "Handmade fettuccine with truffle cream sauce and wild mushrooms",
     price: 22.99,
@@ -136,7 +137,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_active: true
   },
   {
-    id: "placeholder-8",
+    id: "550e8400-e29b-41d4-a716-446655440008",
     title: "Thai Green Curry",
     description: "Spicy coconut curry with vegetables, served with jasmine rice",
     price: 19.99,
