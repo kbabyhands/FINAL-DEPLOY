@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import RestaurantProfile from './RestaurantProfile';
 import RestaurantBranding from './RestaurantBranding';
@@ -10,66 +9,44 @@ import AdminHeader from './admin/AdminHeader';
 import AdminTabNavigation from './admin/AdminTabNavigation';
 import MenuManagementTab from './admin/MenuManagementTab';
 import AnalyticsTab from './admin/AnalyticsTab';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useRestaurantData } from '@/hooks/useRestaurantData';
+import { useMenuItems } from '@/hooks/useMenuItems';
 import { Restaurant, MenuItem } from '@/types';
 
 const AdminDashboard = () => {
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [activeTab, setActiveTab] = useState<'menu' | 'analytics'>('menu');
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadRestaurantData();
-  }, []);
+  const { 
+    restaurant, 
+    isLoading: restaurantLoading, 
+    updateRestaurant, 
+    createRestaurant,
+    isUpdating,
+    isCreating
+  } = useRestaurantData();
 
-  const loadRestaurantData = async () => {
-    try {
-      // Load restaurant profile with branding data
-      const { data: restaurantData, error: restaurantError } = await supabase
-        .from('restaurants')
-        .select('*')
-        .single();
-
-      if (restaurantError && restaurantError.code !== 'PGRST116') {
-        throw restaurantError;
-      }
-
-      setRestaurant(restaurantData);
-
-      // Load menu items if restaurant exists
-      if (restaurantData) {
-        const { data: menuData, error: menuError } = await supabase
-          .from('menu_items')
-          .select('*')
-          .eq('restaurant_id', restaurantData.id)
-          .order('created_at', { ascending: false });
-
-        if (menuError) throw menuError;
-        setMenuItems(menuData || []);
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error loading data",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { 
+    menuItems, 
+    isLoading: menuItemsLoading, 
+    refreshMenuItems 
+  } = useMenuItems(restaurant?.id);
 
   const handleRestaurantUpdate = (updatedRestaurant: Restaurant) => {
-    setRestaurant(updatedRestaurant);
-    loadRestaurantData(); // Reload to get menu items after restaurant is created
+    if (restaurant) {
+      updateRestaurant(updatedRestaurant);
+    } else {
+      createRestaurant(updatedRestaurant);
+    }
   };
 
   const handleMenuItemSave = () => {
     setShowMenuForm(false);
     setEditingItem(null);
-    loadRestaurantData();
+    refreshMenuItems();
   };
 
   const handleAddMenuItem = () => {
@@ -81,13 +58,10 @@ const AdminDashboard = () => {
     setShowMenuForm(true);
   };
 
-  if (loading) {
+  if (restaurantLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your dashboard...</p>
-        </div>
+        <LoadingSpinner size="lg" text="Loading your dashboard..." />
       </div>
     );
   }
@@ -101,12 +75,14 @@ const AdminDashboard = () => {
           <RestaurantProfile
             restaurant={null}
             onUpdate={handleRestaurantUpdate}
+            isLoading={isCreating}
           />
         ) : (
           <div className="space-y-8">
             <RestaurantProfile
               restaurant={restaurant}
               onUpdate={handleRestaurantUpdate}
+              isLoading={isUpdating}
             />
 
             <RestaurantBranding
@@ -127,9 +103,10 @@ const AdminDashboard = () => {
             {activeTab === 'menu' ? (
               <MenuManagementTab
                 menuItems={menuItems}
+                isLoading={menuItemsLoading}
                 onAddMenuItem={handleAddMenuItem}
                 onEditMenuItem={handleEditMenuItem}
-                onDeleteMenuItem={loadRestaurantData}
+                restaurantId={restaurant.id}
               />
             ) : (
               <AnalyticsTab restaurantId={restaurant.id} />

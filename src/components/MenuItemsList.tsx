@@ -1,68 +1,33 @@
 
 import React from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
 import { Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { useMenuItems } from '@/hooks/useMenuItems';
 import { MenuItem } from '@/types';
 
 interface MenuItemsListProps {
   menuItems: MenuItem[];
   onEdit: (item: MenuItem) => void;
-  onDelete: () => void;
+  restaurantId: string;
 }
 
-const MenuItemsList = ({ menuItems, onEdit, onDelete }: MenuItemsListProps) => {
-  const { toast } = useToast();
+const MenuItemsList = ({ menuItems, onEdit, restaurantId }: MenuItemsListProps) => {
+  const { 
+    deleteMenuItem, 
+    toggleMenuItemActive, 
+    isDeleting, 
+    isTogglingActive 
+  } = useMenuItems(restaurantId);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this menu item?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('menu_items')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Menu item deleted successfully"
-      });
-      onDelete();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+    deleteMenuItem(id);
   };
 
   const handleToggleActive = async (id: string, currentStatus: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('menu_items')
-        .update({ is_active: !currentStatus })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: `Menu item ${!currentStatus ? 'activated' : 'deactivated'}`
-      });
-      onDelete(); // Refresh the list
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+    toggleMenuItemActive({ itemId: id, isActive: !currentStatus });
   };
 
   const getDietaryBadges = (item: MenuItem) => {
@@ -113,7 +78,7 @@ const MenuItemsList = ({ menuItems, onEdit, onDelete }: MenuItemsListProps) => {
                   ))}
                 </div>
                 
-                {item.allergens.length > 0 && (
+                {item.allergens && item.allergens.length > 0 && (
                   <div className="text-sm text-gray-500">
                     <span className="font-medium">Allergens: </span>
                     {item.allergens.join(', ')}
@@ -139,6 +104,7 @@ const MenuItemsList = ({ menuItems, onEdit, onDelete }: MenuItemsListProps) => {
                   onClick={() => handleToggleActive(item.id, item.is_active)}
                   variant="outline"
                   size="sm"
+                  disabled={isTogglingActive}
                 >
                   {item.is_active ? (
                     <EyeOff className="w-4 h-4" />
@@ -158,6 +124,7 @@ const MenuItemsList = ({ menuItems, onEdit, onDelete }: MenuItemsListProps) => {
                   variant="outline"
                   size="sm"
                   className="text-red-600 hover:text-red-800"
+                  disabled={isDeleting}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

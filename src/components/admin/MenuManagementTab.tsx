@@ -4,20 +4,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 import MenuItemsList from '../MenuItemsList';
+import { MenuItemsListSkeleton } from '@/components/ui/menu-item-skeleton';
 import { MenuItem } from '@/types';
 
 interface MenuManagementTabProps {
   menuItems: MenuItem[];
+  isLoading?: boolean;
   onAddMenuItem: () => void;
   onEditMenuItem: (item: MenuItem) => void;
-  onDeleteMenuItem: () => void;
+  restaurantId: string;
 }
 
 const MenuManagementTab = ({ 
   menuItems, 
+  isLoading = false,
   onAddMenuItem, 
   onEditMenuItem, 
-  onDeleteMenuItem 
+  restaurantId
 }: MenuManagementTabProps) => {
   return (
     <Card>
@@ -36,11 +39,15 @@ const MenuManagementTab = ({
         </div>
       </CardHeader>
       <CardContent>
-        <MenuItemsList
-          menuItems={menuItems}
-          onEdit={onEditMenuItem}
-          onDelete={onDeleteMenuItem}
-        />
+        {isLoading ? (
+          <MenuItemsListSkeleton />
+        ) : (
+          <MenuItemsList
+            menuItems={menuItems}
+            onEdit={onEditMenuItem}
+            restaurantId={restaurantId}
+          />
+        )}
       </CardContent>
     </Card>
   );

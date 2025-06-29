@@ -1,11 +1,24 @@
 
 import { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AuthForm from '@/components/AuthForm';
 import AdminDashboard from '@/components/AdminDashboard';
 import { useAuth } from '@/hooks/useAuth';
 
-const Admin = () => {
+// Create a client instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      refetchOnWindowFocus: false
+    }
+  }
+});
+
+const AdminContent = () => {
   const { user, loading, initialized } = useAuth();
 
   if (loading || !initialized) {
@@ -21,6 +34,14 @@ const Admin = () => {
   }
 
   return <AdminDashboard />;
+};
+
+const Admin = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AdminContent />
+    </QueryClientProvider>
+  );
 };
 
 export default Admin;
