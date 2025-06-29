@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { Viewer } from '@mkkellogg/gaussian-splats-3d';
 import JSZip from 'jszip';
@@ -51,22 +52,18 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
         }
         
         console.log('Found PLY file in ZIP:', plyFile);
-        const plyData = await zipData.files[plyFile].async('uint8array');
+        const plyData = await zipData.files[plyFile].async('arraybuffer');
         
-        // Create a proper blob with PLY MIME type
+        // Create a blob with the PLY data
         const plyBlob = new Blob([plyData], { 
-          type: 'model/ply' 
+          type: 'application/octet-stream'
         });
         
-        // Create blob URL
+        // Create a blob URL that the library can fetch
         const blobUrl = URL.createObjectURL(plyBlob);
+        console.log('Created blob URL for PLY file:', blobUrl);
         
-        // The library needs to see .ply in the URL, so we'll create a data URL instead
-        const base64Data = btoa(String.fromCharCode(...plyData));
-        const dataUrl = `data:model/ply;base64,${base64Data}`;
-        
-        console.log('Created data URL for PLY file');
-        return dataUrl;
+        return blobUrl;
       } else {
         // Direct PLY file
         console.log('Using direct PLY file');
@@ -97,34 +94,32 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
       // Process the file (handle ZIP if needed)
       const processedUrl = await processFile(splatUrl);
       
-      console.log('Processed URL:', processedUrl.substring(0, 100) + '...');
+      console.log('Processed URL:', processedUrl);
 
-      // Create new viewer with more permissive settings
+      // Create new viewer with more conservative settings
       const viewer = new Viewer({
         container: containerRef.current,
-        gpuAcceleratedSort: true,
-        halfPrecisionCovariancesOnGPU: true,
+        gpuAcceleratedSort: false,
+        halfPrecisionCovariancesOnGPU: false,
         sharedMemoryForWorkers: false,
-        integerBasedSort: true,
+        integerBasedSort: false,
         webXRMode: 'none',
         renderMode: 'always',
-        sceneRevealMode: 'instant'
+        sceneRevealMode: 'gradual'
       });
 
       viewerRef.current = viewer;
 
-      // Load the splat scene with additional options
+      // Load the splat scene with minimal options
       const sceneOptions = {
-        showLoadingUI: true,
-        progressiveLoad: true,
-        rotation: [0, 0, 0, 1],
-        position: [0, 0, 0],
-        scale: [1, 1, 1]
+        showLoadingUI: false,
+        progressiveLoad: false
       };
 
+      console.log('Loading splat scene with URL:', processedUrl);
       await viewer.addSplatScene(processedUrl, sceneOptions);
 
-      // Start the viewer
+      console.log('Starting viewer...');
       viewer.start();
 
       console.log('Gaussian Splat viewer initialized successfully');
@@ -144,8 +139,10 @@ const GaussianSplatViewer = ({ splatUrl, title, className = '' }: GaussianSplatV
           errorMessage = 'The PLY file format is not supported or corrupted. Please try with a different file.';
         } else if (error.message.includes('No PLY file found')) {
           errorMessage = 'No PLY file found in the ZIP archive. Please ensure your ZIP contains a .ply file.';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Could not download the 3D model file. Please check your internet connection.';
         } else {
-          errorMessage = error.message;
+          errorMessage = `Loading error: ${error.message}`;
         }
       }
       
