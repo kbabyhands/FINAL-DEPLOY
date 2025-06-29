@@ -32,7 +32,7 @@ export const useRestaurantData = () => {
   });
 
   const updateRestaurantMutation = useMutation({
-    mutationFn: async (restaurantData: Partial<Restaurant>) => {
+    mutationFn: async (restaurantData: Partial<Restaurant> & { name: string }) => {
       const { data, error } = await supabase
         .from('restaurants')
         .upsert(restaurantData)

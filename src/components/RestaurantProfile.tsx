@@ -6,22 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-
-interface Restaurant {
-  id: string;
-  name: string;
-  description?: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-}
+import { Restaurant } from '@/types';
 
 interface RestaurantProfileProps {
   restaurant: Restaurant | null;
   onUpdate: (restaurant: Restaurant) => void;
+  isLoading?: boolean;
 }
 
-const RestaurantProfile = ({ restaurant, onUpdate }: RestaurantProfileProps) => {
+const RestaurantProfile = ({ restaurant, onUpdate, isLoading = false }: RestaurantProfileProps) => {
   const [editing, setEditing] = useState(!restaurant);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -157,8 +150,8 @@ const RestaurantProfile = ({ restaurant, onUpdate }: RestaurantProfileProps) => 
               />
             </div>
             <div className="flex gap-2">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : 'Save'}
+              <Button type="submit" disabled={loading || isLoading}>
+                {loading || isLoading ? 'Saving...' : 'Save'}
               </Button>
               {restaurant && (
                 <Button type="button" variant="outline" onClick={handleCancel}>
