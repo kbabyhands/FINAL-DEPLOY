@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { X, RotateCcw, ZoomIn, ZoomOut, Move3D } from 'lucide-react';
 
 interface GaussianSplatViewerProps {
@@ -86,7 +86,7 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
         return await extractFromZip(buffer);
       } catch (zipError) {
         console.error('ZIP extraction failed:', zipError);
-        throw new Error('Failed to extract PLY file from ZIP archive. Please upload an uncompressed PLY file instead.');
+        throw new Error('Failed to extract PLY file from ZIP archive. The ZIP file may be corrupted or use unsupported compression.');
       }
     }
     
@@ -105,51 +105,74 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
   };
 
   const extractFromZip = async (buffer: ArrayBuffer): Promise<Float32Array> => {
-    // Simple ZIP extraction - look for the first PLY file
+    console.log('Extracting ZIP file...');
     const uint8Array = new Uint8Array(buffer);
     const dataView = new DataView(buffer);
     
     // Look for local file header signature (0x504B0304)
+    let fileFound = false;
+    
     for (let i = 0; i < uint8Array.length - 30; i++) {
-      const signature = dataView.getUint32(i, true);
-      
-      if (signature === 0x04034b50) { // Local file header
+      // Check for local file header signature
+      if (uint8Array[i] === 0x50 && uint8Array[i + 1] === 0x4B && 
+          uint8Array[i + 2] === 0x03 && uint8Array[i + 3] === 0x04) {
+        
+        console.log('Found local file header at position:', i);
+        
         const compressionMethod = dataView.getUint16(i + 8, true);
         const compressedSize = dataView.getUint32(i + 18, true);
         const uncompressedSize = dataView.getUint32(i + 22, true);
         const fileNameLength = dataView.getUint16(i + 26, true);
         const extraFieldLength = dataView.getUint16(i + 28, true);
         
+        console.log('File info:', {
+          compressionMethod,
+          compressedSize,
+          uncompressedSize,
+          fileNameLength,
+          extraFieldLength
+        });
+        
         const fileNameStart = i + 30;
         const fileName = new TextDecoder().decode(uint8Array.slice(fileNameStart, fileNameStart + fileNameLength));
         
-        console.log('Found file:', fileName, 'compression:', compressionMethod);
+        console.log('Found file:', fileName);
         
         if (fileName.toLowerCase().endsWith('.ply')) {
+          fileFound = true;
           const dataStart = fileNameStart + fileNameLength + extraFieldLength;
           
           if (compressionMethod === 0) { // No compression
+            console.log('Extracting uncompressed PLY file');
             const fileData = uint8Array.slice(dataStart, dataStart + compressedSize);
-            console.log('Extracted uncompressed PLY file:', fileName);
             return parsePLYFile(fileData.buffer);
           } else {
+            console.log('File uses compression method:', compressionMethod);
             throw new Error('Compressed ZIP files are not supported. Please upload an uncompressed ZIP or raw PLY file.');
           }
         }
       }
     }
     
-    throw new Error('No PLY files found in ZIP archive');
+    if (!fileFound) {
+      throw new Error('No PLY files found in ZIP archive');
+    }
+    
+    throw new Error('Unexpected error during ZIP extraction');
   };
 
   const parsePLYFile = (buffer: ArrayBuffer): Float32Array => {
-    console.log('Parsing PLY file...');
+    console.log('Parsing PLY file, buffer size:', buffer.byteLength);
     const text = new TextDecoder().decode(buffer);
     const lines = text.split('\n');
+    
+    console.log('PLY file has', lines.length, 'lines');
+    console.log('First few lines:', lines.slice(0, 10));
     
     let vertexCount = 0;
     let headerEnd = 0;
     let hasColors = false;
+    let properties: string[] = [];
     
     // Parse header
     for (let i = 0; i < lines.length; i++) {
@@ -160,21 +183,26 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
         console.log('Vertex count:', vertexCount);
       }
       
-      if (line.includes('property') && (line.includes('red') || line.includes('green') || line.includes('blue'))) {
-        hasColors = true;
+      if (line.startsWith('property')) {
+        properties.push(line);
+        if (line.includes('red') || line.includes('green') || line.includes('blue')) {
+          hasColors = true;
+        }
       }
       
       if (line === 'end_header') {
         headerEnd = i + 1;
+        console.log('Header ends at line:', headerEnd);
         break;
       }
     }
     
+    console.log('Properties found:', properties);
+    console.log('Has colors:', hasColors);
+    
     if (vertexCount === 0) {
       throw new Error('Invalid PLY file: no vertices found');
     }
-    
-    console.log('PLY info - vertices:', vertexCount, 'has colors:', hasColors);
     
     // Parse vertex data
     const points = new Float32Array(vertexCount * 6); // x, y, z, r, g, b
@@ -201,10 +229,14 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
           points[idx + 4] = values[4] > 1 ? values[4] / 255 : values[4];
           points[idx + 5] = values[5] > 1 ? values[5] / 255 : values[5];
         } else {
-          // Generate colors based on position
-          points[idx + 3] = Math.abs(values[0]) / 10 % 1;
-          points[idx + 4] = Math.abs(values[1]) / 10 % 1;
-          points[idx + 5] = Math.abs(values[2]) / 10 % 1;
+          // Generate colors based on position for better visualization
+          const normalizedX = (values[0] + 5) / 10; // Assuming rough bounds
+          const normalizedY = (values[1] + 5) / 10;
+          const normalizedZ = (values[2] + 5) / 10;
+          
+          points[idx + 3] = Math.max(0, Math.min(1, normalizedX));
+          points[idx + 4] = Math.max(0, Math.min(1, normalizedY));
+          points[idx + 5] = Math.max(0, Math.min(1, normalizedZ));
         }
         
         validPoints++;
@@ -449,6 +481,9 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
               <X className="w-4 h-4" />
             </Button>
           </div>
+          <DialogDescription className="sr-only">
+            Interactive 3D viewer for {itemTitle}. Use mouse to rotate and scroll to zoom.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="relative">
