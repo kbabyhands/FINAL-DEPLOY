@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import MenuCard from "@/components/MenuCard";
@@ -134,7 +133,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_vegan: false,
     is_gluten_free: false,
     is_nut_free: true,
-    image_url: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop",
     is_active: true
   },
   {
