@@ -33,9 +33,18 @@ export const useRestaurantData = () => {
 
   const updateRestaurantMutation = useMutation({
     mutationFn: async (restaurantData: Partial<Restaurant> & { name: string }) => {
+      // Ensure user_id is included for the upsert operation
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
+      const dataToUpsert = {
+        ...restaurantData,
+        user_id: userData.user.id
+      };
+
       const { data, error } = await supabase
         .from('restaurants')
-        .upsert(restaurantData)
+        .upsert(dataToUpsert)
         .select()
         .single();
 
