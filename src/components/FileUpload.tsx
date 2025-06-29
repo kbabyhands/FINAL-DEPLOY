@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, FileText, Image } from 'lucide-react';
+import { Upload, X, FileText, Image, Zap } from 'lucide-react';
 
 interface FileUploadProps {
-  bucket: 'menu-images' | '3d-models' | 'restaurant-branding';
+  bucket: 'menu-images' | '3d-models' | 'restaurant-branding' | 'gaussian-splats';
   currentUrl?: string;
   onUpload: (url: string) => void;
   onRemove: () => void;
@@ -104,12 +104,16 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     if (bucket === 'menu-images' || bucket === 'restaurant-branding') {
       return <Image className="w-4 h-4" />;
     }
+    if (bucket === 'gaussian-splats') {
+      return <Zap className="w-4 h-4" />;
+    }
     return <FileText className="w-4 h-4" />;
   };
 
   const getFileDescription = () => {
     if (bucket === 'menu-images') return 'Image uploaded';
     if (bucket === 'restaurant-branding') return 'Branding asset uploaded';
+    if (bucket === 'gaussian-splats') return 'Gaussian splat uploaded';
     return '3D model uploaded';
   };
 

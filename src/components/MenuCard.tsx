@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Leaf, Wheat, Shield, Nut, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReviewsSection from "./ReviewsSection";
-import ModelViewer from "./ModelViewer";
+import GaussianSplatViewer from "./GaussianSplatViewer";
 import { useMenuItemViews } from "@/hooks/useMenuItemViews";
 
 interface MenuCardProps {
@@ -20,7 +20,7 @@ interface MenuCardProps {
   isGlutenFree?: boolean;
   isNutFree?: boolean;
   imageUrl?: string;
-  modelUrl?: string;
+  splatUrl?: string;
 }
 
 const MenuCard = ({ 
@@ -34,11 +34,11 @@ const MenuCard = ({
   isGlutenFree, 
   isNutFree,
   imageUrl,
-  modelUrl
+  splatUrl
 }: MenuCardProps) => {
   const { trackView } = useMenuItemViews();
   const hasTrackedView = useRef(false);
-  const [showModelViewer, setShowModelViewer] = useState(false);
+  const [showSplatViewer, setShowSplatViewer] = useState(false);
 
   // Track view when component mounts (only once per session)
   useEffect(() => {
@@ -121,7 +121,7 @@ const MenuCard = ({
           </DialogHeader>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            {/* Image/Model Section */}
+            {/* Image/Splat Section */}
             <div className="space-y-4">
               {imageUrl && (
                 <img 
@@ -131,14 +131,14 @@ const MenuCard = ({
                 />
               )}
               
-              {modelUrl && (
+              {splatUrl && (
                 <Button
-                  onClick={() => setShowModelViewer(true)}
+                  onClick={() => setShowSplatViewer(true)}
                   className="w-full flex items-center gap-2"
                   variant="outline"
                 >
                   <Eye className="w-4 h-4" />
-                  View 3D Model
+                  View 3D Dish
                 </Button>
               )}
             </div>
@@ -187,12 +187,12 @@ const MenuCard = ({
         </DialogContent>
       </Dialog>
 
-      {/* 3D Model Viewer Modal */}
-      {modelUrl && (
-        <ModelViewer
-          isOpen={showModelViewer}
-          onClose={() => setShowModelViewer(false)}
-          modelUrl={modelUrl}
+      {/* Gaussian Splat Viewer Modal */}
+      {splatUrl && (
+        <GaussianSplatViewer
+          isOpen={showSplatViewer}
+          onClose={() => setShowSplatViewer(false)}
+          splatUrl={splatUrl}
           itemTitle={title}
         />
       )}
