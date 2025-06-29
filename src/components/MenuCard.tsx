@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -112,7 +111,7 @@ const MenuCard = ({
           </Card>
         </DialogTrigger>
         
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="relative">
             {/* Mobile-friendly close button in header */}
             <div className="flex items-center justify-between mb-2">
@@ -143,9 +142,9 @@ const MenuCard = ({
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 mt-6">
             {/* Image/Splat Section */}
-            <div className="space-y-4">
+            <div className="space-y-4 order-1 lg:order-none">
               {imageUrl && (
                 <img 
                   src={imageUrl} 
@@ -167,9 +166,9 @@ const MenuCard = ({
             </div>
             
             {/* Details Section */}
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6 order-2 lg:order-none">
               <div className="flex items-center gap-4">
-                <Badge variant="outline" className="text-2xl font-bold px-4 py-2">
+                <Badge variant="outline" className="text-xl lg:text-2xl font-bold px-3 py-1 lg:px-4 lg:py-2">
                   ${price.toFixed(2)}
                 </Badge>
               </div>
@@ -181,7 +180,7 @@ const MenuCard = ({
                   {getDietaryBadges().map((badge, index) => {
                     const IconComponent = badge.icon;
                     return (
-                      <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${badge.color}`}>
+                      <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${badge.color}`}>
                         <IconComponent className="w-4 h-4" />
                         <span className="font-medium">{badge.label}</span>
                       </div>
@@ -196,7 +195,7 @@ const MenuCard = ({
                   <Shield className="w-5 h-5" />
                   Allergen Information
                 </h4>
-                <p className="text-gray-700">
+                <p className="text-gray-700 text-sm lg:text-base">
                   <strong>Contains:</strong> {formatAllergens(allergens)}
                 </p>
               </div>
@@ -204,7 +203,7 @@ const MenuCard = ({
           </div>
           
           {/* Reviews Section */}
-          <div className="mt-8">
+          <div className="mt-6 lg:mt-8">
             <ReviewsSection menuItemId={menuItemId} menuItemTitle={title} />
           </div>
           
