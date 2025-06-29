@@ -2,8 +2,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Leaf, Wheat, Shield, Nut, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Leaf, Wheat, Shield, Nut, Eye, X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReviewsSection from "./ReviewsSection";
 import GaussianSplatViewer from "./GaussianSplatViewer";
@@ -113,7 +113,30 @@ const MenuCard = ({
         </DialogTrigger>
         
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+          <DialogHeader className="relative">
+            {/* Mobile-friendly close button in header */}
+            <div className="flex items-center justify-between mb-2">
+              <DialogClose asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex items-center gap-2 md:hidden"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Menu
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="absolute -top-2 -right-2 md:hidden h-8 w-8 p-0"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </DialogClose>
+            </div>
+            
             <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
             <DialogDescription className="text-lg">
               {description}
@@ -183,6 +206,19 @@ const MenuCard = ({
           {/* Reviews Section */}
           <div className="mt-8">
             <ReviewsSection menuItemId={menuItemId} menuItemTitle={title} />
+          </div>
+          
+          {/* Mobile-friendly close button at bottom */}
+          <div className="mt-6 md:hidden">
+            <DialogClose asChild>
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Menu
+              </Button>
+            </DialogClose>
           </div>
         </DialogContent>
       </Dialog>
