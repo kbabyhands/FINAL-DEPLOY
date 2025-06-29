@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useErrorHandler } from '@/utils/errorHandler';
+import { logger } from '@/utils/logger';
 import { MenuItem } from '@/types';
 
 export const useMenuItems = (restaurantId?: string) => {
@@ -17,7 +18,12 @@ export const useMenuItems = (restaurantId?: string) => {
   } = useQuery({
     queryKey: ['menuItems', restaurantId],
     queryFn: async () => {
-      if (!restaurantId) return [];
+      if (!restaurantId) {
+        logger.debug('No restaurant ID provided for menu items query');
+        return [];
+      }
+      
+      logger.debug('Fetching menu items for restaurant:', restaurantId);
       
       const { data, error } = await supabase
         .from('menu_items')
@@ -25,7 +31,12 @@ export const useMenuItems = (restaurantId?: string) => {
         .eq('restaurant_id', restaurantId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Error fetching menu items:', error);
+        throw error;
+      }
+      
+      logger.debug('Successfully fetched menu items:', data?.length || 0);
       return data || [];
     },
     enabled: !!restaurantId
@@ -33,12 +44,19 @@ export const useMenuItems = (restaurantId?: string) => {
 
   const deleteMenuItemMutation = useMutation({
     mutationFn: async (itemId: string) => {
+      logger.debug('Deleting menu item:', itemId);
+      
       const { error } = await supabase
         .from('menu_items')
         .delete()
         .eq('id', itemId);
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Error deleting menu item:', error);
+        throw error;
+      }
+      
+      logger.debug('Successfully deleted menu item:', itemId);
     },
     onMutate: async (itemId) => {
       // Optimistic update
@@ -71,12 +89,19 @@ export const useMenuItems = (restaurantId?: string) => {
 
   const toggleMenuItemActiveMutation = useMutation({
     mutationFn: async ({ itemId, isActive }: { itemId: string; isActive: boolean }) => {
+      logger.debug('Toggling menu item active status:', { itemId, isActive });
+      
       const { error } = await supabase
         .from('menu_items')
         .update({ is_active: isActive })
         .eq('id', itemId);
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Error toggling menu item status:', error);
+        throw error;
+      }
+      
+      logger.debug('Successfully toggled menu item status:', { itemId, isActive });
     },
     onMutate: async ({ itemId, isActive }) => {
       // Optimistic update
@@ -110,6 +135,7 @@ export const useMenuItems = (restaurantId?: string) => {
   });
 
   const refreshMenuItems = () => {
+    logger.debug('Refreshing menu items for restaurant:', restaurantId);
     queryClient.invalidateQueries({ queryKey: ['menuItems', restaurantId] });
   };
 

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useErrorHandler } from '@/utils/errorHandler';
+import { logger } from '@/utils/logger';
 import { Restaurant } from '@/types';
 
 export const useRestaurantData = () => {
@@ -17,15 +18,19 @@ export const useRestaurantData = () => {
   } = useQuery({
     queryKey: ['restaurant'],
     queryFn: async () => {
+      logger.debug('Fetching restaurant data');
+      
       const { data, error } = await supabase
         .from('restaurants')
         .select('*')
         .single();
 
       if (error && error.code !== 'PGRST116') {
+        logger.error('Error fetching restaurant data:', error);
         throw error;
       }
 
+      logger.debug('Successfully fetched restaurant data:', data?.name || 'No restaurant found');
       return data;
     },
     retry: 1
@@ -33,9 +38,14 @@ export const useRestaurantData = () => {
 
   const updateRestaurantMutation = useMutation({
     mutationFn: async (restaurantData: Partial<Restaurant> & { name: string }) => {
+      logger.debug('Updating restaurant:', restaurantData.name);
+      
       // Ensure user_id is included for the upsert operation
       const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      if (!userData.user) {
+        logger.error('User not authenticated for restaurant update');
+        throw new Error('User not authenticated');
+      }
 
       const dataToUpsert = {
         ...restaurantData,
@@ -48,7 +58,12 @@ export const useRestaurantData = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Error updating restaurant:', error);
+        throw error;
+      }
+      
+      logger.debug('Successfully updated restaurant:', data.name);
       return data;
     },
     onSuccess: (data) => {
@@ -65,8 +80,13 @@ export const useRestaurantData = () => {
 
   const createRestaurantMutation = useMutation({
     mutationFn: async (restaurantData: Omit<Restaurant, 'id' | 'created_at' | 'updated_at'>) => {
+      logger.debug('Creating restaurant:', restaurantData.name);
+      
       const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      if (!userData.user) {
+        logger.error('User not authenticated for restaurant creation');
+        throw new Error('User not authenticated');
+      }
 
       const { data, error } = await supabase
         .from('restaurants')
@@ -74,7 +94,12 @@ export const useRestaurantData = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Error creating restaurant:', error);
+        throw error;
+      }
+      
+      logger.debug('Successfully created restaurant:', data.name);
       return data;
     },
     onSuccess: (data) => {

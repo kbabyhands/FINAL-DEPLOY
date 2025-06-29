@@ -6,28 +6,67 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { isValidEmail, sanitizeInput } from '@/utils/validation';
+import { logger } from '@/utils/logger';
 
 const AuthForm = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { signIn, signUp, loading } = useAuth();
   const { toast } = useToast();
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Email validation
+    const sanitizedEmail = sanitizeInput(email);
+    if (!sanitizedEmail.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!isValidEmail(sanitizedEmail)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    // Password validation
+    if (!password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    } else if (password.length > 128) {
+      newErrors.password = "Password must be less than 128 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!validateForm()) {
+      logger.debug('Auth form validation failed:', errors);
+      return;
+    }
+
+    const sanitizedEmail = sanitizeInput(email).trim().toLowerCase();
+    logger.debug('Attempting authentication:', { isSignUp, email: sanitizedEmail });
+
     if (isSignUp) {
-      const { error } = await signUp(email, password);
+      const { error } = await signUp(sanitizedEmail, password);
       
       if (!error) {
+        logger.debug('Sign up successful, confirmation email sent');
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your registration."
         });
       }
     } else {
-      await signIn(email, password);
+      const { error } = await signIn(sanitizedEmail, password);
+      if (!error) {
+        logger.debug('Sign in successful');
+      }
     }
   };
 
@@ -53,7 +92,12 @@ const AuthForm = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                maxLength={255}
+                autoComplete="email"
               />
+              {errors.email && (
+                <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
@@ -63,7 +107,12 @@ const AuthForm = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                maxLength={128}
+                autoComplete={isSignUp ? "new-password" : "current-password"}
               />
+              {errors.password && (
+                <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}

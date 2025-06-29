@@ -8,7 +8,25 @@ export const useMenuItemViews = () => {
   const { handleSupabaseError } = useErrorHandler();
 
   const trackView = useCallback(async (menuItemId: string) => {
+    // Validate menuItemId before proceeding
+    if (!menuItemId || typeof menuItemId !== 'string') {
+      logger.warn('Invalid menu item ID provided for view tracking:', menuItemId);
+      return;
+    }
+
     try {
+      // First, verify the menu item exists
+      const { data: menuItem, error: fetchError } = await supabase
+        .from('menu_items')
+        .select('id')
+        .eq('id', menuItemId)
+        .single();
+
+      if (fetchError || !menuItem) {
+        logger.warn('Menu item not found for view tracking:', menuItemId);
+        return;
+      }
+
       // Generate a simple session ID for tracking unique sessions
       let sessionId = sessionStorage.getItem('menu_session_id');
       if (!sessionId) {
@@ -26,14 +44,12 @@ export const useMenuItemViews = () => {
         });
 
       if (error) {
-        // Don't use handleSupabaseError here as it shows toast notifications
-        // and tracking errors shouldn't be intrusive to users
         logger.error('Error tracking menu item view:', error);
       } else {
-        logger.debug('Menu item view tracked successfully');
+        logger.debug('Menu item view tracked successfully for:', menuItemId);
       }
     } catch (error: any) {
-      logger.error('Error tracking view:', error);
+      logger.error('Error in trackView function:', error);
       // Don't show toast for tracking errors as it would be annoying for users
     }
   }, []);
