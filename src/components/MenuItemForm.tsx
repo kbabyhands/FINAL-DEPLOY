@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -221,12 +220,12 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
               accept="image/*"
             />
             <FileUpload
-              bucket="3d-models"
+              bucket="gaussian-splats"
               currentUrl={formData.model_url}
               onUpload={(url) => setFormData({ ...formData, model_url: url })}
               onRemove={() => setFormData({ ...formData, model_url: '' })}
-              label="3D Model"
-              accept=".glb,.gltf,.obj,.fbx"
+              label="Gaussian Splat File"
+              accept=".splat,.ply,.gz"
             />
           </div>
 
