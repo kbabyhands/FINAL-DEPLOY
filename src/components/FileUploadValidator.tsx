@@ -8,12 +8,12 @@ interface FileUploadValidatorProps {
   bucket: 'menu-images' | '3d-models' | 'restaurant-branding' | 'gaussian-splats';
 }
 
-// File size limits (in bytes) - adjusted for Gaussian splat uploads
+// File size limits (in bytes) - reflecting actual Supabase server limitations
 const FILE_SIZE_LIMITS = {
   'menu-images': 10 * 1024 * 1024, // 10MB
   'restaurant-branding': 10 * 1024 * 1024, // 10MB
   '3d-models': 50 * 1024 * 1024, // 50MB
-  'gaussian-splats': 200 * 1024 * 1024, // Increased to 200MB for Gaussian splat files
+  'gaussian-splats': 50 * 1024 * 1024, // Reduced to 50MB due to Supabase server limits
 };
 
 export const formatFileSize = (bytes: number): string => {
@@ -32,9 +32,16 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
   const maxSize = FILE_SIZE_LIMITS[bucket];
   
   if (file.size > maxSize) {
+    if (bucket === 'gaussian-splats') {
+      return {
+        valid: false,
+        message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}. For Gaussian splat files, please compress using PLY compression tools, reduce point density, or split large models into smaller sections.`
+      };
+    }
+    
     return {
       valid: false,
-      message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)} for ${bucket}. Please compress your file or use a smaller version.`
+      message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}. Please compress your file or use a smaller version.`
     };
   }
 
@@ -56,7 +63,7 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
 
 export const getFileSizeInfo = (bucket: FileUploadValidatorProps['bucket']): string => {
   const maxSize = FILE_SIZE_LIMITS[bucket];
-  return `Maximum file size: ${formatFileSize(maxSize)}`;
+  return `Client limit: ${formatFileSize(maxSize)}`;
 };
 
 export { FILE_SIZE_LIMITS };

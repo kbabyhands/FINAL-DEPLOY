@@ -47,8 +47,18 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         throw new Error(validation.message);
       }
 
-      // Check if it's a large file (over 50MB threshold for progress indication)
-      const isLarge = file.size > 50 * 1024 * 1024;
+      // Server-side size check for Supabase limitations
+      const SUPABASE_UPLOAD_LIMIT = 50 * 1024 * 1024; // 50MB is the practical limit
+      if (file.size > SUPABASE_UPLOAD_LIMIT) {
+        if (bucket === 'gaussian-splats') {
+          throw new Error(`File size (${fileSizeFormatted}) exceeds Supabase's upload limit of ${formatFileSize(SUPABASE_UPLOAD_LIMIT)}. For Gaussian splat files, please:\n\n1. Use PLY compression tools to reduce file size\n2. Reduce point density in your 3D scanning software\n3. Consider splitting large scenes into smaller sections\n\nTarget file size should be under 50MB for reliable uploads.`);
+        } else {
+          throw new Error(`File size (${fileSizeFormatted}) exceeds the upload limit of ${formatFileSize(SUPABASE_UPLOAD_LIMIT)}. Please compress your file and try again.`);
+        }
+      }
+
+      // Check if it's a large file (over 25MB threshold for progress indication)
+      const isLarge = file.size > 25 * 1024 * 1024;
       setIsLargeFile(isLarge);
 
       if (isLarge) {
@@ -72,7 +82,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       setUploadPhase('uploading');
       const startTime = Date.now();
       
-      // Enhanced upload with better error handling for Gaussian splats
+      // Upload with optimized settings for large files
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
@@ -87,13 +97,14 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       if (uploadError) {
         console.error('Upload error:', uploadError);
         
-        // Enhanced error handling for Gaussian splat files
+        // Enhanced error handling for server limitations
         if (uploadError.message?.includes('Payload too large') || 
-            uploadError.message?.includes('exceeded the maximum allowed size')) {
+            uploadError.message?.includes('exceeded the maximum allowed size') ||
+            uploadError.statusCode === '413') {
           if (bucket === 'gaussian-splats') {
-            throw new Error(`File size (${fileSizeFormatted}) exceeds the server upload limit. For Gaussian splat files over 200MB, please compress your file using tools like PLY compression or reduce point density.`);
+            throw new Error(`Server upload limit exceeded (${fileSizeFormatted}). Supabase has a ${formatFileSize(SUPABASE_UPLOAD_LIMIT)} upload limit.\n\nTo fix this:\n• Use PLY compression tools\n• Reduce point cloud density\n• Split large models into sections\n• Target files under 50MB`);
           } else {
-            throw new Error(`File size (${fileSizeFormatted}) exceeds the upload limit. Please compress your file and try again.`);
+            throw new Error(`Upload limit exceeded (${fileSizeFormatted}). Please compress your file to under ${formatFileSize(SUPABASE_UPLOAD_LIMIT)}.`);
           }
         }
         
@@ -131,11 +142,11 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       // Provide specific error messages for common issues
       let errorMessage = error.message;
       
-      if (error.message?.includes('Payload too large')) {
+      if (error.message?.includes('Payload too large') || error.message?.includes('413')) {
         if (bucket === 'gaussian-splats') {
-          errorMessage = `File too large: Your Gaussian splat file (${fileSize}) exceeds the server limit. Please compress your file to under 200MB using PLY compression or reduce point density.`;
+          errorMessage = `Upload failed: File too large (${fileSize})\n\nSupabase has a 50MB upload limit. For Gaussian splats:\n• Compress with PLY tools\n• Reduce point density\n• Split large models\n• Target under 50MB`;
         } else {
-          errorMessage = `File too large: Your file (${fileSize}) exceeds the upload limit. Please compress your file.`;
+          errorMessage = `Upload failed: File too large (${fileSize}). Please compress to under 50MB.`;
         }
       } else if (error.message?.includes('Invalid file type')) {
         errorMessage = 'Invalid file type. Please check the allowed file formats.';
@@ -147,7 +158,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
         title: "Upload Failed",
         description: errorMessage,
         variant: "destructive",
-        duration: 10000,
+        duration: 15000,
       });
     } finally {
       setUploading(false);
@@ -200,16 +211,22 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
     <div>
       <Label>{label}</Label>
       <div className="text-xs text-gray-500 mb-2">
+        <div className="flex items-center gap-1 text-amber-600 mb-1">
+          <AlertTriangle className="w-3 h-3" />
+          <span>Server upload limit: 50MB (Supabase limitation)</span>
+        </div>
         {getFileSizeInfo(bucket)}
         {bucket === 'gaussian-splats' && (
-          <div className="space-y-1 mt-1">
-            <div className="flex items-center gap-1 text-blue-600">
+          <div className="space-y-1 mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
+            <div className="flex items-center gap-1 text-blue-600 font-medium">
               <Info className="w-3 h-3" />
-              <span>Supports .splat, .ply, and .gz formats</span>
+              <span>Gaussian Splat Upload Tips</span>
             </div>
-            <div className="flex items-center gap-1 text-amber-600">
-              <AlertTriangle className="w-3 h-3" />
-              <span>Large files may need compression before upload</span>
+            <div className="text-xs text-blue-700 space-y-1">
+              <div>• Supports .splat, .ply, and .gz formats</div>
+              <div>• Files over 50MB will be rejected by server</div>
+              <div>• Use PLY compression tools to reduce size</div>
+              <div>• Consider reducing point cloud density</div>
             </div>
           </div>
         )}
