@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -38,14 +37,16 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
   }, [isOpen, splatUrl]);
 
   const loadGaussianSplat = async () => {
+    console.log('Starting to load Gaussian splat from:', splatUrl);
+    
     try {
       setIsLoading(true);
       setError(null);
       
-      console.log('Loading Gaussian splat from:', splatUrl);
-
       // Fetch the splat file
       const response = await fetch(splatUrl);
+      console.log('Fetch response status:', response.status);
+      
       if (!response.ok) {
         throw new Error(`Failed to fetch splat file: ${response.status} ${response.statusText}`);
       }
@@ -53,32 +54,25 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
       const arrayBuffer = await response.arrayBuffer();
       console.log('Loaded splat file, size:', arrayBuffer.byteLength, 'bytes');
 
-      // Check if it's a ZIP file
-      const uint8Array = new Uint8Array(arrayBuffer);
-      const isZip = uint8Array[0] === 0x50 && uint8Array[1] === 0x4B; // PK signature
-      
-      let splatBuffer: ArrayBuffer;
-      
-      if (isZip) {
-        console.log('Detected ZIP file, attempting to extract...');
-        // For ZIP files, we'll try to extract the content
-        // This is a simplified approach - in production you'd use a proper ZIP library
-        try {
-          splatBuffer = await extractFromZip(arrayBuffer);
-        } catch (zipError) {
-          console.error('ZIP extraction failed:', zipError);
-          throw new Error('Unable to extract PLY data from ZIP file. Please ensure the ZIP contains a valid PLY file.');
-        }
-      } else {
-        splatBuffer = arrayBuffer;
+      if (arrayBuffer.byteLength === 0) {
+        throw new Error('File is empty');
       }
 
       // Parse the splat data
-      const parsedData = await parseSplatData(splatBuffer);
+      console.log('Starting to parse splat data...');
+      const parsedData = await parseSplatData(arrayBuffer);
+      console.log('Parsed data points:', parsedData.length / 6);
+      
+      if (parsedData.length === 0) {
+        throw new Error('No valid data points found in the file');
+      }
+      
       setSplatData(parsedData);
       
       // Render the splat data
+      console.log('Starting to render...');
       renderGaussianSplat(parsedData);
+      console.log('Rendering complete');
       
       setIsLoading(false);
     } catch (err: any) {
@@ -88,109 +82,153 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
     }
   };
 
-  const extractFromZip = async (zipBuffer: ArrayBuffer): Promise<ArrayBuffer> => {
-    // This is a simplified ZIP extraction for demonstration
-    // In a real implementation, you'd use a proper ZIP library like JSZip
-    throw new Error('ZIP extraction not yet implemented. Please upload a .ply or .splat file directly.');
-  };
-
   const parseSplatData = async (buffer: ArrayBuffer): Promise<Float32Array> => {
     const uint8Array = new Uint8Array(buffer);
     
     // Check if it's a PLY file
-    const header = new TextDecoder().decode(uint8Array.slice(0, 100));
+    const headerSample = new TextDecoder().decode(uint8Array.slice(0, 100));
+    console.log('File header sample:', headerSample.substring(0, 50));
     
-    if (header.includes('ply')) {
-      console.log('Parsing PLY file...');
+    if (headerSample.toLowerCase().includes('ply')) {
+      console.log('Detected PLY file format');
       return parsePLYFile(buffer);
     } else {
-      console.log('Parsing as binary splat file...');
+      console.log('Assuming binary splat file format');
       return parseBinarySplatFile(buffer);
     }
   };
 
   const parsePLYFile = (buffer: ArrayBuffer): Float32Array => {
+    console.log('Parsing PLY file...');
     const text = new TextDecoder().decode(buffer);
     const lines = text.split('\n');
     
     let vertexCount = 0;
     let headerEnd = 0;
-    let inHeader = true;
     
     // Parse header
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (line.startsWith('element vertex')) {
         vertexCount = parseInt(line.split(' ')[2]);
+        console.log('Found vertex count in PLY:', vertexCount);
       }
       if (line === 'end_header') {
         headerEnd = i + 1;
-        inHeader = false;
+        console.log('Header ends at line:', headerEnd);
         break;
       }
     }
     
-    console.log('PLY vertex count:', vertexCount);
-    
     if (vertexCount === 0) {
-      throw new Error('Invalid PLY file: no vertices found');
+      throw new Error('Invalid PLY file: no vertices found in header');
     }
     
-    // Parse vertex data (simplified - assumes x, y, z, r, g, b format)
+    // Parse vertex data
     const points = new Float32Array(vertexCount * 6); // x, y, z, r, g, b
+    let validPoints = 0;
     
     for (let i = 0; i < vertexCount && (headerEnd + i) < lines.length; i++) {
       const line = lines[headerEnd + i].trim();
       if (!line) continue;
       
-      const values = line.split(/\s+/).map(parseFloat);
-      if (values.length >= 3) {
-        const baseIndex = i * 6;
+      const values = line.split(/\s+/).map(v => parseFloat(v));
+      if (values.length >= 3 && !values.slice(0, 3).some(isNaN)) {
+        const baseIndex = validPoints * 6;
         points[baseIndex] = values[0];     // x
         points[baseIndex + 1] = values[1]; // y
         points[baseIndex + 2] = values[2]; // z
-        points[baseIndex + 3] = values[3] / 255 || 1; // r
-        points[baseIndex + 4] = values[4] / 255 || 1; // g
-        points[baseIndex + 5] = values[5] / 255 || 1; // b
+        
+        // Handle colors (normalize if needed)
+        points[baseIndex + 3] = values.length > 3 ? (values[3] > 1 ? values[3] / 255 : values[3]) : Math.random();
+        points[baseIndex + 4] = values.length > 4 ? (values[4] > 1 ? values[4] / 255 : values[4]) : Math.random();
+        points[baseIndex + 5] = values.length > 5 ? (values[5] > 1 ? values[5] / 255 : values[5]) : Math.random();
+        
+        validPoints++;
       }
     }
     
-    return points;
+    console.log('Successfully parsed', validPoints, 'valid points from PLY');
+    
+    if (validPoints === 0) {
+      throw new Error('No valid vertex data found in PLY file');
+    }
+    
+    // Return only the valid portion of the array
+    return points.slice(0, validPoints * 6);
   };
 
   const parseBinarySplatFile = (buffer: ArrayBuffer): Float32Array => {
-    // For binary .splat files, each point is typically 32 bytes
-    // This is a simplified parser
-    const pointSize = 32; // bytes per point
-    const pointCount = Math.floor(buffer.byteLength / pointSize);
-    const points = new Float32Array(pointCount * 6);
+    console.log('Parsing binary splat file...');
     
-    const dataView = new DataView(buffer);
+    // Try different point sizes
+    const possiblePointSizes = [32, 24, 16, 12];
+    let bestData: Float32Array | null = null;
+    let maxValidPoints = 0;
     
-    for (let i = 0; i < pointCount; i++) {
-      const offset = i * pointSize;
-      const pointIndex = i * 6;
+    for (const pointSize of possiblePointSizes) {
+      const pointCount = Math.floor(buffer.byteLength / pointSize);
+      console.log(`Trying point size ${pointSize}, estimated ${pointCount} points`);
       
-      try {
-        points[pointIndex] = dataView.getFloat32(offset, true);         // x
-        points[pointIndex + 1] = dataView.getFloat32(offset + 4, true); // y
-        points[pointIndex + 2] = dataView.getFloat32(offset + 8, true); // z
-        points[pointIndex + 3] = Math.random();                         // r (fallback)
-        points[pointIndex + 4] = Math.random();                         // g (fallback)
-        points[pointIndex + 5] = Math.random();                         // b (fallback)
-      } catch (e) {
-        console.warn('Error parsing point', i, ':', e);
+      if (pointCount === 0) continue;
+      
+      const points = new Float32Array(pointCount * 6);
+      const dataView = new DataView(buffer);
+      let validPoints = 0;
+      
+      for (let i = 0; i < pointCount; i++) {
+        const offset = i * pointSize;
+        const pointIndex = validPoints * 6;
+        
+        try {
+          const x = dataView.getFloat32(offset, true);
+          const y = dataView.getFloat32(offset + 4, true);
+          const z = dataView.getFloat32(offset + 8, true);
+          
+          // Check if coordinates are reasonable (not NaN, not extremely large)
+          if (!isNaN(x) && !isNaN(y) && !isNaN(z) && 
+              Math.abs(x) < 1000 && Math.abs(y) < 1000 && Math.abs(z) < 1000) {
+            
+            points[pointIndex] = x;
+            points[pointIndex + 1] = y;
+            points[pointIndex + 2] = z;
+            points[pointIndex + 3] = Math.random(); // r
+            points[pointIndex + 4] = Math.random(); // g
+            points[pointIndex + 5] = Math.random(); // b
+            validPoints++;
+          }
+        } catch (e) {
+          // Skip invalid points
+          continue;
+        }
+      }
+      
+      console.log(`Point size ${pointSize}: ${validPoints} valid points`);
+      
+      if (validPoints > maxValidPoints) {
+        maxValidPoints = validPoints;
+        bestData = points.slice(0, validPoints * 6);
       }
     }
     
-    return points;
+    if (!bestData || maxValidPoints === 0) {
+      throw new Error('Unable to parse binary data - no valid points found');
+    }
+    
+    console.log('Best parsing result:', maxValidPoints, 'valid points');
+    return bestData;
   };
 
   const renderGaussianSplat = (data: Float32Array) => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     
-    if (!canvas || !ctx || !data) return;
+    if (!canvas || !ctx || !data) {
+      console.error('Canvas or context not available for rendering');
+      return;
+    }
+
+    console.log('Starting render with canvas size:', canvas.width, 'x', canvas.height);
 
     // Clear canvas
     ctx.fillStyle = '#1a1a1a';
@@ -200,7 +238,9 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
     const centerY = canvas.height / 2;
     const pointCount = data.length / 6;
     
-    console.log('Rendering', pointCount, 'points');
+    console.log('Rendering', pointCount, 'points to canvas');
+
+    let renderedCount = 0;
 
     // Render points
     for (let i = 0; i < pointCount; i++) {
@@ -219,18 +259,18 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
       const rotatedY = Math.cos(camera.rotationX) * y - Math.sin(camera.rotationX) * rotatedZ;
       
       // Project 3D to 2D
-      const scale = (5 + rotatedZ) * camera.zoom * 20;
+      const scale = (5 + rotatedZ) * camera.zoom * 50;
       const screenX = centerX + rotatedX * scale;
       const screenY = centerY - rotatedY * scale;
       
       // Skip points outside canvas
-      if (screenX < 0 || screenX > canvas.width || screenY < 0 || screenY > canvas.height) {
+      if (screenX < -10 || screenX > canvas.width + 10 || screenY < -10 || screenY > canvas.height + 10) {
         continue;
       }
       
       // Calculate point size based on distance
       const depth = Math.max(0.1, 5 + rotatedZ);
-      const pointSize = Math.max(0.5, (2 * camera.zoom) / depth);
+      const pointSize = Math.max(1, (3 * camera.zoom) / depth);
       
       // Set color
       const red = Math.floor(Math.max(0, Math.min(255, r * 255)));
@@ -241,12 +281,16 @@ const GaussianSplatViewer = ({ isOpen, onClose, splatUrl, itemTitle }: GaussianS
       ctx.beginPath();
       ctx.arc(screenX, screenY, pointSize, 0, Math.PI * 2);
       ctx.fill();
+      
+      renderedCount++;
     }
 
+    console.log('Rendered', renderedCount, 'points to screen');
+
     // Add UI overlay
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.font = '16px Arial';
-    ctx.fillText(`Gaussian Splat: ${pointCount} points`, 20, 30);
+    ctx.fillText(`Gaussian Splat: ${pointCount} points (${renderedCount} visible)`, 20, 30);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
