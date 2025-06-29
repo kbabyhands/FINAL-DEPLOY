@@ -134,8 +134,6 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       if (uploadError) {
         console.error('Upload error details:', {
           message: uploadError.message,
-          status: uploadError.status,
-          statusCode: uploadError.statusCode,
           error: uploadError
         });
         
