@@ -50,7 +50,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_vegan: false,
     is_gluten_free: false,
     is_nut_free: true,
-    image_url: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400&h=300&fit=crop",
     is_active: true
   },
   {
@@ -64,7 +64,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_vegan: false,
     is_gluten_free: true,
     is_nut_free: true,
-    image_url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&h=300&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop",
     is_active: true
   },
   {
@@ -78,7 +78,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_vegan: true,
     is_gluten_free: true,
     is_nut_free: true,
-    image_url: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400&h=300&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
     is_active: true
   },
   {
@@ -92,7 +92,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_vegan: false,
     is_gluten_free: false,
     is_nut_free: true,
-    image_url: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
     is_active: true
   },
   {
@@ -106,7 +106,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_vegan: false,
     is_gluten_free: false,
     is_nut_free: true,
-    image_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&h=300&fit=crop",
     is_active: true
   },
   {
@@ -120,6 +120,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_vegan: true,
     is_gluten_free: false,
     is_nut_free: true,
+    image_url: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop",
     is_active: true
   },
   {
@@ -133,7 +134,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_vegan: false,
     is_gluten_free: false,
     is_nut_free: true,
-    image_url: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=300&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop",
     is_active: true
   },
   {
@@ -147,7 +148,7 @@ const placeholderMenuItems: MenuItem[] = [
     is_vegan: true,
     is_gluten_free: true,
     is_nut_free: false,
-    image_url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=400&h=300&fit=crop",
     is_active: true
   }
 ];
