@@ -1,9 +1,10 @@
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Leaf, Wheat, Shield, Nut } from "lucide-react";
+import { Leaf, Wheat, Shield, Nut, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import ReviewsSection from "./ReviewsSection";
 import ModelViewer from "./ModelViewer";
 import { useMenuItemViews } from "@/hooks/useMenuItemViews";
@@ -37,6 +38,7 @@ const MenuCard = ({
 }: MenuCardProps) => {
   const { trackView } = useMenuItemViews();
   const hasTrackedView = useRef(false);
+  const [showModelViewer, setShowModelViewer] = useState(false);
 
   // Track view when component mounts (only once per session)
   useEffect(() => {
@@ -67,113 +69,134 @@ const MenuCard = ({
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
-          <div className="relative overflow-hidden rounded-t-lg">
-            {imageUrl ? (
-              <img 
-                src={imageUrl} 
-                alt={title}
-                className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-              />
-            ) : (
-              <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                <span className="text-blue-600 text-lg font-semibold">No Image</span>
+    <>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
+            <div className="relative overflow-hidden rounded-t-lg">
+              {imageUrl ? (
+                <img 
+                  src={imageUrl} 
+                  alt={title}
+                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                  <span className="text-blue-600 text-lg font-semibold">No Image</span>
+                </div>
+              )}
+              <div className="absolute top-2 right-2">
+                <Badge variant="secondary" className="bg-white/90 text-black font-bold">
+                  ${price.toFixed(2)}
+                </Badge>
               </div>
-            )}
-            <div className="absolute top-2 right-2">
-              <Badge variant="secondary" className="bg-white/90 text-black font-bold">
-                ${price.toFixed(2)}
-              </Badge>
-            </div>
-          </div>
-          
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
-            <p className="text-gray-600 text-sm mb-3 line-clamp-3">{description}</p>
-            
-            {/* Dietary badges */}
-            <div className="flex flex-wrap gap-1 mb-2">
-              {getDietaryBadges().map((badge, index) => {
-                const IconComponent = badge.icon;
-                return (
-                  <div key={index} className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${badge.color}`}>
-                    <IconComponent className="w-3 h-3" />
-                    <span>{badge.label}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </DialogTrigger>
-      
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
-          <DialogDescription className="text-lg">
-            {description}
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Image/Model Section */}
-          <div className="space-y-4">
-            {imageUrl && (
-              <img 
-                src={imageUrl} 
-                alt={title}
-                className="w-full h-64 object-cover rounded-lg"
-              />
-            )}
-            
-            {modelUrl && <ModelViewer modelUrl={modelUrl} />}
-          </div>
-          
-          {/* Details Section */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <Badge variant="outline" className="text-2xl font-bold px-4 py-2">
-                ${price.toFixed(2)}
-              </Badge>
             </div>
             
-            {/* Dietary Information */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-lg">Dietary Information</h4>
-              <div className="flex flex-wrap gap-2">
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
+              <p className="text-gray-600 text-sm mb-3 line-clamp-3">{description}</p>
+              
+              {/* Dietary badges */}
+              <div className="flex flex-wrap gap-1 mb-2">
                 {getDietaryBadges().map((badge, index) => {
                   const IconComponent = badge.icon;
                   return (
-                    <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${badge.color}`}>
-                      <IconComponent className="w-4 h-4" />
-                      <span className="font-medium">{badge.label}</span>
+                    <div key={index} className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${badge.color}`}>
+                      <IconComponent className="w-3 h-3" />
+                      <span>{badge.label}</span>
                     </div>
                   );
                 })}
               </div>
+            </CardContent>
+          </Card>
+        </DialogTrigger>
+        
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
+            <DialogDescription className="text-lg">
+              {description}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {/* Image/Model Section */}
+            <div className="space-y-4">
+              {imageUrl && (
+                <img 
+                  src={imageUrl} 
+                  alt={title}
+                  className="w-full h-64 object-cover rounded-lg"
+                />
+              )}
+              
+              {modelUrl && (
+                <Button
+                  onClick={() => setShowModelViewer(true)}
+                  className="w-full flex items-center gap-2"
+                  variant="outline"
+                >
+                  <Eye className="w-4 h-4" />
+                  View 3D Model
+                </Button>
+              )}
             </div>
             
-            {/* Allergen Information */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-lg flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                Allergen Information
-              </h4>
-              <p className="text-gray-700">
-                <strong>Contains:</strong> {formatAllergens(allergens)}
-              </p>
+            {/* Details Section */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <Badge variant="outline" className="text-2xl font-bold px-4 py-2">
+                  ${price.toFixed(2)}
+                </Badge>
+              </div>
+              
+              {/* Dietary Information */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-lg">Dietary Information</h4>
+                <div className="flex flex-wrap gap-2">
+                  {getDietaryBadges().map((badge, index) => {
+                    const IconComponent = badge.icon;
+                    return (
+                      <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${badge.color}`}>
+                        <IconComponent className="w-4 h-4" />
+                        <span className="font-medium">{badge.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              {/* Allergen Information */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-lg flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Allergen Information
+                </h4>
+                <p className="text-gray-700">
+                  <strong>Contains:</strong> {formatAllergens(allergens)}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* Reviews Section */}
-        <div className="mt-8">
-          <ReviewsSection menuItemId={menuItemId} />
-        </div>
-      </DialogContent>
-    </Dialog>
+          
+          {/* Reviews Section */}
+          <div className="mt-8">
+            <ReviewsSection menuItemId={menuItemId} menuItemTitle={title} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 3D Model Viewer Modal */}
+      {modelUrl && (
+        <ModelViewer
+          isOpen={showModelViewer}
+          onClose={() => setShowModelViewer(false)}
+          modelUrl={modelUrl}
+          itemTitle={title}
+        />
+      )}
+    </>
   );
 };
 
