@@ -14,8 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { sanitizeInput, isValidEmail } from "@/utils/validation";
-import { logger } from "@/utils/logger";
 
 interface ReviewFormProps {
   menuItemId: string;
@@ -31,84 +29,40 @@ const ReviewForm = ({ menuItemId, menuItemTitle, onClose, onSubmit }: ReviewForm
   const [reviewText, setReviewText] = useState("");
   const [hoveredRating, setHoveredRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    // Name validation
-    const sanitizedName = sanitizeInput(customerName);
-    if (!sanitizedName.trim()) {
-      newErrors.customerName = "Name is required";
-    } else if (sanitizedName.length > 100) {
-      newErrors.customerName = "Name must be less than 100 characters";
-    }
-
-    // Email validation (optional but must be valid if provided)
-    const sanitizedEmail = sanitizeInput(customerEmail);
-    if (sanitizedEmail && !isValidEmail(sanitizedEmail)) {
-      newErrors.customerEmail = "Please enter a valid email address";
-    }
-
-    // Rating validation
-    if (rating === 0) {
-      newErrors.rating = "Please provide a rating";
-    } else if (rating < 1 || rating > 5) {
-      newErrors.rating = "Rating must be between 1 and 5 stars";
-    }
-
-    // Review text validation (optional but limited length)
-    const sanitizedReview = sanitizeInput(reviewText);
-    if (sanitizedReview.length > 1000) {
-      newErrors.reviewText = "Review must be less than 1000 characters";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      logger.debug('Review form validation failed:', errors);
+    if (!customerName.trim() || rating === 0) {
+      toast({
+        title: "Missing information",
+        description: "Please provide your name and rating.",
+        variant: "destructive"
+      });
       return;
     }
 
     setSubmitting(true);
-    logger.debug('Submitting review for menu item:', menuItemId);
 
     try {
-      const sanitizedData = {
-        menu_item_id: menuItemId,
-        customer_name: sanitizeInput(customerName).trim(),
-        customer_email: customerEmail.trim() ? sanitizeInput(customerEmail).trim() : null,
-        rating,
-        review_text: reviewText.trim() ? sanitizeInput(reviewText).trim() : null,
-      };
-
       const { error } = await supabase
         .from('menu_item_reviews')
-        .insert(sanitizedData);
+        .insert({
+          menu_item_id: menuItemId,
+          customer_name: customerName.trim(),
+          customer_email: customerEmail.trim() || null,
+          rating,
+          review_text: reviewText.trim() || null,
+        });
 
-      if (error) {
-        logger.error('Error submitting review:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      logger.debug('Review submitted successfully');
-      toast({
-        title: "Thank you!",
-        description: "Your review has been submitted successfully."
-      });
-      
       onSubmit();
     } catch (error: any) {
-      logger.error('Error in review submission:', error);
       toast({
         title: "Error submitting review",
-        description: error.message || "An unexpected error occurred",
+        description: error.message,
         variant: "destructive"
       });
     } finally {
@@ -157,11 +111,7 @@ const ReviewForm = ({ menuItemId, menuItemTitle, onClose, onSubmit }: ReviewForm
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Enter your name"
               required
-              maxLength={100}
             />
-            {errors.customerName && (
-              <p className="text-sm text-red-500">{errors.customerName}</p>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -172,11 +122,7 @@ const ReviewForm = ({ menuItemId, menuItemTitle, onClose, onSubmit }: ReviewForm
               value={customerEmail}
               onChange={(e) => setCustomerEmail(e.target.value)}
               placeholder="Enter your email"
-              maxLength={255}
             />
-            {errors.customerEmail && (
-              <p className="text-sm text-red-500">{errors.customerEmail}</p>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -187,9 +133,6 @@ const ReviewForm = ({ menuItemId, menuItemTitle, onClose, onSubmit }: ReviewForm
                 {rating > 0 ? `${rating} star${rating !== 1 ? 's' : ''}` : 'Click to rate'}
               </span>
             </div>
-            {errors.rating && (
-              <p className="text-sm text-red-500">{errors.rating}</p>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -200,14 +143,7 @@ const ReviewForm = ({ menuItemId, menuItemTitle, onClose, onSubmit }: ReviewForm
               onChange={(e) => setReviewText(e.target.value)}
               placeholder="Share your experience with this menu item..."
               rows={4}
-              maxLength={1000}
             />
-            <div className="text-sm text-gray-500 text-right">
-              {reviewText.length}/1000 characters
-            </div>
-            {errors.reviewText && (
-              <p className="text-sm text-red-500">{errors.reviewText}</p>
-            )}
           </div>
 
           <DialogFooter className="gap-2">
