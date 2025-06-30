@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -155,7 +154,7 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {menuItem ? 'Edit Menu Item' : 'Add New Menu Item'}
@@ -211,7 +210,7 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <FileUpload
               bucket="menu-images"
               currentUrl={formData.image_url}
@@ -227,6 +226,14 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
               onRemove={() => setFormData({ ...formData, model_url: '' })}
               label="3D Model"
               accept=".glb,.gltf,.obj,.fbx"
+            />
+            <FileUpload
+              bucket="gaussian-splats"
+              currentUrl={formData.model_url}
+              onUpload={(url) => setFormData({ ...formData, model_url: url })}
+              onRemove={() => setFormData({ ...formData, model_url: '' })}
+              label="Gaussian Splat (.ply)"
+              accept=".ply,.gz"
             />
           </div>
 
