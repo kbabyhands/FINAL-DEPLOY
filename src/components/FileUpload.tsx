@@ -21,54 +21,6 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
 
-  const uploadLargeFile = async (file: File, filePath: string) => {
-    const chunkSize = 6 * 1024 * 1024; // 6MB chunks
-    const totalChunks = Math.ceil(file.size / chunkSize);
-    
-    console.log(`Uploading large file in ${totalChunks} chunks of ${chunkSize} bytes each`);
-
-    try {
-      // Get current user
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
-
-      // For large files, we'll use the resumable upload approach
-      // First, try to upload the file directly with the standard method
-      // If it fails, we'll implement chunked upload
-      
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          metadata: {
-            user_id: userData.user.id,
-            original_name: file.name,
-            file_size: file.size.toString(),
-            content_type: file.type || 'application/octet-stream'
-          },
-          upsert: false
-        });
-
-      if (uploadError) {
-        // If we get a payload too large error, try alternative approach
-        if (uploadError.message.includes('too large') || uploadError.message.includes('413')) {
-          console.log('Standard upload failed, implementing workaround for large files...');
-          
-          // For very large files on Supabase, we need to use a different approach
-          // Since Supabase doesn't support resumable uploads in the client library,
-          // we'll inform the user about the limitation and suggest alternatives
-          
-          throw new Error(`File size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds Supabase's single upload limit. For files larger than ~50MB, consider using a file compression tool to reduce the size, or contact support about enabling larger uploads for your project.`);
-        }
-        throw uploadError;
-      }
-
-      return filePath;
-    } catch (error) {
-      console.error('Large file upload error:', error);
-      throw error;
-    }
-  };
-
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
@@ -98,35 +50,47 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       // Update progress
       setUploadProgress(10);
 
-      let uploadedFilePath: string;
-
-      // For large files (>50MB), use special handling
+      // For large files (>50MB), we need to use a different approach
+      // Since Supabase doesn't support resumable uploads in the client library,
+      // we'll need to inform users about the limitation
       if (file.size > 50 * 1024 * 1024) {
-        console.log('Large file detected, using specialized upload method');
-        uploadedFilePath = await uploadLargeFile(file, filePath);
-      } else {
-        // Standard upload for smaller files
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) throw new Error('User not authenticated');
+        console.log('Large file detected - Supabase client API has ~50MB limit per request');
+        
+        // Show user the limitation and suggest alternatives
+        throw new Error(
+          `File size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds Supabase's client API upload limit of ~50MB per request. 
 
-        const { error: uploadError } = await supabase.storage
-          .from(bucket)
-          .upload(filePath, file, {
-            metadata: {
-              user_id: userData.user.id,
-              original_name: file.name,
-              file_size: file.size.toString(),
-              content_type: file.type || 'application/octet-stream'
-            },
-            upsert: false
-          });
+For large Gaussian splat files, consider:
+1. Compressing the PLY file further using tools like Draco compression
+2. Using the Supabase CLI for direct uploads to bypass the client API limit
+3. Splitting large files into smaller chunks (if applicable)
+4. Contacting your Supabase project admin to configure direct upload access
 
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          throw uploadError;
-        }
+Your Supabase Pro plan supports up to 5GB storage, but individual uploads via the web client are limited to ~50MB.`
+        );
+      }
 
-        uploadedFilePath = filePath;
+      // Standard upload for files under 50MB
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
+      setUploadProgress(30);
+
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          metadata: {
+            user_id: userData.user.id,
+            original_name: file.name,
+            file_size: file.size.toString(),
+            content_type: file.type || 'application/octet-stream'
+          },
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
       }
 
       setUploadProgress(90);
@@ -134,7 +98,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       // Get the public URL
       const { data } = supabase.storage
         .from(bucket)
-        .getPublicUrl(uploadedFilePath);
+        .getPublicUrl(filePath);
 
       console.log('File uploaded successfully:', data.publicUrl);
       setUploadProgress(100);
@@ -219,7 +183,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
 
   const getSizeLimit = () => {
     if (bucket === 'gaussian-splats' || bucket === '3d-models') {
-      return 'Up to 5GB (Pro plan)';
+      return 'Up to 50MB (client API limit)';
     }
     return 'Up to 50MB';
   };
@@ -274,9 +238,6 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
                         style={{width: `${uploadProgress}%`}}
                       ></div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      Large files may take several minutes
-                    </div>
                   </div>
                 ) : (
                   <div className="space-y-1">
@@ -284,8 +245,9 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
                     <div className="text-xs text-gray-500">{getAcceptedFormats()}</div>
                     <div className="text-xs text-blue-600 font-medium">{getSizeLimit()}</div>
                     {bucket === 'gaussian-splats' && (
-                      <div className="text-xs text-amber-600">
-                        Note: Files {'>'}50MB may require special handling
+                      <div className="text-xs text-amber-600 max-w-xs">
+                        <div className="font-medium mb-1">Large File Notice:</div>
+                        <div>Files {'>'} 50MB require Supabase CLI or direct server upload due to client API limits. Storage supports up to 5GB on Pro plans.</div>
                       </div>
                     )}
                   </div>
