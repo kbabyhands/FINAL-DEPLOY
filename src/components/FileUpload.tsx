@@ -33,82 +33,85 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
       const file = event.target.files[0];
       console.log(`Uploading file: ${file.name}, Size: ${file.size} bytes (${(file.size / (1024 * 1024)).toFixed(2)} MB)`);
 
-      // Check file size limits based on bucket and plan
-      const maxSize = bucket === 'gaussian-splats' ? 5 * 1024 * 1024 * 1024 : // 5GB for Gaussian splats (Pro plan)
-                     bucket === '3d-models' ? 5 * 1024 * 1024 * 1024 : // 5GB for 3D models (Pro plan)
-                     50 * 1024 * 1024; // 50MB for images
-
-      if (file.size > maxSize) {
-        const maxSizeMB = maxSize / (1024 * 1024);
-        throw new Error(`File size exceeds the ${maxSizeMB}MB limit for ${bucket}`);
-      }
-
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      // Update progress
-      setUploadProgress(10);
-
-      // For large files (>50MB), we need to use a different approach
-      // Since Supabase doesn't support resumable uploads in the client library,
-      // we'll need to inform users about the limitation
-      if (file.size > 50 * 1024 * 1024) {
-        console.log('Large file detected - Supabase client API has ~50MB limit per request');
-        
-        // Show user the limitation and suggest alternatives
-        throw new Error(
-          `File size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds Supabase's client API upload limit of ~50MB per request. 
-
-For large Gaussian splat files, consider:
-1. Compressing the PLY file further using tools like Draco compression
-2. Using the Supabase CLI for direct uploads to bypass the client API limit
-3. Splitting large files into smaller chunks (if applicable)
-4. Contacting your Supabase project admin to configure direct upload access
-
-Your Supabase Pro plan supports up to 5GB storage, but individual uploads via the web client are limited to ~50MB.`
-        );
-      }
-
-      // Standard upload for files under 50MB
+      // Get current user
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
-      setUploadProgress(30);
+      setUploadProgress(10);
 
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          metadata: {
-            user_id: userData.user.id,
-            original_name: file.name,
-            file_size: file.size.toString(),
-            content_type: file.type || 'application/octet-stream'
-          },
-          upsert: false
+      // For large files or Gaussian splats, use chunked upload
+      if (file.size > 50 * 1024 * 1024 || bucket === 'gaussian-splats') {
+        console.log('Using chunked upload for large file');
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', bucket);
+        formData.append('userId', userData.user.id);
+
+        setUploadProgress(30);
+
+        const response = await supabase.functions.invoke('chunked-upload', {
+          body: formData,
         });
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
+        if (response.error) {
+          throw new Error(response.error.message || 'Upload failed');
+        }
+
+        const result = response.data;
+        if (!result.success) {
+          throw new Error(result.error || 'Upload failed');
+        }
+
+        setUploadProgress(100);
+        onUpload(result.url);
+
+        toast({
+          title: "Success",
+          description: `${getFileDescription()} uploaded successfully (${(file.size / (1024 * 1024)).toFixed(1)}MB)`
+        });
+
+      } else {
+        // Standard upload for smaller files
+        const fileExt = file.name.split('.').pop()?.toLowerCase();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+        setUploadProgress(30);
+
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(fileName, file, {
+            metadata: {
+              user_id: userData.user.id,
+              original_name: file.name,
+              file_size: file.size.toString(),
+              content_type: file.type || 'application/octet-stream'
+            },
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw uploadError;
+        }
+
+        setUploadProgress(90);
+
+        // Get the public URL
+        const { data } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(fileName);
+
+        console.log('File uploaded successfully:', data.publicUrl);
+        setUploadProgress(100);
+        
+        onUpload(data.publicUrl);
+
+        toast({
+          title: "Success",
+          description: `${getFileDescription()} uploaded successfully (${(file.size / (1024 * 1024)).toFixed(1)}MB)`
+        });
       }
-
-      setUploadProgress(90);
-
-      // Get the public URL
-      const { data } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
-
-      console.log('File uploaded successfully:', data.publicUrl);
-      setUploadProgress(100);
-      
-      onUpload(data.publicUrl);
-
-      toast({
-        title: "Success",
-        description: `${getFileDescription()} uploaded successfully (${(file.size / (1024 * 1024)).toFixed(1)}MB)`
-      });
     } catch (error: any) {
       console.error('Upload failed:', error);
       toast({
@@ -182,8 +185,11 @@ Your Supabase Pro plan supports up to 5GB storage, but individual uploads via th
   };
 
   const getSizeLimit = () => {
-    if (bucket === 'gaussian-splats' || bucket === '3d-models') {
-      return 'Up to 50MB (client API limit)';
+    if (bucket === 'gaussian-splats') {
+      return 'Up to 5GB (Pro plan)';
+    }
+    if (bucket === '3d-models') {
+      return 'Up to 5GB (Pro plan)';
     }
     return 'Up to 50MB';
   };
@@ -245,9 +251,9 @@ Your Supabase Pro plan supports up to 5GB storage, but individual uploads via th
                     <div className="text-xs text-gray-500">{getAcceptedFormats()}</div>
                     <div className="text-xs text-blue-600 font-medium">{getSizeLimit()}</div>
                     {bucket === 'gaussian-splats' && (
-                      <div className="text-xs text-amber-600 max-w-xs">
-                        <div className="font-medium mb-1">Large File Notice:</div>
-                        <div>Files {'>'} 50MB require Supabase CLI or direct server upload due to client API limits. Storage supports up to 5GB on Pro plans.</div>
+                      <div className="text-xs text-green-600 max-w-xs">
+                        <div className="font-medium mb-1">Large File Support:</div>
+                        <div>Files up to 5GB are supported using our enhanced upload system. Large files will be processed automatically.</div>
                       </div>
                     )}
                   </div>
