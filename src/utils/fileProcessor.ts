@@ -24,7 +24,7 @@ export class FileProcessor {
         type: 'ply'
       };
     } else {
-      throw new Error('Unsupported file format. Please upload .ply, .ply.gz, or .zip files.');
+      throw new Error('Unsupported file format. Please upload .ply, .ply.gz, or .zip files containing PLY files.');
     }
   }
 
@@ -69,7 +69,7 @@ export class FileProcessor {
         type: 'ply'
       };
     } catch (error) {
-      throw new Error('Failed to decompress .gz file. Please ensure it\'s a valid gzip archive.');
+      throw new Error('Failed to decompress .gz file. Please ensure it\'s a valid gzip archive containing a PLY file.');
     }
   }
 }

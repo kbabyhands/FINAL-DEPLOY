@@ -381,7 +381,7 @@ const Index = () => {
               onClick={() => setShowModelViewer(true)}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium"
             >
-              🎯 View 3D Models & Gaussian Splats
+              📐 View 3D PLY Models
             </Button>
           </div>
           

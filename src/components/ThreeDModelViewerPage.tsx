@@ -44,9 +44,9 @@ export const ThreeDModelViewerPage = () => {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">3D Model Viewer</h1>
+        <h1 className="text-3xl font-bold">3D PLY Model Viewer</h1>
         <p className="text-gray-600">
-          Upload and view PLY files and compressed 3D models
+          Upload and view PLY files and compressed 3D point cloud models
         </p>
       </div>
 
@@ -57,7 +57,7 @@ export const ThreeDModelViewerPage = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 Upload 3D Model
-                <Badge variant="outline">Beta</Badge>
+                <Badge variant="outline">PLY Only</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -71,7 +71,7 @@ export const ThreeDModelViewerPage = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                3D Viewer
+                3D PLY Viewer
                 {currentFile && (
                   <div className="flex gap-2">
                     <Button
@@ -115,8 +115,8 @@ export const ThreeDModelViewerPage = () => {
               ) : (
                 <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
                   <div className="text-center text-gray-500">
-                    <div className="text-4xl mb-2">🎯</div>
-                    <p>Upload a 3D model to get started</p>
+                    <div className="text-4xl mb-2">📐</div>
+                    <p>Upload a PLY model to get started</p>
                   </div>
                 </div>
               )}
@@ -128,16 +128,16 @@ export const ThreeDModelViewerPage = () => {
       {/* Instructions */}
       <Card>
         <CardHeader>
-          <CardTitle>How to Use</CardTitle>
+          <CardTitle>How to Use the PLY Viewer</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <h4 className="font-medium mb-2">Supported File Types:</h4>
               <ul className="space-y-1 text-gray-600">
-                <li>• <strong>.ply</strong> - Standard polygon files</li>
+                <li>• <strong>.ply</strong> - Standard PLY polygon files</li>
                 <li>• <strong>.ply.gz</strong> - Compressed PLY files</li>
-                <li>• <strong>.zip</strong> - Archives with PLY files inside</li>
+                <li>• <strong>.zip</strong> - Archives containing PLY files</li>
               </ul>
             </div>
             <div>
