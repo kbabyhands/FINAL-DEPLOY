@@ -147,6 +147,7 @@ const Index = () => {
     { id: "all", name: "All", icon: "🍽️" }
   ]);
   const [loading, setLoading] = useState(true);
+  const [showModelViewer, setShowModelViewer] = useState(false);
   const { toast } = useToast();
   const { handleSupabaseError } = useErrorHandler();
 
@@ -287,6 +288,34 @@ const Index = () => {
     fontFamily: restaurant.font_family || 'Inter'
   } : {};
 
+  // Show 3D Model Viewer if toggled
+  if (showModelViewer) {
+    const { ThreeDModelViewerPage } = require('@/components/ThreeDModelViewerPage');
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowModelViewer(false)}
+            >
+              ← Back to Menu
+            </Button>
+            <Link to="/admin">
+              <Button variant="outline" size="sm">
+                <Settings className="w-4 h-4 mr-2" />
+                Admin Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
+        <div className="py-8">
+          <ThreeDModelViewerPage />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="min-h-screen"
@@ -332,11 +361,21 @@ const Index = () => {
             {restaurant?.name || 'Our Menu'}
           </h1>
           <p 
-            className="text-lg"
+            className="text-lg mb-6"
             style={{ color: restaurant?.secondary_color || '#6b7280' }}
           >
             {restaurant?.description || 'Explore our delicious offerings. Filter by category or dietary needs.'}
           </p>
+          
+          {/* 3D Model Viewer Button */}
+          <div className="mb-6">
+            <Button 
+              onClick={() => setShowModelViewer(true)}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium"
+            >
+              🎯 View 3D Models & Gaussian Splats
+            </Button>
+          </div>
           
           {/* Admin Link */}
           <div className="absolute top-4 right-4">
