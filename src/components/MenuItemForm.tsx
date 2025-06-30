@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -225,11 +224,8 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
 
           <FileUploadsSection
             imageUrl={formData.image_url}
-            modelUrl={formData.model_url}
             onImageUpload={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
             onImageRemove={() => setFormData(prev => ({ ...prev, image_url: '' }))}
-            onModelUpload={(url) => setFormData(prev => ({ ...prev, model_url: url }))}
-            onModelRemove={() => setFormData(prev => ({ ...prev, model_url: '' }))}
           />
 
           <DietaryOptionsSection
