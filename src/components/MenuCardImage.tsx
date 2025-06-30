@@ -12,7 +12,6 @@ interface MenuCardImageProps {
 
 const MenuCardImage = ({ imageUrl, modelUrl, title }: MenuCardImageProps) => {
   const [modelData, setModelData] = useState<ArrayBuffer | null>(null);
-  const [modelType, setModelType] = useState<'ply' | 'splat'>('ply');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,9 +45,8 @@ const MenuCardImage = ({ imageUrl, modelUrl, title }: MenuCardImageProps) => {
           console.log('MenuCardImage: Processing file with FileProcessor...');
           const processedFile = await FileProcessor.processFile(file);
           
-          console.log('MenuCardImage: File processed successfully, type:', processedFile.type, 'size:', processedFile.data.byteLength);
+          console.log('MenuCardImage: File processed successfully, size:', processedFile.data.byteLength);
           setModelData(processedFile.data);
-          setModelType(processedFile.type);
         } catch (error) {
           console.error('MenuCardImage: Failed to load/process 3D model:', error);
           setError(error instanceof Error ? error.message : 'Failed to load 3D model');
@@ -92,7 +90,7 @@ const MenuCardImage = ({ imageUrl, modelUrl, title }: MenuCardImageProps) => {
             <ThreeDModelViewer
               modelData={modelData}
               filename={title}
-              type={modelType}
+              type="ply"
             />
             <div className="absolute top-2 left-2">
               <Badge variant="outline" className="bg-white/90 text-purple-600 font-bold">

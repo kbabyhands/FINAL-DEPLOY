@@ -94,7 +94,7 @@ export const ModelFileUpload = ({ onFileProcessed }: ModelFileUploadProps) => {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".ply,.gz,.zip,.splat"
+            accept=".ply,.gz,.zip"
             onChange={handleFileInput}
             className="hidden"
             disabled={isProcessing}
@@ -110,7 +110,7 @@ export const ModelFileUpload = ({ onFileProcessed }: ModelFileUploadProps) => {
               <CheckCircle className="w-8 h-8 text-green-600 mx-auto" />
               <p className="text-green-700 font-medium">{uploadedFile.filename}</p>
               <p className="text-sm text-gray-600">
-                {uploadedFile.type.toUpperCase()} file ready
+                PLY file ready
               </p>
               <Button 
                 variant="outline" 
@@ -127,10 +127,10 @@ export const ModelFileUpload = ({ onFileProcessed }: ModelFileUploadProps) => {
             <div className="space-y-2">
               <Upload className="w-8 h-8 text-gray-400 mx-auto" />
               <p className="text-gray-600">
-                Drop your 3D model here or click to upload
+                Drop your PLY file here or click to upload
               </p>
               <p className="text-sm text-gray-400">
-                Supports .ply, .ply.gz, .zip, and .splat files
+                Supports .ply, .ply.gz, and .zip files
               </p>
             </div>
           )}
@@ -146,7 +146,6 @@ export const ModelFileUpload = ({ onFileProcessed }: ModelFileUploadProps) => {
           <li>• .ply - Polygon File Format</li>
           <li>• .ply.gz - Compressed PLY files</li>
           <li>• .zip - Archives containing PLY files</li>
-          <li>• .splat - Gaussian splat files</li>
         </ul>
       </div>
     </div>

@@ -46,7 +46,7 @@ export const ThreeDModelViewerPage = () => {
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">3D Model Viewer</h1>
         <p className="text-gray-600">
-          Upload and view PLY files, Gaussian splats, and compressed 3D models
+          Upload and view PLY files and compressed 3D models
         </p>
       </div>
 
@@ -138,7 +138,6 @@ export const ThreeDModelViewerPage = () => {
                 <li>• <strong>.ply</strong> - Standard polygon files</li>
                 <li>• <strong>.ply.gz</strong> - Compressed PLY files</li>
                 <li>• <strong>.zip</strong> - Archives with PLY files inside</li>
-                <li>• <strong>.splat</strong> - Gaussian splat files</li>
               </ul>
             </div>
             <div>

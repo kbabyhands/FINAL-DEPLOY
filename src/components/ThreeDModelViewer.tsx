@@ -1,24 +1,24 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { PLYLoader } from '@/utils/plyLoader';
-import GaussianSplatRenderer from './GaussianSplatRenderer';
 
 interface ModelViewerProps {
   modelData: ArrayBuffer;
   filename: string;
-  type: 'ply' | 'splat';
+  type: 'ply';
 }
 
-const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 'splat' }) => {
+const ModelMesh = ({ modelData }: { modelData: ArrayBuffer }) => {
   const meshRef = useRef<THREE.Points>(null);
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const [autoRotate, setAutoRotate] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('ModelMesh: Loading model data, type:', type, 'size:', modelData?.byteLength);
+    console.log('ModelMesh: Loading PLY data, size:', modelData?.byteLength);
     
     if (!modelData || modelData.byteLength === 0) {
       console.error('ModelMesh: No model data provided');
@@ -26,52 +26,50 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
       return;
     }
 
-    if (type === 'ply') {
-      try {
-        const loader = new PLYLoader();
-        const geo = loader.load(modelData);
+    try {
+      const loader = new PLYLoader();
+      const geo = loader.load(modelData);
+      
+      if (geo) {
+        console.log('ModelMesh: PLY loaded successfully, vertices:', geo.attributes.position?.count || 0);
         
-        if (geo) {
-          console.log('ModelMesh: PLY loaded successfully, vertices:', geo.attributes.position?.count || 0);
+        // Ensure proper bounds for the geometry
+        geo.computeBoundingBox();
+        geo.computeBoundingSphere();
+        
+        // Center and scale the geometry appropriately
+        if (geo.boundingBox && geo.boundingSphere) {
+          const center = geo.boundingBox.getCenter(new THREE.Vector3());
+          const size = geo.boundingBox.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
           
-          // Ensure proper bounds for the geometry
-          geo.computeBoundingBox();
-          geo.computeBoundingSphere();
+          console.log('ModelMesh: Original bounds - Center:', center, 'Size:', size, 'Max dimension:', maxDim);
           
-          // Center and scale the geometry appropriately
-          if (geo.boundingBox && geo.boundingSphere) {
-            const center = geo.boundingBox.getCenter(new THREE.Vector3());
-            const size = geo.boundingBox.getSize(new THREE.Vector3());
-            const maxDim = Math.max(size.x, size.y, size.z);
-            
-            console.log('ModelMesh: Original bounds - Center:', center, 'Size:', size, 'Max dimension:', maxDim);
-            
-            // Center the geometry
-            geo.translate(-center.x, -center.y, -center.z);
-            
-            // Scale to fit in a reasonable size (normalize to ~4 units for better visibility)
-            if (maxDim > 0) {
-              const targetSize = 4;
-              const scale = targetSize / maxDim;
-              geo.scale(scale, scale, scale);
-              console.log('ModelMesh: Applied scale factor:', scale);
-            }
-            
-            // Recompute bounds after transformations
-            geo.computeBoundingBox();
-            geo.computeBoundingSphere();
+          // Center the geometry
+          geo.translate(-center.x, -center.y, -center.z);
+          
+          // Scale to fit in a reasonable size (normalize to ~4 units for better visibility)
+          if (maxDim > 0) {
+            const targetSize = 4;
+            const scale = targetSize / maxDim;
+            geo.scale(scale, scale, scale);
+            console.log('ModelMesh: Applied scale factor:', scale);
           }
           
-          setGeometry(geo);
-          setError(null);
-        } else {
-          console.error('ModelMesh: PLY loader returned null');
-          setError('Failed to parse PLY file - invalid format');
+          // Recompute bounds after transformations
+          geo.computeBoundingBox();
+          geo.computeBoundingSphere();
         }
-      } catch (error) {
-        console.error('ModelMesh: Failed to load PLY file:', error);
-        setError('Error loading PLY file: ' + (error as Error).message);
+        
+        setGeometry(geo);
+        setError(null);
+      } else {
+        console.error('ModelMesh: PLY loader returned null');
+        setError('Failed to parse PLY file - invalid format');
       }
+    } catch (error) {
+      console.error('ModelMesh: Failed to load PLY file:', error);
+      setError('Error loading PLY file: ' + (error as Error).message);
     }
 
     // Cleanup function
@@ -80,23 +78,13 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
         geometry.dispose();
       }
     };
-  }, [modelData, type]);
+  }, [modelData]);
 
   useFrame((state, delta) => {
-    if (meshRef.current && autoRotate && !error && geometry && type === 'ply') {
+    if (meshRef.current && autoRotate && !error && geometry) {
       meshRef.current.rotation.y += delta * 0.2;
     }
   });
-
-  // Handle Gaussian splats with dedicated renderer
-  if (type === 'splat') {
-    return (
-      <GaussianSplatRenderer 
-        modelData={modelData} 
-        autoRotate={autoRotate}
-      />
-    );
-  }
 
   if (error) {
     return (
@@ -243,12 +231,12 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
         >
           <ResponsiveCameraController />
           
-          {/* Optimized lighting for splat rendering */}
+          {/* Optimized lighting for point cloud rendering */}
           <ambientLight intensity={0.6} />
           <directionalLight position={[5, 5, 5]} intensity={0.8} />
           <directionalLight position={[-5, -5, -5]} intensity={0.4} />
           
-          <ModelMesh modelData={modelData} type={type} />
+          <ModelMesh modelData={modelData} />
           
           <OrbitControls
             enablePan={true}
@@ -275,11 +263,11 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
         </Canvas>
         
         <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs sm:text-sm">
-          {filename} ({type.toUpperCase()})
+          {filename} (PLY)
         </div>
         
         <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs hidden sm:block">
-          {type === 'splat' ? 'Gaussian Splat Viewer' : 'Point Cloud Viewer'} • Drag to orbit • Scroll to zoom
+          Point Cloud Viewer • Drag to orbit • Scroll to zoom
         </div>
         
         <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs sm:hidden">
