@@ -37,7 +37,7 @@ export const useFileUploadCore = ({
       const file = event.target.files[0];
       const fileSizeFormatted = formatFileSize(file.size);
       
-      console.log('Starting file upload process with Pro plan:', {
+      console.log('Starting file upload with Supabase Pro plan:', {
         fileName: file.name,
         fileSize: fileSizeFormatted,
         fileType: file.type,
@@ -51,23 +51,17 @@ export const useFileUploadCore = ({
         throw new Error(validation.message);
       }
 
-      console.log('File validation passed for Pro plan');
+      console.log('File validation passed for Supabase Pro plan');
 
-      // Pro plan allows much larger uploads - 5GB for 3D models
-      const SUPABASE_PRO_UPLOAD_LIMIT = 5 * 1024 * 1024 * 1024; // 5GB
+      // Check for large files (Pro plan supports up to 5GB for 3D models)
       const isLargeFile = file.size > 100 * 1024 * 1024; // Consider 100MB+ as large
       
-      if (file.size > SUPABASE_PRO_UPLOAD_LIMIT && (bucket === 'gaussian-splats' || bucket === '3d-models')) {
-        console.error('File size exceeds Pro plan limit:', file.size, 'vs', SUPABASE_PRO_UPLOAD_LIMIT);
-        throw new Error(`File size (${fileSizeFormatted}) exceeds Supabase Pro plan's upload limit of ${formatFileSize(SUPABASE_PRO_UPLOAD_LIMIT)}. Even with Pro plan, files over 5GB need special handling.`);
-      }
-
       onFileInfo(fileSizeFormatted, '', isLargeFile);
 
       if (isLargeFile) {
         toast({
           title: "Large File Upload (Pro Plan)",
-          description: `Uploading ${fileSizeFormatted}. With your Pro plan, this should work much better than before!`,
+          description: `Uploading ${fileSizeFormatted}. Your Pro plan supports files up to 5GB!`,
           duration: 5000,
         });
       }
@@ -78,10 +72,10 @@ export const useFileUploadCore = ({
       
       let fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       
-      // Add descriptive prefix for ZIP files containing PLY data
-      if (fileExt === 'zip' && (bucket === 'gaussian-splats' || bucket === '3d-models')) {
-        fileName = `pro-plan-3d-${Date.now()}-${Math.random().toString(36).substring(2)}.zip`;
-        console.log('Large 3D model ZIP file for Pro plan:', fileName);
+      // Add descriptive prefix for 3D model files
+      if (bucket === 'gaussian-splats' || bucket === '3d-models') {
+        fileName = `pro-3d-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        console.log('3D model file for Pro plan:', fileName);
       }
       
       const filePath = fileName;
@@ -90,7 +84,7 @@ export const useFileUploadCore = ({
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) {
         console.error('Auth error:', userError);
-        throw new Error('Authentication failed. Please sign in and try again.');
+        throw new Error('Authentication required. Please sign in and try again.');
       }
       if (!userData.user) {
         console.error('No authenticated user found');
@@ -98,7 +92,7 @@ export const useFileUploadCore = ({
       }
 
       console.log('User authenticated for Pro plan upload:', userData.user.id);
-      console.log('Starting Pro plan upload for file:', file.name, 'Size:', fileSizeFormatted, 'Path:', filePath);
+      console.log('Starting Pro plan upload:', file.name, 'Size:', fileSizeFormatted, 'Path:', filePath);
       
       onUploadProgress(0, 'uploading');
       const startTime = Date.now();
@@ -115,7 +109,7 @@ export const useFileUploadCore = ({
 
       console.log('Pro plan upload metadata:', metadata);
       
-      // Upload with optimized settings for Pro plan large files
+      // Upload with Pro plan optimizations
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
@@ -125,7 +119,7 @@ export const useFileUploadCore = ({
         });
 
       if (uploadError) {
-        console.error('Pro plan upload error details:', {
+        console.error('Pro plan upload error:', {
           message: uploadError.message,
           error: uploadError
         });
@@ -134,7 +128,7 @@ export const useFileUploadCore = ({
         if (uploadError.message?.includes('Payload too large') || 
             uploadError.message?.includes('exceeded the maximum allowed size') ||
             uploadError.message?.includes('413')) {
-          throw new Error(`Upload failed even with Pro plan (${fileSizeFormatted}). The file might be corrupted or in an unsupported format. Try:\n• Verify the file isn't corrupted\n• Use PLY compression tools\n• Contact support if the file is under 5GB`);
+          throw new Error(`Upload failed: File size (${fileSizeFormatted}) may exceed limits. With Pro plan, 3D models support up to 5GB. Please verify your file isn't corrupted.`);
         }
         
         // Handle authentication errors
@@ -142,7 +136,7 @@ export const useFileUploadCore = ({
           throw new Error('Authentication error. Please sign out and sign back in, then try again.');
         }
         
-        throw new Error(`Pro plan upload failed: ${uploadError.message}`);
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
       onUploadProgress(100, 'complete');
@@ -165,26 +159,26 @@ export const useFileUploadCore = ({
 
       toast({
         title: "Pro Plan Upload Complete! 🎉",
-        description: `${file.name} uploaded successfully (${fileSizeFormatted}) with your Pro plan benefits`,
+        description: `${file.name} uploaded successfully (${fileSizeFormatted})`,
         duration: 5000,
       });
 
       onUploadComplete();
 
     } catch (error: any) {
-      console.error('Pro plan file upload error details:', {
+      console.error('File upload error:', {
         message: error.message,
         stack: error.stack,
         error: error
       });
       
-      // Provide specific error messages for Pro plan
+      // Provide specific error messages
       let errorMessage = error.message;
       
       if (error.message?.includes('Payload too large') || error.message?.includes('413')) {
-        errorMessage = `Upload failed: Even with Pro plan, this file is too large or corrupted. Pro plan supports up to 5GB for 3D models.`;
+        errorMessage = `Upload failed: File too large. Pro plan supports up to 5GB for 3D models.`;
       } else if (error.message?.includes('Invalid file type')) {
-        errorMessage = 'Invalid file type. Please ensure your file contains valid 3D model data.';
+        errorMessage = 'Invalid file type. Please ensure your file is a valid format.';
       } else if (error.message?.includes('Duplicate')) {
         errorMessage = 'A file with this name already exists. Please rename your file and try again.';
       } else if (error.message?.includes('auth') || error.message?.includes('JWT')) {
@@ -192,10 +186,10 @@ export const useFileUploadCore = ({
       }
       
       toast({
-        title: "Pro Plan Upload Failed",
+        title: "Upload Failed",
         description: errorMessage,
         variant: "destructive",
-        duration: 15000,
+        duration: 10000,
       });
 
       onUploadError(errorMessage);
