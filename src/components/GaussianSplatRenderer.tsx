@@ -26,36 +26,26 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
 
     try {
       const loader = new SplatLoader();
-      const data = loader.load(modelData, 100000); // Increased limit for better quality
+      const data = loader.load(modelData, 200000); // Increased limit
       
       if (data) {
         console.log('Splat loaded successfully');
         console.log('Count:', data.count);
         console.log('Bounds:', data.bounds);
         
-        // Fix coordinate system - flip Y to correct upside-down orientation
-        const positions = data.positions;
-        for (let i = 1; i < positions.length; i += 3) {
-          positions[i] = -positions[i]; // Flip Y coordinate
-        }
-        
-        // Update bounds after flipping
-        const temp = data.bounds.min.y;
-        data.bounds.min.y = -data.bounds.max.y;
-        data.bounds.max.y = -temp;
-        data.bounds.center.y = -data.bounds.center.y;
-        
-        // Position camera appropriately
+        // Center the model
+        const center = data.bounds.center;
         const maxDim = Math.max(data.bounds.size.x, data.bounds.size.y, data.bounds.size.z);
-        const distance = maxDim * 1.5; // Closer camera for better detail
         
-        camera.position.set(distance * 0.6, distance * 0.2, distance * 0.6);
-        camera.lookAt(data.bounds.center.x, data.bounds.center.y, data.bounds.center.z);
+        // Position camera for optimal viewing
+        const distance = maxDim * 2;
+        camera.position.set(distance * 0.8, distance * 0.3, distance * 0.8);
+        camera.lookAt(center.x, center.y, center.z);
         
         if (camera instanceof THREE.PerspectiveCamera) {
-          camera.near = maxDim * 0.001;
-          camera.far = maxDim * 10;
-          camera.fov = 50;
+          camera.near = maxDim * 0.01;
+          camera.far = maxDim * 20;
+          camera.fov = 45;
           camera.updateProjectionMatrix();
         }
         
@@ -82,24 +72,23 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     return { geometry: geom, material: mat };
   }, [splatData, size]);
 
-  // Optimize WebGL settings for better performance
+  // Optimize WebGL for splat rendering
   useEffect(() => {
     if (gl) {
-      gl.sortObjects = false; // Important for transparency
+      gl.sortObjects = false;
       gl.outputColorSpace = THREE.SRGBColorSpace;
-      gl.toneMapping = THREE.ACESFilmicToneMapping;
-      gl.toneMappingExposure = 1.0;
+      gl.setClearColor(0x000000, 1);
     }
   }, [gl]);
 
   useFrame((state, delta) => {
     if (meshRef.current && autoRotate && !error && splatData) {
-      meshRef.current.rotation.y += delta * 0.3; // Slightly faster rotation
+      meshRef.current.rotation.y += delta * 0.5;
     }
     
-    // Update material uniforms for responsive rendering
     if (material) {
       material.updateScreenSize(size.width, size.height);
+      material.updateTime(state.clock.elapsedTime);
     }
   });
 

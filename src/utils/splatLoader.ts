@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 
 export interface SplatData {
@@ -17,7 +16,7 @@ export interface SplatData {
 }
 
 export class SplatLoader {
-  load(data: ArrayBuffer, maxSplats = 50000): SplatData | null {
+  load(data: ArrayBuffer, maxSplats = 100000): SplatData | null {
     try {
       console.log('SplatLoader: Loading file, size:', data.byteLength);
       
@@ -32,8 +31,8 @@ export class SplatLoader {
         return this.parsePLY(data, maxSplats);
       }
 
-      // Try binary formats
-      const bytesPerSplat = [32, 44, 56, 62];
+      // Try binary formats with improved detection
+      const bytesPerSplat = [32, 44, 56, 62, 64];
       for (const bytes of bytesPerSplat) {
         const remainder = data.byteLength % bytes;
         if (remainder < 16) {
@@ -81,7 +80,6 @@ export class SplatLoader {
   }
 
   private parseBinary(data: ArrayBuffer, headerSize: number, count: number, bytesPerSplat: number, maxSplats: number): SplatData | null {
-    // Standard property order for binary files
     const properties = ['x', 'y', 'z', 'scale_0', 'scale_1', 'scale_2', 'red', 'green', 'blue', 'opacity', 'rot_0', 'rot_1', 'rot_2', 'rot_3'];
     return this.parseData(data, headerSize, count, properties, maxSplats, bytesPerSplat);
   }
@@ -98,7 +96,6 @@ export class SplatLoader {
 
     const dataView = new DataView(data, headerSize);
     
-    // Calculate bytes per splat
     let bytesPerSplat = fixedBytesPerSplat || 0;
     if (!bytesPerSplat) {
       for (const prop of properties) {
@@ -122,8 +119,8 @@ export class SplatLoader {
 
       try {
         let x = 0, y = 0, z = 0;
-        let sx = 0.1, sy = 0.1, sz = 0.1;
-        let r = 0.5, g = 0.5, b = 0.5, a = 1.0;
+        let sx = 0.5, sy = 0.5, sz = 0.5; // Better default scale
+        let r = 1.0, g = 1.0, b = 1.0, a = 1.0; // Brighter default colors
         let qx = 0, qy = 0, qz = 0, qw = 1;
 
         let propOffset = 0;
@@ -142,13 +139,13 @@ export class SplatLoader {
             case 'x': x = value; break;
             case 'y': y = value; break;
             case 'z': z = value; break;
-            case 'scale_0': case 'scale_x': sx = Math.max(0.01, Math.abs(value)); break;
-            case 'scale_1': case 'scale_y': sy = Math.max(0.01, Math.abs(value)); break;
-            case 'scale_2': case 'scale_z': sz = Math.max(0.01, Math.abs(value)); break;
-            case 'red': r = Math.max(0.1, value); break;
-            case 'green': g = Math.max(0.1, value); break;
-            case 'blue': b = Math.max(0.1, value); break;
-            case 'opacity': case 'alpha': a = Math.max(0.1, value); break;
+            case 'scale_0': case 'scale_x': sx = Math.max(0.1, Math.abs(value)); break;
+            case 'scale_1': case 'scale_y': sy = Math.max(0.1, Math.abs(value)); break;
+            case 'scale_2': case 'scale_z': sz = Math.max(0.1, Math.abs(value)); break;
+            case 'red': r = Math.max(0.2, value); break;
+            case 'green': g = Math.max(0.2, value); break;
+            case 'blue': b = Math.max(0.2, value); break;
+            case 'opacity': case 'alpha': a = Math.max(0.3, value); break;
             case 'rot_0': case 'qx': qx = value; break;
             case 'rot_1': case 'qy': qy = value; break;
             case 'rot_2': case 'qz': qz = value; break;
@@ -156,7 +153,6 @@ export class SplatLoader {
           }
         }
 
-        // Validate
         if (isFinite(x) && isFinite(y) && isFinite(z) && isFinite(sx) && isFinite(sy) && isFinite(sz)) {
           const idx = validCount * 3;
           const idx4 = validCount * 4;
@@ -173,7 +169,6 @@ export class SplatLoader {
           scales[idx + 1] = sy;
           scales[idx + 2] = sz;
 
-          // Normalize quaternion
           const qLen = Math.sqrt(qx*qx + qy*qy + qz*qz + qw*qw);
           if (qLen > 0.001) {
             rotations[idx4] = qx / qLen;
@@ -189,7 +184,6 @@ export class SplatLoader {
 
           opacities[validCount] = a;
 
-          // Update bounds
           minX = Math.min(minX, x);
           minY = Math.min(minY, y);
           minZ = Math.min(minZ, z);
@@ -217,8 +211,7 @@ export class SplatLoader {
       size: new THREE.Vector3(maxX - minX, maxY - minY, maxZ - minZ)
     };
 
-    console.log(`Successfully loaded ${validCount} splats`);
-    console.log('Bounds:', bounds);
+    console.log(`Successfully loaded ${validCount} splats with improved quality`);
 
     return {
       positions: positions.slice(0, validCount * 3),
