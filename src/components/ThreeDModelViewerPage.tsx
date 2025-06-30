@@ -27,7 +27,7 @@ export const ThreeDModelViewerPage = () => {
           <ThreeDModelViewer 
             modelData={currentFile.data}
             filename={currentFile.filename}
-            type={currentFile.type}
+            type="ply"
           />
           <Button
             onClick={toggleFullscreen}
@@ -93,7 +93,7 @@ export const ThreeDModelViewerPage = () => {
                     <ThreeDModelViewer 
                       modelData={currentFile.data}
                       filename={currentFile.filename}
-                      type={currentFile.type}
+                      type="ply"
                     />
                   </div>
                   

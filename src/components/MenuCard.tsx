@@ -40,7 +40,6 @@ const MenuCard = ({
   const { trackView } = useMenuItemViews();
   const hasTrackedView = useRef(false);
   const [modelData, setModelData] = useState<ArrayBuffer | null>(null);
-  const [modelType, setModelType] = useState<'ply' | 'splat'>('ply');
   const [modelError, setModelError] = useState<string | null>(null);
 
   // Track view when component mounts (only once per session)
@@ -84,7 +83,6 @@ const MenuCard = ({
           
           console.log('MenuCard: File processed successfully, type:', processedFile.type, 'size:', processedFile.data.byteLength);
           setModelData(processedFile.data);
-          setModelType(processedFile.type);
           setModelError(null);
         } catch (error) {
           console.error('MenuCard: Failed to load/process 3D model:', error);
@@ -115,7 +113,7 @@ const MenuCard = ({
             <ThreeDModelViewer
               modelData={modelData}
               filename={title}
-              type={modelType}
+              type="ply"
             />
           </div>
         );

@@ -5,7 +5,7 @@ import JSZip from 'jszip';
 export interface ProcessedFile {
   data: ArrayBuffer;
   filename: string;
-  type: 'ply' | 'splat';
+  type: 'ply';
 }
 
 export class FileProcessor {
@@ -23,15 +23,8 @@ export class FileProcessor {
         filename: file.name,
         type: 'ply'
       };
-    } else if (filename.endsWith('.splat')) {
-      const data = await file.arrayBuffer();
-      return {
-        data,
-        filename: file.name,
-        type: 'splat'
-      };
     } else {
-      throw new Error('Unsupported file format. Please upload .ply, .ply.gz, .splat, or .zip files.');
+      throw new Error('Unsupported file format. Please upload .ply, .ply.gz, or .zip files.');
     }
   }
 
@@ -39,9 +32,8 @@ export class FileProcessor {
     const zip = new JSZip();
     const zipContent = await zip.loadAsync(file);
     
-    // Find the first .ply or .splat file in the zip
+    // Find the first .ply file in the zip
     let targetFile: JSZip.JSZipObject | null = null;
-    let fileType: 'ply' | 'splat' = 'ply';
     
     for (const filename in zipContent.files) {
       const zipFile = zipContent.files[filename];
@@ -49,25 +41,20 @@ export class FileProcessor {
         const lowerName = filename.toLowerCase();
         if (lowerName.endsWith('.ply')) {
           targetFile = zipFile;
-          fileType = 'ply';
-          break;
-        } else if (lowerName.endsWith('.splat')) {
-          targetFile = zipFile;
-          fileType = 'splat';
           break;
         }
       }
     }
     
     if (!targetFile) {
-      throw new Error('No .ply or .splat file found in the zip archive.');
+      throw new Error('No .ply file found in the zip archive.');
     }
     
     const data = await targetFile.async('arraybuffer');
     return {
       data,
       filename: targetFile.name,
-      type: fileType
+      type: 'ply'
     };
   }
 
