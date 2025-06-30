@@ -8,6 +8,7 @@ import DietaryBadges from "./DietaryBadges";
 import { useMenuItemViews } from "@/hooks/useMenuItemViews";
 import ThreeDModelViewer from "./ThreeDModelViewer";
 import { useState } from "react";
+import { FileProcessor } from "@/utils/fileProcessor";
 
 interface MenuCardProps {
   menuItemId: string;
@@ -66,24 +67,27 @@ const MenuCard = ({
             throw new Error(`Failed to fetch: ${response.status}`);
           }
           
-          const data = await response.arrayBuffer();
+          const arrayBuffer = await response.arrayBuffer();
           
-          if (data.byteLength === 0) {
+          if (arrayBuffer.byteLength === 0) {
             throw new Error('Empty file');
           }
           
-          console.log('MenuCard: Model loaded, size:', data.byteLength);
-          setModelData(data);
-          setModelError(null);
+          console.log('MenuCard: Raw file loaded, size:', arrayBuffer.byteLength);
           
-          // Determine file type from URL
-          if (modelUrl.toLowerCase().endsWith('.splat')) {
-            setModelType('splat');
-          } else {
-            setModelType('ply');
-          }
+          // Create a File object from the ArrayBuffer to use with FileProcessor
+          const filename = modelUrl.split('/').pop() || 'model.ply';
+          const file = new File([arrayBuffer], filename);
+          
+          console.log('MenuCard: Processing file with FileProcessor...');
+          const processedFile = await FileProcessor.processFile(file);
+          
+          console.log('MenuCard: File processed successfully, type:', processedFile.type, 'size:', processedFile.data.byteLength);
+          setModelData(processedFile.data);
+          setModelType(processedFile.type);
+          setModelError(null);
         } catch (error) {
-          console.error('MenuCard: Failed to load 3D model:', error);
+          console.error('MenuCard: Failed to load/process 3D model:', error);
           setModelError(error instanceof Error ? error.message : 'Load failed');
         }
       };

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import ThreeDModelViewer from "./ThreeDModelViewer";
 import { Badge } from "@/components/ui/badge";
+import { FileProcessor } from "@/utils/fileProcessor";
 
 interface MenuCardImageProps {
   imageUrl?: string;
@@ -30,24 +31,26 @@ const MenuCardImage = ({ imageUrl, modelUrl, title }: MenuCardImageProps) => {
             throw new Error(`Failed to fetch model: ${response.status} ${response.statusText}`);
           }
           
-          const data = await response.arrayBuffer();
+          const arrayBuffer = await response.arrayBuffer();
           
-          if (data.byteLength === 0) {
+          if (arrayBuffer.byteLength === 0) {
             throw new Error('Empty model file');
           }
           
-          console.log('MenuCardImage: Model loaded successfully, size:', data.byteLength);
-          setModelData(data);
+          console.log('MenuCardImage: Raw file loaded, size:', arrayBuffer.byteLength);
           
-          // Determine file type from URL
-          const lowerUrl = modelUrl.toLowerCase();
-          if (lowerUrl.endsWith('.splat')) {
-            setModelType('splat');
-          } else {
-            setModelType('ply');
-          }
+          // Create a File object from the ArrayBuffer to use with FileProcessor
+          const filename = modelUrl.split('/').pop() || 'model.ply';
+          const file = new File([arrayBuffer], filename);
+          
+          console.log('MenuCardImage: Processing file with FileProcessor...');
+          const processedFile = await FileProcessor.processFile(file);
+          
+          console.log('MenuCardImage: File processed successfully, type:', processedFile.type, 'size:', processedFile.data.byteLength);
+          setModelData(processedFile.data);
+          setModelType(processedFile.type);
         } catch (error) {
-          console.error('MenuCardImage: Failed to load 3D model:', error);
+          console.error('MenuCardImage: Failed to load/process 3D model:', error);
           setError(error instanceof Error ? error.message : 'Failed to load 3D model');
         } finally {
           setLoading(false);
