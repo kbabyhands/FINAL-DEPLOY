@@ -285,7 +285,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: F
                     <div className="text-xs text-blue-600 font-medium">{getSizeLimit()}</div>
                     {bucket === 'gaussian-splats' && (
                       <div className="text-xs text-amber-600">
-                        Note: Files >50MB may require special handling
+                        Note: Files {'>'}50MB may require special handling
                       </div>
                     )}
                   </div>
