@@ -376,7 +376,6 @@ const Index = () => {
                 isGlutenFree={item.is_gluten_free}
                 isNutFree={item.is_nut_free}
                 imageUrl={item.image_url}
-                splatUrl={item.model_url}
               />
             ))}
           </div>

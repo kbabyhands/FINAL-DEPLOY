@@ -18,7 +18,6 @@ interface MenuCardProps {
   isGlutenFree?: boolean;
   isNutFree?: boolean;
   imageUrl?: string;
-  splatUrl?: string;
 }
 
 const MenuCard = ({ 
@@ -31,8 +30,7 @@ const MenuCard = ({
   isVegan, 
   isGlutenFree, 
   isNutFree,
-  imageUrl,
-  splatUrl
+  imageUrl
 }: MenuCardProps) => {
   const { trackView } = useMenuItemViews();
   const hasTrackedView = useRef(false);
@@ -99,8 +97,6 @@ const MenuCard = ({
           isGlutenFree={isGlutenFree}
           isNutFree={isNutFree}
           imageUrl={imageUrl}
-          splatUrl={splatUrl}
-          onViewSplat={() => {}} // Empty function since we removed the viewer
         />
       </DialogContent>
     </Dialog>
