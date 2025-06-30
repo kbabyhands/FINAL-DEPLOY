@@ -8,12 +8,12 @@ interface FileUploadValidatorProps {
   bucket: 'menu-images' | '3d-models' | 'restaurant-branding' | 'gaussian-splats';
 }
 
-// File size limits (in bytes) - reflecting actual Supabase server limitations
+// File size limits (in bytes) - Updated for Supabase Pro plan
 const FILE_SIZE_LIMITS = {
   'menu-images': 10 * 1024 * 1024, // 10MB
   'restaurant-branding': 10 * 1024 * 1024, // 10MB
-  '3d-models': 50 * 1024 * 1024, // 50MB
-  'gaussian-splats': 50 * 1024 * 1024, // Reduced to 50MB due to Supabase server limits
+  '3d-models': 5 * 1024 * 1024 * 1024, // 5GB for Pro plan
+  'gaussian-splats': 5 * 1024 * 1024 * 1024, // 5GB for Pro plan
 };
 
 export const formatFileSize = (bytes: number): string => {
@@ -42,7 +42,7 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
     if (bucket === 'gaussian-splats' || bucket === '3d-models') {
       return {
         valid: false,
-        message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}. For 3D model files, please compress using PLY compression tools, reduce point density, or split large models into smaller sections.`
+        message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}. With Supabase Pro, you can upload files up to 5GB for 3D models. If your file is larger, consider compressing it or splitting it into sections.`
       };
     }
     
@@ -81,7 +81,7 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
 
 export const getFileSizeInfo = (bucket: FileUploadValidatorProps['bucket']): string => {
   const maxSize = FILE_SIZE_LIMITS[bucket];
-  return `Client limit: ${formatFileSize(maxSize)}`;
+  return `Pro plan limit: ${formatFileSize(maxSize)}`;
 };
 
 export { FILE_SIZE_LIMITS };

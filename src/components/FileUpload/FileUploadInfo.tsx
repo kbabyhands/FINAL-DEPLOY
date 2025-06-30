@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info, CheckCircle } from 'lucide-react';
 import { getFileSizeInfo } from '../FileUploadValidator';
 
 interface FileUploadInfoProps {
@@ -8,28 +9,28 @@ interface FileUploadInfoProps {
 }
 
 const FileUploadInfo = ({ bucket }: FileUploadInfoProps) => {
-  const getSpecificInfo = () => {
-    switch (bucket) {
-      case 'gaussian-splats':
-        return (
-          <div className="text-xs text-blue-600 mt-1">
-            Supports PLY files and ZIP archives containing PLY files
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
+  const sizeInfo = getFileSizeInfo(bucket);
+  
+  if (bucket === '3d-models' || bucket === 'gaussian-splats') {
+    return (
+      <Alert className="mb-2 border-green-200 bg-green-50">
+        <CheckCircle className="h-4 w-4 text-green-600" />
+        <AlertDescription className="text-green-700">
+          <strong>Pro Plan Benefits:</strong> Upload 3D models up to 5GB! 
+          Supports .ply, .ply.gz, .zip archives, and .splat files. 
+          Large files will show progress indicators during upload.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
   return (
-    <div className="text-xs text-gray-500 mb-2">
-      <div className="flex items-center gap-1 text-amber-600 mb-1">
-        <AlertTriangle className="w-3 h-3" />
-        <span>Server upload limit: 50MB (Supabase limitation)</span>
-      </div>
-      {getFileSizeInfo(bucket)}
-      {getSpecificInfo()}
-    </div>
+    <Alert className="mb-2">
+      <Info className="h-4 w-4" />
+      <AlertDescription>
+        {sizeInfo}
+      </AlertDescription>
+    </Alert>
   );
 };
 
