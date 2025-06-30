@@ -4,6 +4,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { PLYLoader } from '@/utils/plyLoader';
+import GaussianSplatRenderer from './GaussianSplatRenderer';
 
 interface ModelViewerProps {
   modelData: ArrayBuffer;
@@ -72,11 +73,6 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
         console.error('ModelMesh: Failed to load PLY file:', error);
         setError('Error loading PLY file: ' + (error as Error).message);
       }
-    } else if (type === 'splat') {
-      console.log('ModelMesh: Splat files not yet implemented');
-      setError('Gaussian Splat support coming soon');
-    } else {
-      setError('Unsupported file type: ' + type);
     }
 
     // Cleanup function
@@ -88,11 +84,22 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
   }, [modelData, type]);
 
   useFrame((state, delta) => {
-    if (meshRef.current && autoRotate && !error && geometry) {
+    if (meshRef.current && autoRotate && !error && geometry && type === 'ply') {
       meshRef.current.rotation.y += delta * 0.2;
     }
   });
 
+  // Handle Gaussian splats with dedicated renderer
+  if (type === 'splat') {
+    return (
+      <GaussianSplatRenderer 
+        modelData={modelData} 
+        autoRotate={autoRotate}
+      />
+    );
+  }
+
+  // Handle PLY files
   if (error) {
     return (
       <mesh position={[0, 0, 0]}>
