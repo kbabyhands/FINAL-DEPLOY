@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 
 export interface SplatData {
@@ -93,11 +92,11 @@ export class SplatLoader {
     // Check if it's a PLY file first
     const header = new TextDecoder().decode(data.slice(0, Math.min(512, data.byteLength)));
     if (header.includes('ply') && header.includes('format')) {
-      return this.SUPPORTED_FORMATS.find(f => f.type === 'ply_gaussian') || null;
+      return SplatLoader.SUPPORTED_FORMATS.find(f => f.type === 'ply_gaussian') || null;
     }
 
     // Try different binary formats by checking if file size is divisible by bytes per splat
-    for (const format of this.SUPPORTED_FORMATS) {
+    for (const format of SplatLoader.SUPPORTED_FORMATS) {
       if (format.type !== 'ply_gaussian') {
         const remainder = data.byteLength % format.bytesPerSplat;
         if (remainder === 0 || remainder < 16) { // Allow small header

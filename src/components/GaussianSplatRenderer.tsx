@@ -51,12 +51,13 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
   const [splatData, setSplatData] = useState<SplatData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingProgress, setLoadingProgress] = useState<string>('');
-  const [performance, setPerformance] = useState({ fps: 0, renderTime: 0, splatCount: 0 });
+  const [performanceStats, setPerformanceStats] = useState({ fps: 0, renderTime: 0, splatCount: 0 });
   const { camera } = useThree();
   
   // Performance monitoring
   const frameTimeRef = useRef<number[]>([]);
-  const lastFrameTime = useRef(performance.now());
+  const lastFrameTime = useRef(Date.now());
+  const frameCount = useRef(0);
 
   const lodManager = useMemo(() => {
     if (splatData) {
@@ -120,8 +121,10 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
   }, [splatData]);
 
   useFrame((state, delta) => {
+    frameCount.current++;
+    
     // Performance monitoring
-    const currentTime = performance.now();
+    const currentTime = Date.now();
     const frameTime = currentTime - lastFrameTime.current;
     lastFrameTime.current = currentTime;
     
@@ -131,11 +134,11 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     }
     
     // Update performance stats every 30 frames
-    if (state.frame % 30 === 0 && frameTimeRef.current.length > 10) {
+    if (frameCount.current % 30 === 0 && frameTimeRef.current.length > 10) {
       const avgFrameTime = frameTimeRef.current.reduce((a, b) => a + b) / frameTimeRef.current.length;
       const fps = Math.round(1000 / avgFrameTime);
       
-      setPerformance(prev => ({
+      setPerformanceStats(prev => ({
         fps,
         renderTime: Math.round(avgFrameTime * 100) / 100,
         splatCount: lodManager ? Math.floor(splatData?.count || 0 * (lodManager.getCurrentLOD() === 0 ? 1 : 0.7)) : splatData?.count || 0
