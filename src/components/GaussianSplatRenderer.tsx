@@ -14,10 +14,28 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
   const meshRef = useRef<THREE.Mesh>(null);
   const [splatData, setSplatData] = useState<SplatData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { camera, size, gl } = useThree();
+  const { camera, size, gl, viewport } = useThree();
+
+  // Responsive splat count based on screen size and device performance
+  const adaptiveSplatCount = useMemo(() => {
+    const pixelCount = size.width * size.height;
+    const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    
+    // Adjust splat count based on screen resolution and device capabilities
+    if (pixelCount < 500000) { // Small screens (mobile)
+      return Math.floor(50000 / devicePixelRatio);
+    } else if (pixelCount < 1000000) { // Medium screens (tablet)
+      return Math.floor(100000 / devicePixelRatio);
+    } else if (pixelCount < 2000000) { // Large screens (desktop)
+      return Math.floor(150000 / devicePixelRatio);
+    } else { // Very large screens
+      return 200000;
+    }
+  }, [size.width, size.height]);
 
   useEffect(() => {
     console.log('Loading splat data, size:', modelData?.byteLength);
+    console.log('Adaptive splat count:', adaptiveSplatCount);
     
     if (!modelData || modelData.byteLength === 0) {
       setError('No splat data provided');
@@ -26,26 +44,34 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
 
     try {
       const loader = new SplatLoader();
-      const data = loader.load(modelData, 200000); // Increased limit
+      const data = loader.load(modelData, adaptiveSplatCount);
       
       if (data) {
         console.log('Splat loaded successfully');
         console.log('Count:', data.count);
         console.log('Bounds:', data.bounds);
         
-        // Center the model
+        // Responsive camera positioning
         const center = data.bounds.center;
         const maxDim = Math.max(data.bounds.size.x, data.bounds.size.y, data.bounds.size.z);
         
-        // Position camera for optimal viewing
-        const distance = maxDim * 2;
-        camera.position.set(distance * 0.8, distance * 0.3, distance * 0.8);
+        // Adjust distance based on viewport aspect ratio
+        const aspectRatio = size.width / size.height;
+        const baseDistance = maxDim * 2;
+        const distance = aspectRatio < 1 ? baseDistance * 1.5 : baseDistance; // Further on mobile
+        
+        camera.position.set(
+          distance * 0.8, 
+          distance * (aspectRatio < 1 ? 0.5 : 0.3), // Higher on mobile
+          distance * 0.8
+        );
         camera.lookAt(center.x, center.y, center.z);
         
         if (camera instanceof THREE.PerspectiveCamera) {
           camera.near = maxDim * 0.01;
           camera.far = maxDim * 20;
-          camera.fov = 45;
+          // Responsive FOV
+          camera.fov = aspectRatio < 1 ? 55 : 45; // Wider FOV on mobile
           camera.updateProjectionMatrix();
         }
         
@@ -58,7 +84,7 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
       console.error('Failed to load splat file:', error);
       setError('Error loading splat file: ' + (error as Error).message);
     }
-  }, [modelData, camera]);
+  }, [modelData, camera, adaptiveSplatCount, size]);
 
   const { geometry, material } = useMemo(() => {
     if (!splatData) return { geometry: null, material: null };
@@ -68,27 +94,35 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     
     const mat = new GaussianSplatMaterial();
     mat.updateScreenSize(size.width, size.height);
+    mat.updateDevicePixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     
     return { geometry: geom, material: mat };
   }, [splatData, size]);
 
-  // Optimize WebGL for splat rendering
+  // Optimize WebGL for responsive rendering
   useEffect(() => {
     if (gl) {
       gl.sortObjects = false;
       gl.outputColorSpace = THREE.SRGBColorSpace;
       gl.setClearColor(0x000000, 1);
+      
+      // Adaptive pixel ratio based on performance
+      const adaptivePixelRatio = size.width * size.height > 1000000 ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+      gl.setPixelRatio(adaptivePixelRatio);
     }
-  }, [gl]);
+  }, [gl, size]);
 
   useFrame((state, delta) => {
     if (meshRef.current && autoRotate && !error && splatData) {
-      meshRef.current.rotation.y += delta * 0.5;
+      // Slower rotation on smaller screens for better viewing
+      const rotationSpeed = size.width < 768 ? 0.3 : 0.5;
+      meshRef.current.rotation.y += delta * rotationSpeed;
     }
     
     if (material) {
       material.updateScreenSize(size.width, size.height);
       material.updateTime(state.clock.elapsedTime);
+      material.updateViewportSize(viewport.width, viewport.height);
     }
   });
 

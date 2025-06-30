@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
@@ -99,7 +98,6 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
     );
   }
 
-  // Handle PLY files
   if (error) {
     return (
       <mesh position={[0, 0, 0]}>
@@ -137,22 +135,36 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
   );
 };
 
-const CameraController = () => {
-  const { camera } = useThree();
+const ResponsiveCameraController = () => {
+  const { camera, size } = useThree();
   
   useEffect(() => {
-    // Enhanced camera positioning for better splat viewing
-    camera.position.set(3, 3, 3);
+    // Responsive camera positioning
+    const aspectRatio = size.width / size.height;
+    const isMobile = size.width < 768;
+    
+    if (isMobile) {
+      camera.position.set(4, 4, 4);
+      if (camera instanceof THREE.PerspectiveCamera) {
+        camera.fov = 60; // Wider FOV for mobile
+      }
+    } else {
+      camera.position.set(3, 3, 3);
+      if (camera instanceof THREE.PerspectiveCamera) {
+        camera.fov = 45;
+      }
+    }
+    
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
     
-    // Set appropriate near/far planes for splat rendering
+    // Set appropriate near/far planes
     if (camera instanceof THREE.PerspectiveCamera) {
       camera.near = 0.01;
       camera.far = 1000;
       camera.updateProjectionMatrix();
     }
-  }, [camera]);
+  }, [camera, size]);
 
   return null;
 };
@@ -212,23 +224,24 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
             gl.domElement.addEventListener('webglcontextlost', handleContextLost);
             gl.domElement.addEventListener('webglcontextrestored', handleContextRestored);
             
-            // Enhanced WebGL settings for splat rendering
+            // Enhanced WebGL settings for responsive rendering
             gl.getContext().getExtension('OES_element_index_uint');
             gl.getContext().getExtension('WEBGL_depth_texture');
-            gl.sortObjects = false; // Important for proper transparency
+            gl.sortObjects = false;
           }}
           onError={handleError}
           gl={{ 
-            antialias: true, 
+            antialias: window.innerWidth > 1200, // Conditional antialiasing
             alpha: true,
             preserveDrawingBuffer: true,
             powerPreference: "high-performance",
             failIfMajorPerformanceCaveat: false,
-            precision: "highp"
+            precision: window.innerWidth > 768 ? "highp" : "mediump" // Adaptive precision
           }}
           camera={{ position: [3, 3, 3], fov: 60, near: 0.01, far: 1000 }}
+          dpr={[1, Math.min(window.devicePixelRatio, 2)]} // Adaptive pixel ratio
         >
-          <CameraController />
+          <ResponsiveCameraController />
           
           {/* Optimized lighting for splat rendering */}
           <ambientLight intensity={0.6} />
@@ -248,15 +261,29 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
             target={[0, 0, 0]}
             enableDamping={true}
             dampingFactor={0.05}
+            // Responsive touch settings
+            touches={{
+              ONE: THREE.TOUCH.ROTATE,
+              TWO: THREE.TOUCH.DOLLY_PAN
+            }}
+            mouseButtons={{
+              LEFT: THREE.MOUSE.ROTATE,
+              MIDDLE: THREE.MOUSE.DOLLY,
+              RIGHT: THREE.MOUSE.PAN
+            }}
           />
         </Canvas>
         
-        <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-sm">
+        <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs sm:text-sm">
           {filename} ({type.toUpperCase()})
         </div>
         
-        <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs">
+        <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs hidden sm:block">
           {type === 'splat' ? 'Gaussian Splat Viewer' : 'Point Cloud Viewer'} • Drag to orbit • Scroll to zoom
+        </div>
+        
+        <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs sm:hidden">
+          Touch to control
         </div>
       </div>
     </ErrorBoundary>

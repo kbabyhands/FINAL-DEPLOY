@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 
 export const gaussianSplatVertexShader = `
@@ -19,6 +18,8 @@ export const gaussianSplatVertexShader = `
   
   uniform vec2 screenSize;
   uniform float time;
+  uniform float devicePixelRatio;
+  uniform vec2 viewportSize;
   
   // Convert quaternion to rotation matrix
   mat3 getRotationMatrix(vec4 q) {
@@ -38,13 +39,16 @@ export const gaussianSplatVertexShader = `
     // Transform splat position to view space
     vec4 viewPos = modelViewMatrix * vec4(splatPosition, 1.0);
     
-    // Calculate splat size in screen space
+    // Calculate splat size in screen space with responsive scaling
     float distance = length(viewPos.xyz);
     float splatSize = max(splatScale.x, max(splatScale.y, splatScale.z));
     
-    // Adaptive sizing based on distance
-    float screenRadius = (splatSize * 100.0) / distance;
-    screenRadius = clamp(screenRadius, 2.0, 50.0);
+    // Responsive sizing based on screen size and distance
+    float screenFactor = min(screenSize.x, screenSize.y) / 800.0; // Normalize to 800px baseline
+    float responsiveScale = mix(0.5, 1.0, screenFactor); // Scale down on smaller screens
+    
+    float screenRadius = (splatSize * 80.0 * responsiveScale) / (distance * devicePixelRatio);
+    screenRadius = clamp(screenRadius, 1.5, 30.0); // Adjusted range for better mobile performance
     vRadius = screenRadius;
     
     // Create billboard quad
@@ -56,8 +60,9 @@ export const gaussianSplatVertexShader = `
     vec3 rotatedRight = rotation * right;
     vec3 rotatedUp = rotation * up;
     
-    // Offset the vertex position
-    vec3 offset = (rotatedRight * quadOffset.x + rotatedUp * quadOffset.y) * screenRadius * 0.01;
+    // Responsive offset scaling
+    float offsetScale = 0.01 * responsiveScale;
+    vec3 offset = (rotatedRight * quadOffset.x + rotatedUp * quadOffset.y) * screenRadius * offsetScale;
     vec4 finalViewPos = viewPos + vec4(offset, 0.0);
     
     gl_Position = projectionMatrix * finalViewPos;
@@ -72,21 +77,27 @@ export const gaussianSplatFragmentShader = `
   varying vec2 vUv;
   varying float vRadius;
   
+  uniform vec2 screenSize;
+  uniform float devicePixelRatio;
+  
   void main() {
     // Calculate distance from center
     float dist = length(vUv);
     
-    // Create smooth Gaussian falloff
-    float gaussian = exp(-4.0 * dist * dist);
+    // Responsive Gaussian falloff - sharper on high-DPI displays
+    float falloffIntensity = mix(3.0, 5.0, min(devicePixelRatio, 2.0));
+    float gaussian = exp(-falloffIntensity * dist * dist);
     
-    // Early discard for performance
-    if (gaussian < 0.01) discard;
+    // Adaptive early discard threshold for performance
+    float discardThreshold = devicePixelRatio > 1.5 ? 0.005 : 0.01;
+    if (gaussian < discardThreshold) discard;
     
-    // Apply opacity
+    // Apply opacity with responsive brightness
     float alpha = gaussian * vOpacity;
     
-    // Enhanced color with subtle brightness boost
-    vec3 color = vColor * (1.0 + 0.2 * gaussian);
+    // Screen-size adaptive color enhancement
+    float colorBoost = mix(1.1, 1.3, min(screenSize.x / 1920.0, 1.0));
+    vec3 color = vColor * (1.0 + 0.2 * gaussian * colorBoost);
     
     gl_FragColor = vec4(color, alpha);
   }
@@ -99,7 +110,9 @@ export class GaussianSplatMaterial extends THREE.ShaderMaterial {
       fragmentShader: gaussianSplatFragmentShader,
       uniforms: {
         screenSize: { value: new THREE.Vector2(1920, 1080) },
-        time: { value: 0.0 }
+        time: { value: 0.0 },
+        devicePixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
+        viewportSize: { value: new THREE.Vector2(10, 10) }
       },
       transparent: true,
       blending: THREE.NormalBlending,
@@ -115,6 +128,14 @@ export class GaussianSplatMaterial extends THREE.ShaderMaterial {
   
   updateTime(time: number) {
     this.uniforms.time.value = time;
+  }
+  
+  updateDevicePixelRatio(ratio: number) {
+    this.uniforms.devicePixelRatio.value = Math.min(ratio, 2);
+  }
+  
+  updateViewportSize(width: number, height: number) {
+    this.uniforms.viewportSize.value.set(width, height);
   }
 }
 
