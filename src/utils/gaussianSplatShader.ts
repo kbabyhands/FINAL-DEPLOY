@@ -14,8 +14,8 @@ export const gaussianSplatVertexShader = `
   varying vec3 vColor;
   varying float vOpacity;
   varying vec2 vUv;
-  varying float vRadius;
   varying vec2 vConic;
+  varying float vPower;
   
   uniform vec2 screenSize;
   uniform float focalX;
@@ -37,10 +37,10 @@ export const gaussianSplatVertexShader = `
   void main() {
     vColor = splatColor;
     vOpacity = splatOpacity;
-    vUv = quadOffset;
     
     // Transform splat center to view space
     vec4 viewPos = modelViewMatrix * vec4(splatPosition, 1.0);
+    float depth = -viewPos.z;
     
     // Create scaling matrix
     mat3 S = mat3(
@@ -52,60 +52,68 @@ export const gaussianSplatVertexShader = `
     // Create rotation matrix from quaternion
     mat3 R = quaternionToMatrix(splatRotation);
     
-    // Combine rotation and scaling
+    // Combine rotation and scaling to get covariance
     mat3 RS = R * S;
-    
-    // Transform to world coordinates, then to view space
-    mat3 modelView3x3 = mat3(modelViewMatrix);
     mat3 Sigma3D = transpose(RS) * RS;
+    
+    // Transform to view space
+    mat3 modelView3x3 = mat3(modelViewMatrix);
     mat3 Cov3D = modelView3x3 * Sigma3D * transpose(modelView3x3);
     
-    // Project to 2D covariance
+    // Project to 2D covariance using proper Jacobian
     float focal = focalX;
-    float t = viewPos.z;
-    float limx = 1.3 * screenSize.x;
-    float limy = 1.3 * screenSize.y;
-    float txtz = t * t;
+    float txtz = depth * depth;
     
     mat3 J = mat3(
-      focal / t, 0.0, -(focal * viewPos.x) / txtz,
-      0.0, focal / t, -(focal * viewPos.y) / txtz,
+      focal / depth, 0.0, -(focal * viewPos.x) / txtz,
+      0.0, focal / depth, -(focal * viewPos.y) / txtz,
       0.0, 0.0, 0.0
     );
     
-    mat3 W = transpose(J) * Cov3D * J;
+    mat3 W = J * Cov3D * transpose(J);
     
-    // Add small regularization
-    mat2 Cov2D = mat2(W[0][0] + 0.3, W[0][1], W[1][0], W[1][1] + 0.3);
+    // Add regularization to prevent degenerate cases
+    mat2 Cov2D = mat2(
+      W[0][0] + 0.3, W[0][1], 
+      W[1][0], W[1][1] + 0.3
+    );
     
     // Compute eigenvalues for ellipse size
     float det = Cov2D[0][0] * Cov2D[1][1] - Cov2D[0][1] * Cov2D[1][0];
     float trace = Cov2D[0][0] + Cov2D[1][1];
+    
+    if (det <= 0.0) {
+      gl_Position = vec4(0.0, 0.0, -1.0, 1.0); // Cull invalid splats
+      return;
+    }
+    
     float mid = 0.5 * trace;
-    float lambda1 = mid + sqrt(max(0.1, mid * mid - det));
-    float lambda2 = mid - sqrt(max(0.1, mid * mid - det));
+    float discriminant = max(0.1, mid * mid - det);
+    float lambda1 = mid + sqrt(discriminant);
+    float lambda2 = mid - sqrt(discriminant);
     
     float radius = ceil(3.0 * sqrt(max(lambda1, lambda2)));
-    vRadius = max(radius, 4.0);
+    radius = max(radius, 2.0);
     
-    // Compute conic parameters for fragment shader
+    // Compute inverse covariance for fragment shader
     float detInv = 1.0 / det;
     vConic = vec2(Cov2D[1][1] * detInv, -Cov2D[0][1] * detInv);
+    vPower = Cov2D[0][0] * detInv;
     
     // Project center to screen
     vec4 clipPos = projectionMatrix * viewPos;
     vec2 ndc = clipPos.xy / clipPos.w;
-    
-    // Convert to screen coordinates
     vec2 screenPos = (ndc * 0.5 + 0.5) * screenSize;
     
     // Apply billboard offset
-    vec2 offset = quadOffset * vRadius;
+    vec2 offset = quadOffset * radius;
     screenPos += offset;
+    vUv = quadOffset;
     
     // Convert back to NDC
     vec2 finalNDC = (screenPos / screenSize) * 2.0 - 1.0;
     
+    // Preserve depth
     gl_Position = vec4(finalNDC * clipPos.w, clipPos.z, clipPos.w);
   }
 `;
@@ -116,24 +124,30 @@ export const gaussianSplatFragmentShader = `
   varying vec3 vColor;
   varying float vOpacity;
   varying vec2 vUv;
-  varying float vRadius;
   varying vec2 vConic;
+  varying float vPower;
   
   void main() {
     vec2 d = vUv;
     
-    // Compute power using conic form
-    float power = -0.5 * (vConic.x * d.x * d.x + vConic.y * d.x * d.y + vConic.x * d.y * d.y);
+    // Compute Gaussian using proper quadratic form
+    float power = -0.5 * (vPower * d.x * d.x + 2.0 * vConic.y * d.x * d.y + vConic.x * d.y * d.y);
     
+    // Early discard for efficiency
     if (power > 0.0) discard;
+    if (power < -4.0) discard; // Prevent underflow
     
     float alpha = exp(power);
     
-    if (alpha < 0.02) discard;
+    // Apply opacity threshold
+    if (alpha < 0.01) discard;
     
     alpha *= vOpacity;
     
-    gl_FragColor = vec4(vColor * alpha, alpha);
+    // Gamma correction for better color representation
+    vec3 color = pow(vColor, vec3(2.2));
+    
+    gl_FragColor = vec4(color * alpha, alpha);
   }
 `;
 
@@ -148,7 +162,7 @@ export class GaussianSplatMaterial extends THREE.ShaderMaterial {
         focalY: { value: 1000.0 }
       },
       transparent: true,
-      blending: THREE.NormalBlending,
+      blending: THREE.AdditiveBlending, // Changed to additive for better splat blending
       depthWrite: false,
       depthTest: true,
       side: THREE.DoubleSide
@@ -157,9 +171,11 @@ export class GaussianSplatMaterial extends THREE.ShaderMaterial {
   
   updateScreenSize(width: number, height: number) {
     this.uniforms.screenSize.value.set(width, height);
-    // Update focal length based on screen size for proper projection
-    this.uniforms.focalX.value = width * 0.5;
-    this.uniforms.focalY.value = height * 0.5;
+    // Compute focal length based on field of view and screen size
+    const fov = 50 * Math.PI / 180; // 50 degrees in radians
+    const focal = (height / 2) / Math.tan(fov / 2);
+    this.uniforms.focalX.value = focal;
+    this.uniforms.focalY.value = focal;
   }
 }
 

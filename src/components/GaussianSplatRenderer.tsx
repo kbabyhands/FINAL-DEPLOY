@@ -14,7 +14,7 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
   const meshRef = useRef<THREE.Mesh>(null);
   const [splatData, setSplatData] = useState<SplatData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { camera, size } = useThree();
+  const { camera, size, gl } = useThree();
 
   useEffect(() => {
     console.log('Loading splat data, size:', modelData?.byteLength);
@@ -26,7 +26,7 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
 
     try {
       const loader = new SplatLoader();
-      const data = loader.load(modelData, 50000); // Increased for better quality
+      const data = loader.load(modelData, 100000); // Increased limit for better quality
       
       if (data) {
         console.log('Splat loaded successfully');
@@ -47,15 +47,15 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
         
         // Position camera appropriately
         const maxDim = Math.max(data.bounds.size.x, data.bounds.size.y, data.bounds.size.z);
-        const distance = maxDim * 2;
+        const distance = maxDim * 1.5; // Closer camera for better detail
         
-        camera.position.set(distance * 0.8, distance * 0.3, distance * 0.8);
+        camera.position.set(distance * 0.6, distance * 0.2, distance * 0.6);
         camera.lookAt(data.bounds.center.x, data.bounds.center.y, data.bounds.center.z);
         
         if (camera instanceof THREE.PerspectiveCamera) {
           camera.near = maxDim * 0.001;
-          camera.far = maxDim * 20;
-          camera.fov = 50; // Slightly narrower FOV for better view
+          camera.far = maxDim * 10;
+          camera.fov = 50;
           camera.updateProjectionMatrix();
         }
         
@@ -82,24 +82,24 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     return { geometry: geom, material: mat };
   }, [splatData, size]);
 
+  // Optimize WebGL settings for better performance
+  useEffect(() => {
+    if (gl) {
+      gl.sortObjects = false; // Important for transparency
+      gl.outputColorSpace = THREE.SRGBColorSpace;
+      gl.toneMapping = THREE.ACESFilmicToneMapping;
+      gl.toneMappingExposure = 1.0;
+    }
+  }, [gl]);
+
   useFrame((state, delta) => {
     if (meshRef.current && autoRotate && !error && splatData) {
-      meshRef.current.rotation.y += delta * 0.2; // Slower rotation
+      meshRef.current.rotation.y += delta * 0.3; // Slightly faster rotation
     }
     
     // Update material uniforms for responsive rendering
     if (material) {
       material.updateScreenSize(size.width, size.height);
-      
-      // Update camera-dependent uniforms
-      if (camera instanceof THREE.PerspectiveCamera) {
-        const aspect = size.width / size.height;
-        const fov = camera.fov * Math.PI / 180;
-        const focal = (size.height / 2) / Math.tan(fov / 2);
-        
-        material.uniforms.focalX.value = focal;
-        material.uniforms.focalY.value = focal;
-      }
     }
   });
 
