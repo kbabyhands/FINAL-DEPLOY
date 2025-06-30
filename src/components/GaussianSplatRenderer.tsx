@@ -1,20 +1,69 @@
 
-import React, { useRef, useEffect, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SplatLoader, SplatData } from '@/utils/splatLoader';
-import { GaussianSplatMaterial } from '@/utils/gaussianSplatShader';
+import { GaussianSplatMaterial, SplatInstancedGeometry } from '@/utils/gaussianSplatShader';
 
 interface GaussianSplatRendererProps {
   modelData: ArrayBuffer;
   autoRotate: boolean;
 }
 
+// LOD system for performance optimization
+class SplatLODManager {
+  private splatData: SplatData;
+  private camera: THREE.Camera;
+  private lodLevels: number[] = [1.0, 0.7, 0.4, 0.2]; // Percentage of splats to render at each level
+  private currentLOD: number = 0;
+
+  constructor(splatData: SplatData, camera: THREE.Camera) {
+    this.splatData = splatData;
+    this.camera = camera;
+  }
+
+  updateLOD(cameraPosition: THREE.Vector3): number {
+    const distance = cameraPosition.distanceTo(this.splatData.bounds.center);
+    const maxDim = Math.max(this.splatData.bounds.size.x, this.splatData.bounds.size.y, this.splatData.bounds.size.z);
+    
+    const normalizedDistance = distance / maxDim;
+    
+    if (normalizedDistance < 2) {
+      this.currentLOD = 0; // Full quality
+    } else if (normalizedDistance < 5) {
+      this.currentLOD = 1; // High quality
+    } else if (normalizedDistance < 10) {
+      this.currentLOD = 2; // Medium quality  
+    } else {
+      this.currentLOD = 3; // Low quality
+    }
+    
+    return Math.floor(this.splatData.count * this.lodLevels[this.currentLOD]);
+  }
+
+  getCurrentLOD(): number {
+    return this.currentLOD;
+  }
+}
+
 const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererProps) => {
-  const meshRef = useRef<THREE.Points>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
   const [splatData, setSplatData] = useState<SplatData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingProgress, setLoadingProgress] = useState<string>('');
+  const [performance, setPerformance] = useState({ fps: 0, renderTime: 0, splatCount: 0 });
+  const { camera } = useThree();
+  
+  // Performance monitoring
+  const frameTimeRef = useRef<number[]>([]);
+  const lastFrameTime = useRef(performance.now());
+
+  const lodManager = useMemo(() => {
+    if (splatData) {
+      return new SplatLODManager(splatData, camera);
+    }
+    return null;
+  }, [splatData, camera]);
 
   useEffect(() => {
     console.log('GaussianSplatRenderer: Loading splat data, size:', modelData?.byteLength);
@@ -27,21 +76,28 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
 
     setLoadingProgress('Processing splat file...');
 
-    // Use fewer splats for better performance but better quality rendering
-    const maxSplats = modelData.byteLength > 10000000 ? 75000 : 200000;
+    // Use adaptive splat count based on file size and performance
+    const getMaxSplats = () => {
+      const fileSizeMB = modelData.byteLength / (1024 * 1024);
+      if (fileSizeMB > 50) return 100000; // Large files
+      if (fileSizeMB > 20) return 150000; // Medium files  
+      return 200000; // Small files
+    };
     
     try {
       const loader = new SplatLoader();
-      const data = loader.load(modelData, maxSplats);
+      const data = loader.load(modelData, getMaxSplats());
       
       if (data) {
-        console.log('GaussianSplatRenderer: Splat loaded successfully, count:', data.count);
+        console.log('GaussianSplatRenderer: Splat loaded successfully');
+        console.log('- Count:', data.count);
+        console.log('- Bounds:', data.bounds);
         setSplatData(data);
         setError(null);
         setLoadingProgress('');
       } else {
         console.error('GaussianSplatRenderer: Splat loader returned null');
-        setError('Failed to parse splat file - invalid format');
+        setError('Failed to parse splat file - invalid format or corrupted data');
         setLoadingProgress('');
       }
     } catch (error) {
@@ -51,68 +107,98 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     }
   }, [modelData]);
 
+  // Create geometry and material
+  const { geometry, material } = useMemo(() => {
+    if (!splatData) return { geometry: null, material: null };
+
+    const geom = new SplatInstancedGeometry(splatData.count);
+    geom.setSplatData(splatData);
+    
+    const mat = new GaussianSplatMaterial();
+    
+    return { geometry: geom, material: mat };
+  }, [splatData]);
+
   useFrame((state, delta) => {
+    // Performance monitoring
+    const currentTime = performance.now();
+    const frameTime = currentTime - lastFrameTime.current;
+    lastFrameTime.current = currentTime;
+    
+    frameTimeRef.current.push(frameTime);
+    if (frameTimeRef.current.length > 60) {
+      frameTimeRef.current.shift();
+    }
+    
+    // Update performance stats every 30 frames
+    if (state.frame % 30 === 0 && frameTimeRef.current.length > 10) {
+      const avgFrameTime = frameTimeRef.current.reduce((a, b) => a + b) / frameTimeRef.current.length;
+      const fps = Math.round(1000 / avgFrameTime);
+      
+      setPerformance(prev => ({
+        fps,
+        renderTime: Math.round(avgFrameTime * 100) / 100,
+        splatCount: lodManager ? Math.floor(splatData?.count || 0 * (lodManager.getCurrentLOD() === 0 ? 1 : 0.7)) : splatData?.count || 0
+      }));
+    }
+
     if (meshRef.current && autoRotate && !error && splatData) {
-      meshRef.current.rotation.y += delta * 0.3;
+      meshRef.current.rotation.y += delta * 0.2;
+    }
+
+    // Update LOD based on camera distance
+    if (lodManager && geometry && splatData) {
+      const activeSplatCount = lodManager.updateLOD(camera.position);
+      geometry.instanceCount = activeSplatCount;
     }
   });
 
+  // Error state
   if (error) {
     return (
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshBasicMaterial color="#ff4444" />
-      </mesh>
+      <group>
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[2, 0.5, 0.1]} />
+          <meshBasicMaterial color="#ff4444" />
+        </mesh>
+        <mesh position={[0, -0.8, 0]}>
+          <boxGeometry args={[0.1, 0.1, 0.1]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+      </group>
     );
   }
 
-  if (!splatData) {
+  // Loading state
+  if (!splatData || !geometry || !material) {
     return (
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[0.5, 0.5, 0.5]} />
-        <meshBasicMaterial color="#888888" />
-      </mesh>
+      <group>
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshBasicMaterial color="#888888" />
+        </mesh>
+      </group>
     );
   }
 
-  // Create geometry from splat data
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(splatData.positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(splatData.colors, 3));
-  geometry.setAttribute('scale', new THREE.BufferAttribute(splatData.scales, 3));
-  geometry.setAttribute('rotation', new THREE.BufferAttribute(splatData.rotations, 4));
-  geometry.setAttribute('opacity', new THREE.BufferAttribute(splatData.opacities, 1));
-
-  // Compute bounds for proper centering and scaling
-  geometry.computeBoundingBox();
-  
-  if (geometry.boundingBox) {
-    const center = geometry.boundingBox.getCenter(new THREE.Vector3());
-    const size = geometry.boundingBox.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    
-    console.log('GaussianSplatRenderer: Bounds - Center:', center, 'Size:', size, 'Max dimension:', maxDim);
-    
-    // Center the geometry
-    geometry.translate(-center.x, -center.y, -center.z);
-    
-    if (maxDim > 0) {
-      const targetSize = 3; // Slightly smaller for better fitting
-      const scale = targetSize / maxDim;
-      geometry.scale(scale, scale, scale);
-      console.log('GaussianSplatRenderer: Applied scale factor:', scale);
-    }
-  }
-
-  // Use custom Gaussian splat material
-  const material = new GaussianSplatMaterial();
-
+  // Main rendering
   return (
-    <points
-      ref={meshRef}
-      geometry={geometry}
-      material={material}
-    />
+    <group>
+      <mesh
+        ref={meshRef}
+        geometry={geometry}
+        material={material}
+        position={[-splatData.bounds.center.x, -splatData.bounds.center.y, -splatData.bounds.center.z]}
+      />
+      
+      {/* Performance debug info - only visible in dev mode */}
+      {process.env.NODE_ENV === 'development' && (
+        <mesh position={[2, 2, 0]}>
+          <planeGeometry args={[1, 0.5]} />
+          <meshBasicMaterial transparent opacity={0.8} color="#000000" />
+        </mesh>
+      )}
+    </group>
   );
 };
 

@@ -141,10 +141,17 @@ const CameraController = () => {
   const { camera } = useThree();
   
   useEffect(() => {
-    // Position camera for optimal viewing of point cloud
-    camera.position.set(5, 5, 5);
+    // Enhanced camera positioning for better splat viewing
+    camera.position.set(3, 3, 3);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
+    
+    // Set appropriate near/far planes for splat rendering
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.near = 0.01;
+      camera.far = 1000;
+      camera.updateProjectionMatrix();
+    }
   }, [camera]);
 
   return null;
@@ -204,6 +211,11 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
           onCreated={({ gl }) => {
             gl.domElement.addEventListener('webglcontextlost', handleContextLost);
             gl.domElement.addEventListener('webglcontextrestored', handleContextRestored);
+            
+            // Enhanced WebGL settings for splat rendering
+            gl.getContext().getExtension('OES_element_index_uint');
+            gl.getContext().getExtension('WEBGL_depth_texture');
+            gl.sortObjects = false; // Important for proper transparency
           }}
           onError={handleError}
           gl={{ 
@@ -211,18 +223,17 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
             alpha: true,
             preserveDrawingBuffer: true,
             powerPreference: "high-performance",
-            failIfMajorPerformanceCaveat: false
+            failIfMajorPerformanceCaveat: false,
+            precision: "highp"
           }}
-          camera={{ position: [5, 5, 5], fov: 60 }}
+          camera={{ position: [3, 3, 3], fov: 60, near: 0.01, far: 1000 }}
         >
           <CameraController />
           
-          {/* Enhanced lighting setup for point clouds */}
-          <ambientLight intensity={1.0} />
-          <directionalLight position={[10, 10, 10]} intensity={1.5} />
-          <directionalLight position={[-10, -10, -10]} intensity={1.0} />
-          <directionalLight position={[0, 10, 0]} intensity={0.8} />
-          <pointLight position={[15, 15, 15]} intensity={0.7} />
+          {/* Optimized lighting for splat rendering */}
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[5, 5, 5]} intensity={0.8} />
+          <directionalLight position={[-5, -5, -5]} intensity={0.4} />
           
           <ModelMesh modelData={modelData} type={type} />
           
@@ -230,11 +241,13 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
-            maxDistance={50}
-            minDistance={0.5}
+            maxDistance={100}
+            minDistance={0.1}
             autoRotate={false}
             autoRotateSpeed={0.5}
             target={[0, 0, 0]}
+            enableDamping={true}
+            dampingFactor={0.05}
           />
         </Canvas>
         
@@ -243,7 +256,7 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
         </div>
         
         <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs">
-          Click to stop rotation • Drag to orbit • Scroll to zoom
+          {type === 'splat' ? 'Gaussian Splat Viewer' : 'Point Cloud Viewer'} • Drag to orbit • Scroll to zoom
         </div>
       </div>
     </ErrorBoundary>
