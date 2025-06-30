@@ -38,10 +38,20 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
           geo.computeBoundingBox();
           geo.computeBoundingSphere();
           
-          // Center the geometry
+          // Center and scale the geometry
           if (geo.boundingBox) {
             const center = geo.boundingBox.getCenter(new THREE.Vector3());
+            const size = geo.boundingBox.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            
+            // Center the geometry
             geo.translate(-center.x, -center.y, -center.z);
+            
+            // Scale to fit in a reasonable size (normalize to ~2 units)
+            if (maxDim > 0) {
+              const scale = 2 / maxDim;
+              geo.scale(scale, scale, scale);
+            }
           }
           
           setGeometry(geo);
@@ -71,7 +81,7 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
 
   useFrame((state, delta) => {
     if (meshRef.current && autoRotate && !error && geometry) {
-      meshRef.current.rotation.y += delta * 0.2;
+      meshRef.current.rotation.y += delta * 0.3;
     }
   });
 
@@ -93,12 +103,13 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
     );
   }
 
-  // Create material for point cloud
+  // Create material for point cloud with better visibility
   const material = new THREE.PointsMaterial({
-    size: 0.02,
+    size: 0.015,
     vertexColors: true,
     sizeAttenuation: true,
-    alphaTest: 0.1
+    alphaTest: 0.1,
+    transparent: false
   });
 
   return (
@@ -115,9 +126,10 @@ const CameraController = () => {
   const { camera } = useThree();
   
   useEffect(() => {
-    // Position camera for optimal viewing
-    camera.position.set(0, 0, 3);
+    // Position camera for optimal viewing of centered model
+    camera.position.set(3, 3, 3);
     camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
   }, [camera]);
 
   return null;
@@ -186,12 +198,16 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
             powerPreference: "high-performance",
             failIfMajorPerformanceCaveat: false
           }}
+          camera={{ position: [3, 3, 3], fov: 60 }}
         >
           <CameraController />
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[10, 10, 5]} intensity={1} />
-          <directionalLight position={[-10, -10, -5]} intensity={0.5} />
-          <directionalLight position={[0, 10, 0]} intensity={0.3} />
+          
+          {/* Enhanced lighting setup */}
+          <ambientLight intensity={0.8} />
+          <directionalLight position={[5, 5, 5]} intensity={1.2} />
+          <directionalLight position={[-5, -5, -5]} intensity={0.8} />
+          <directionalLight position={[0, 10, 0]} intensity={0.6} />
+          <pointLight position={[10, 10, 10]} intensity={0.5} />
           
           <ModelMesh modelData={modelData} type={type} />
           
@@ -199,10 +215,11 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
-            maxDistance={20}
+            maxDistance={50}
             minDistance={0.5}
             autoRotate={false}
             autoRotateSpeed={0.5}
+            target={[0, 0, 0]}
           />
         </Canvas>
         
