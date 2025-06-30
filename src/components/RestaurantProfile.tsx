@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -5,20 +6,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Restaurant } from '@/types';
-import { validateRestaurantData, sanitizeInput, ValidationError } from '@/utils/validation';
-import { logger } from '@/utils/logger';
+
+interface Restaurant {
+  id: string;
+  name: string;
+  description?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+}
 
 interface RestaurantProfileProps {
   restaurant: Restaurant | null;
   onUpdate: (restaurant: Restaurant) => void;
-  isLoading?: boolean;
 }
 
-const RestaurantProfile = ({ restaurant, onUpdate, isLoading = false }: RestaurantProfileProps) => {
+const RestaurantProfile = ({ restaurant, onUpdate }: RestaurantProfileProps) => {
   const [editing, setEditing] = useState(!restaurant);
   const [loading, setLoading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [formData, setFormData] = useState({
     name: restaurant?.name || '',
     description: restaurant?.description || '',
@@ -28,37 +33,9 @@ const RestaurantProfile = ({ restaurant, onUpdate, isLoading = false }: Restaura
   });
   const { toast } = useToast();
 
-  const getFieldError = (fieldName: string): string | undefined => {
-    return validationErrors.find(error => error.field === fieldName)?.message;
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    const sanitizedValue = sanitizeInput(value);
-    setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
-    
-    // Clear validation errors for this field when user starts typing
-    if (validationErrors.some(error => error.field === field)) {
-      setValidationErrors(prev => prev.filter(error => error.field !== field));
-    }
-  };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate form data
-    const validation = validateRestaurantData(formData);
-    if (!validation.isValid) {
-      setValidationErrors(validation.errors);
-      toast({
-        title: "Validation Error",
-        description: "Please fix the errors below",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setLoading(true);
-    setValidationErrors([]);
 
     try {
       if (restaurant) {
@@ -72,7 +49,6 @@ const RestaurantProfile = ({ restaurant, onUpdate, isLoading = false }: Restaura
 
         if (error) throw error;
         onUpdate(data);
-        logger.info('Restaurant updated successfully');
       } else {
         // Create new restaurant
         const { data: userData } = await supabase.auth.getUser();
@@ -86,7 +62,6 @@ const RestaurantProfile = ({ restaurant, onUpdate, isLoading = false }: Restaura
 
         if (error) throw error;
         onUpdate(data);
-        logger.info('Restaurant created successfully');
       }
 
       setEditing(false);
@@ -95,7 +70,6 @@ const RestaurantProfile = ({ restaurant, onUpdate, isLoading = false }: Restaura
         description: "Restaurant profile saved successfully"
       });
     } catch (error: any) {
-      logger.error('Error saving restaurant:', error);
       toast({
         title: "Error",
         description: error.message,
@@ -116,7 +90,6 @@ const RestaurantProfile = ({ restaurant, onUpdate, isLoading = false }: Restaura
         email: restaurant.email || ''
       });
       setEditing(false);
-      setValidationErrors([]);
     }
   };
 
@@ -145,73 +118,47 @@ const RestaurantProfile = ({ restaurant, onUpdate, isLoading = false }: Restaura
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                className={getFieldError('name') ? 'border-red-500' : ''}
               />
-              {getFieldError('name') && (
-                <p className="text-sm text-red-500 mt-1">{getFieldError('name')}</p>
-              )}
             </div>
-            
             <div>
               <Label htmlFor="description">Description</Label>
               <Input
                 id="description"
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Tell customers about your restaurant"
-                className={getFieldError('description') ? 'border-red-500' : ''}
               />
-              {getFieldError('description') && (
-                <p className="text-sm text-red-500 mt-1">{getFieldError('description')}</p>
-              )}
             </div>
-            
             <div>
               <Label htmlFor="address">Address</Label>
               <Input
                 id="address"
                 value={formData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                className={getFieldError('address') ? 'border-red-500' : ''}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               />
-              {getFieldError('address') && (
-                <p className="text-sm text-red-500 mt-1">{getFieldError('address')}</p>
-              )}
             </div>
-            
             <div>
               <Label htmlFor="phone">Phone</Label>
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="e.g., +1 (555) 123-4567"
-                className={getFieldError('phone') ? 'border-red-500' : ''}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
-              {getFieldError('phone') && (
-                <p className="text-sm text-red-500 mt-1">{getFieldError('phone')}</p>
-              )}
             </div>
-            
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className={getFieldError('email') ? 'border-red-500' : ''}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
-              {getFieldError('email') && (
-                <p className="text-sm text-red-500 mt-1">{getFieldError('email')}</p>
-              )}
             </div>
-            
             <div className="flex gap-2">
-              <Button type="submit" disabled={loading || isLoading}>
-                {loading || isLoading ? 'Saving...' : 'Save'}
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Saving...' : 'Save'}
               </Button>
               {restaurant && (
                 <Button type="button" variant="outline" onClick={handleCancel}>

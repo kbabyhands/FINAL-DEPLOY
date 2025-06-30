@@ -1,14 +1,13 @@
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import MenuCardContent from "./MenuCardContent";
-import DietaryBadges from "./DietaryBadges";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Leaf, Wheat, Shield, Nut, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import ReviewsSection from "./ReviewsSection";
+import GaussianSplatViewer from "./GaussianSplatViewer";
 import { useMenuItemViews } from "@/hooks/useMenuItemViews";
-import ThreeDModelViewer from "./ThreeDModelViewer";
-import { useState } from "react";
-import { FileProcessor } from "@/utils/fileProcessor";
 
 interface MenuCardProps {
   menuItemId: string;
@@ -21,7 +20,7 @@ interface MenuCardProps {
   isGlutenFree?: boolean;
   isNutFree?: boolean;
   imageUrl?: string;
-  modelUrl?: string;
+  splatUrl?: string;
 }
 
 const MenuCard = ({ 
@@ -35,12 +34,11 @@ const MenuCard = ({
   isGlutenFree, 
   isNutFree,
   imageUrl,
-  modelUrl
+  splatUrl
 }: MenuCardProps) => {
   const { trackView } = useMenuItemViews();
   const hasTrackedView = useRef(false);
-  const [modelData, setModelData] = useState<ArrayBuffer | null>(null);
-  const [modelError, setModelError] = useState<string | null>(null);
+  const [showSplatViewer, setShowSplatViewer] = useState(false);
 
   // Track view when component mounts (only once per session)
   useEffect(() => {
@@ -48,158 +46,157 @@ const MenuCard = ({
       const timer = setTimeout(() => {
         trackView(menuItemId);
         hasTrackedView.current = true;
-      }, 1000);
+      }, 1000); // Wait 1 second to ensure the user actually viewed the item
 
       return () => clearTimeout(timer);
     }
   }, [menuItemId, trackView]);
 
-  // Load 3D model data if model URL is provided
-  useEffect(() => {
-    if (modelUrl) {
-      console.log('MenuCard: Loading 3D model from:', modelUrl);
-      const loadModel = async () => {
-        try {
-          const response = await fetch(modelUrl);
-          
-          if (!response.ok) {
-            throw new Error(`Failed to fetch: ${response.status}`);
-          }
-          
-          const arrayBuffer = await response.arrayBuffer();
-          
-          if (arrayBuffer.byteLength === 0) {
-            throw new Error('Empty file');
-          }
-          
-          console.log('MenuCard: Raw file loaded, size:', arrayBuffer.byteLength);
-          
-          // Create a File object from the ArrayBuffer to use with FileProcessor
-          const filename = modelUrl.split('/').pop() || 'model.ply';
-          const file = new File([arrayBuffer], filename);
-          
-          console.log('MenuCard: Processing file with FileProcessor...');
-          const processedFile = await FileProcessor.processFile(file);
-          
-          console.log('MenuCard: File processed successfully, type:', processedFile.type, 'size:', processedFile.data.byteLength);
-          setModelData(processedFile.data);
-          setModelError(null);
-        } catch (error) {
-          console.error('MenuCard: Failed to load/process 3D model:', error);
-          setModelError(error instanceof Error ? error.message : 'Load failed');
-        }
-      };
-      loadModel();
-    }
-  }, [modelUrl]);
+  const getDietaryBadges = () => {
+    const badges = [];
+    if (isVegetarian) badges.push({ icon: Leaf, label: "Vegetarian", color: "bg-green-100 text-green-800" });
+    if (isVegan) badges.push({ icon: Leaf, label: "Vegan", color: "bg-green-200 text-green-900" });
+    if (isGlutenFree) badges.push({ icon: Wheat, label: "Gluten Free", color: "bg-yellow-100 text-yellow-800" });
+    if (isNutFree) badges.push({ icon: Nut, label: "Nut Free", color: "bg-orange-100 text-orange-800" });
+    return badges;
+  };
 
-  const renderPreview = () => {
-    // If we have a 3D model, show it
-    if (modelUrl) {
-      if (modelError) {
-        return (
-          <div className="w-full h-48 bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
-            <div className="text-center">
-              <span className="text-red-600 text-sm font-semibold">3D Model Error</span>
-              <p className="text-red-500 text-xs">{modelError}</p>
-            </div>
-          </div>
-        );
-      }
-      
-      if (modelData) {
-        return (
-          <div className="w-full h-48 relative">
-            <ThreeDModelViewer
-              modelData={modelData}
-              filename={title}
-              type="ply"
-            />
-          </div>
-        );
-      }
-      
-      // Loading state
-      return (
-        <div className="w-full h-48 bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto mb-2"></div>
-            <span className="text-purple-600 text-sm font-semibold">Loading 3D...</span>
-          </div>
-        </div>
-      );
-    }
-    
-    // Fall back to 2D image
-    if (imageUrl) {
-      return (
-        <img 
-          src={imageUrl} 
-          alt={title}
-          className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-        />
-      );
-    }
-    
-    // Default placeholder
-    return (
-      <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-        <span className="text-blue-600 text-lg font-semibold">No Preview</span>
-      </div>
-    );
+  const formatAllergens = (allergens: string[]) => {
+    if (!allergens || allergens.length === 0) return "None";
+    return allergens.map(allergen => 
+      allergen.charAt(0).toUpperCase() + allergen.slice(1)
+    ).join(", ");
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
-          <div className="relative overflow-hidden rounded-t-lg">
-            {renderPreview()}
-            <div className="absolute top-2 right-2">
-              <Badge variant="secondary" className="bg-white/90 text-black font-bold">
-                ${price.toFixed(2)}
-              </Badge>
-            </div>
-            {modelUrl && (
-              <div className="absolute top-2 left-2">
-                <Badge variant="outline" className="bg-white/90 text-purple-600 font-bold">
-                  3D
+    <>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
+            <div className="relative overflow-hidden rounded-t-lg">
+              {imageUrl ? (
+                <img 
+                  src={imageUrl} 
+                  alt={title}
+                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                  <span className="text-blue-600 text-lg font-semibold">No Image</span>
+                </div>
+              )}
+              <div className="absolute top-2 right-2">
+                <Badge variant="secondary" className="bg-white/90 text-black font-bold">
+                  ${price.toFixed(2)}
                 </Badge>
               </div>
-            )}
+            </div>
+            
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
+              <p className="text-gray-600 text-sm mb-3 line-clamp-3">{description}</p>
+              
+              {/* Dietary badges */}
+              <div className="flex flex-wrap gap-1 mb-2">
+                {getDietaryBadges().map((badge, index) => {
+                  const IconComponent = badge.icon;
+                  return (
+                    <div key={index} className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${badge.color}`}>
+                      <IconComponent className="w-3 h-3" />
+                      <span>{badge.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </DialogTrigger>
+        
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
+            <DialogDescription className="text-lg">
+              {description}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {/* Image/Splat Section */}
+            <div className="space-y-4">
+              {imageUrl && (
+                <img 
+                  src={imageUrl} 
+                  alt={title}
+                  className="w-full h-64 object-cover rounded-lg"
+                />
+              )}
+              
+              {splatUrl && (
+                <Button
+                  onClick={() => setShowSplatViewer(true)}
+                  className="w-full flex items-center gap-2"
+                  variant="outline"
+                >
+                  <Eye className="w-4 h-4" />
+                  View 3D Dish
+                </Button>
+              )}
+            </div>
+            
+            {/* Details Section */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <Badge variant="outline" className="text-2xl font-bold px-4 py-2">
+                  ${price.toFixed(2)}
+                </Badge>
+              </div>
+              
+              {/* Dietary Information */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-lg">Dietary Information</h4>
+                <div className="flex flex-wrap gap-2">
+                  {getDietaryBadges().map((badge, index) => {
+                    const IconComponent = badge.icon;
+                    return (
+                      <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${badge.color}`}>
+                        <IconComponent className="w-4 h-4" />
+                        <span className="font-medium">{badge.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              {/* Allergen Information */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-lg flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Allergen Information
+                </h4>
+                <p className="text-gray-700">
+                  <strong>Contains:</strong> {formatAllergens(allergens)}
+                </p>
+              </div>
+            </div>
           </div>
           
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
-            <p className="text-gray-600 text-sm mb-3 line-clamp-3">{description}</p>
-            
-            <DietaryBadges
-              isVegetarian={isVegetarian}
-              isVegan={isVegan}
-              isGlutenFree={isGlutenFree}
-              isNutFree={isNutFree}
-              size="sm"
-            />
-          </CardContent>
-        </Card>
-      </DialogTrigger>
-      
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
-        <MenuCardContent
-          menuItemId={menuItemId}
-          title={title}
-          description={description}
-          price={price}
-          allergens={allergens}
-          isVegetarian={isVegetarian}
-          isVegan={isVegan}
-          isGlutenFree={isGlutenFree}
-          isNutFree={isNutFree}
-          imageUrl={imageUrl}
-          modelUrl={modelUrl}
+          {/* Reviews Section */}
+          <div className="mt-8">
+            <ReviewsSection menuItemId={menuItemId} menuItemTitle={title} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Gaussian Splat Viewer Modal */}
+      {splatUrl && (
+        <GaussianSplatViewer
+          isOpen={showSplatViewer}
+          onClose={() => setShowSplatViewer(false)}
+          splatUrl={splatUrl}
+          itemTitle={title}
         />
-      </DialogContent>
-    </Dialog>
+      )}
+    </>
   );
 };
 
