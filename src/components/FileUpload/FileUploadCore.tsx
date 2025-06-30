@@ -57,8 +57,8 @@ export const useFileUploadCore = ({
       const SUPABASE_UPLOAD_LIMIT = 50 * 1024 * 1024; // 50MB is the practical limit
       if (file.size > SUPABASE_UPLOAD_LIMIT) {
         console.error('File size exceeds Supabase limit:', file.size, 'vs', SUPABASE_UPLOAD_LIMIT);
-        if (bucket === 'gaussian-splats') {
-          throw new Error(`File size (${fileSizeFormatted}) exceeds Supabase's upload limit of ${formatFileSize(SUPABASE_UPLOAD_LIMIT)}. For Gaussian splat files, please:\n\n1. Use PLY compression tools to reduce file size\n2. Create ZIP archives of PLY files for better compression\n3. Reduce point density in your 3D scanning software\n4. Consider splitting large scenes into smaller sections\n\nTarget file size should be under 50MB for reliable uploads.`);
+        if (bucket === 'gaussian-splats' || bucket === '3d-models') {
+          throw new Error(`File size (${fileSizeFormatted}) exceeds Supabase's upload limit of ${formatFileSize(SUPABASE_UPLOAD_LIMIT)}. For 3D model files, please:\n\n1. Use PLY compression tools to reduce file size\n2. Create ZIP archives of PLY files for better compression\n3. Reduce point density in your 3D scanning software\n4. Consider splitting large scenes into smaller sections\n\nTarget file size should be under 50MB for reliable uploads.`);
         } else {
           throw new Error(`File size (${fileSizeFormatted}) exceeds the upload limit of ${formatFileSize(SUPABASE_UPLOAD_LIMIT)}. Please compress your file and try again.`);
         }
@@ -83,9 +83,9 @@ export const useFileUploadCore = ({
       let fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       
       // Add descriptive prefix for ZIP files containing PLY data
-      if (fileExt === 'zip' && bucket === 'gaussian-splats') {
+      if (fileExt === 'zip' && (bucket === 'gaussian-splats' || bucket === '3d-models')) {
         fileName = `compressed-ply-${Date.now()}-${Math.random().toString(36).substring(2)}.zip`;
-        console.log('ZIP file detected for Gaussian splats, using descriptive filename:', fileName);
+        console.log('ZIP file detected for 3D models, using descriptive filename:', fileName);
       }
       
       const filePath = fileName;
@@ -137,7 +137,7 @@ export const useFileUploadCore = ({
         if (uploadError.message?.includes('Payload too large') || 
             uploadError.message?.includes('exceeded the maximum allowed size') ||
             uploadError.message?.includes('413')) {
-          if (bucket === 'gaussian-splats') {
+          if (bucket === 'gaussian-splats' || bucket === '3d-models') {
             throw new Error(`Server upload limit exceeded (${fileSizeFormatted}). Supabase has a ${formatFileSize(SUPABASE_UPLOAD_LIMIT)} upload limit.\n\nTo fix this:\n• Use PLY compression tools\n• Create ZIP archives of PLY files\n• Reduce point cloud density\n• Split large models into sections\n• Target files under 50MB`);
           } else {
             throw new Error(`Upload limit exceeded (${fileSizeFormatted}). Please compress your file to under ${formatFileSize(SUPABASE_UPLOAD_LIMIT)}.`);
@@ -156,7 +156,7 @@ export const useFileUploadCore = ({
         
         // Handle file type errors
         if (uploadError.message?.includes('Invalid file type') || uploadError.message?.includes('not allowed')) {
-          throw new Error('File type not allowed. Please check that your ZIP file contains PLY or Gaussian splat data.');
+          throw new Error('File type not allowed. Please check that your ZIP file contains PLY or 3D model data.');
         }
         
         throw new Error(`Upload failed: ${uploadError.message}`);
@@ -199,13 +199,13 @@ export const useFileUploadCore = ({
       let errorMessage = error.message;
       
       if (error.message?.includes('Payload too large') || error.message?.includes('413')) {
-        if (bucket === 'gaussian-splats') {
-          errorMessage = `Upload failed: File too large\n\nSupabase has a 50MB upload limit. For Gaussian splats:\n• Compress with PLY tools\n• Create ZIP archives\n• Reduce point density\n• Split large models\n• Target under 50MB`;
+        if (bucket === 'gaussian-splats' || bucket === '3d-models') {
+          errorMessage = `Upload failed: File too large\n\nSupabase has a 50MB upload limit. For 3D models:\n• Compress with PLY tools\n• Create ZIP archives\n• Reduce point density\n• Split large models\n• Target under 50MB`;
         } else {
           errorMessage = `Upload failed: File too large. Please compress to under 50MB.`;
         }
       } else if (error.message?.includes('Invalid file type')) {
-        errorMessage = 'Invalid file type. Please ensure your ZIP file contains PLY or Gaussian splat data.';
+        errorMessage = 'Invalid file type. Please ensure your file contains valid 3D model data.';
       } else if (error.message?.includes('Duplicate')) {
         errorMessage = 'A file with this name already exists. Please rename your file and try again.';
       } else if (error.message?.includes('auth') || error.message?.includes('JWT')) {

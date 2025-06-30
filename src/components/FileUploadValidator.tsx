@@ -39,10 +39,10 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
   });
   
   if (file.size > maxSize) {
-    if (bucket === 'gaussian-splats') {
+    if (bucket === 'gaussian-splats' || bucket === '3d-models') {
       return {
         valid: false,
-        message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}. For Gaussian splat files, please compress using PLY compression tools, reduce point density, or split large models into smaller sections.`
+        message: `File size (${formatFileSize(file.size)}) exceeds the maximum allowed size of ${formatFileSize(maxSize)}. For 3D model files, please compress using PLY compression tools, reduce point density, or split large models into smaller sections.`
       };
     }
     
@@ -52,8 +52,8 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
     };
   }
 
-  // Check for Gaussian splat specific formats
-  if (bucket === 'gaussian-splats') {
+  // Check for 3D model specific formats
+  if (bucket === 'gaussian-splats' || bucket === '3d-models') {
     const validExtensions = ['.splat', '.ply', '.gz', '.zip'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     
@@ -62,7 +62,7 @@ export const validateFile = (file: File, bucket: FileUploadValidatorProps['bucke
     if (!validExtensions.includes(fileExtension)) {
       return {
         valid: false,
-        message: 'Please upload a valid Gaussian splat file (.splat, .ply, .gz, or .zip format).'
+        message: 'Please upload a valid 3D model file (.splat, .ply, .gz, or .zip format).'
       };
     }
 

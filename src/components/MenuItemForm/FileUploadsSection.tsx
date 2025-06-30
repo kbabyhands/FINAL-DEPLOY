@@ -34,7 +34,7 @@ const FileUploadsSection = ({
       
       <div className="w-full">
         <FileUpload
-          bucket="menu-models"
+          bucket="3d-models"
           currentUrl={modelUrl}
           onUpload={onModelUpload}
           onRemove={onModelRemove}
