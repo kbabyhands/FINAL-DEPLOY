@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect, useState, Suspense } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import * as THREE from 'three';
 import JSZip from 'jszip';
@@ -18,49 +18,63 @@ interface ThreeDModelViewerProps {
 
 interface ModelProps {
   modelUrl: string;
+  onLoadingChange: (loading: boolean) => void;
+  onError: (error: string) => void;
 }
 
-const Model = ({ modelUrl }: ModelProps) => {
+const Model = ({ modelUrl, onLoadingChange, onError }: ModelProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadModel = async () => {
+      console.log('Starting to load model:', modelUrl);
+      
       try {
-        setLoading(true);
-        setError(null);
+        onLoadingChange(true);
+        onError('');
 
         let processedUrl = modelUrl;
 
         // Check if it's a ZIP file
         if (modelUrl.toLowerCase().endsWith('.zip')) {
+          console.log('Processing ZIP file...');
+          
           const response = await fetch(modelUrl);
           if (!response.ok) {
-            throw new Error(`Failed to fetch ZIP file: ${response.statusText}`);
+            throw new Error(`Failed to fetch ZIP file: ${response.status} ${response.statusText}`);
           }
 
           const arrayBuffer = await response.arrayBuffer();
+          console.log('ZIP file downloaded, size:', arrayBuffer.byteLength);
+          
           const zip = new JSZip();
           const zipData = await zip.loadAsync(arrayBuffer);
 
           // Find the first PLY file in the ZIP
           const plyFile = Object.keys(zipData.files).find(filename =>
-            filename.toLowerCase().endsWith('.ply')
+            filename.toLowerCase().endsWith('.ply') && !zipData.files[filename].dir
           );
 
           if (!plyFile) {
-            throw new Error('No PLY file found in the ZIP archive');
+            const fileList = Object.keys(zipData.files).filter(f => !zipData.files[f].dir);
+            throw new Error(`No PLY file found in ZIP. Found files: ${fileList.join(', ')}`);
           }
 
+          console.log('Found PLY file in ZIP:', plyFile);
+          
           const plyData = await zipData.files[plyFile].async('arraybuffer');
+          console.log('Extracted PLY data, size:', plyData.byteLength);
+          
           const plyBlob = new Blob([plyData], { type: 'application/octet-stream' });
           processedUrl = URL.createObjectURL(plyBlob);
         }
 
+        console.log('Loading PLY file from:', processedUrl);
         const loader = new PLYLoader();
         const loadedGeometry = await loader.load(processedUrl);
+        
+        console.log('PLY loaded successfully, vertices:', loadedGeometry.getAttribute('position')?.count);
         setGeometry(loadedGeometry);
 
         // Clean up blob URL if we created one
@@ -68,15 +82,16 @@ const Model = ({ modelUrl }: ModelProps) => {
           URL.revokeObjectURL(processedUrl);
         }
       } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
         console.error('Error loading 3D model:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load 3D model');
+        onError(`Failed to load 3D model: ${errorMessage}`);
       } finally {
-        setLoading(false);
+        onLoadingChange(false);
       }
     };
 
     loadModel();
-  }, [modelUrl]);
+  }, [modelUrl, onLoadingChange, onError]);
 
   useFrame(() => {
     if (meshRef.current) {
@@ -84,12 +99,8 @@ const Model = ({ modelUrl }: ModelProps) => {
     }
   });
 
-  if (loading) {
-    return null; // Loading handled by parent
-  }
-
-  if (error || !geometry) {
-    return null; // Error handled by parent
+  if (!geometry) {
+    return null;
   }
 
   return (
@@ -103,7 +114,7 @@ const Model = ({ modelUrl }: ModelProps) => {
 
 const ThreeDModelViewer = ({ modelUrl, title, className = '' }: ThreeDModelViewerProps) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
 
@@ -113,12 +124,13 @@ const ThreeDModelViewer = ({ modelUrl, title, className = '' }: ThreeDModelViewe
 
   const handleError = (errorMessage: string) => {
     setError(errorMessage);
-    setIsLoading(false);
-    toast({
-      title: "Loading Error",
-      description: errorMessage,
-      variant: "destructive"
-    });
+    if (errorMessage) {
+      toast({
+        title: "3D Model Loading Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
   };
 
   const toggleFullscreen = () => {
@@ -155,15 +167,21 @@ const ThreeDModelViewer = ({ modelUrl, title, className = '' }: ThreeDModelViewe
       )}
 
       {error && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 rounded-lg z-10">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 rounded-lg z-10 p-4">
           <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
-          <p className="text-red-600 text-center px-4 max-w-md">{error}</p>
+          <p className="text-red-600 text-center text-sm max-w-md leading-relaxed">{error}</p>
           <Button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              setError('');
+              setIsLoading(true);
+              // Force re-render by changing key
+              window.location.reload();
+            }}
             className="mt-4"
             variant="outline"
+            size="sm"
           >
-            Try Again
+            Retry Loading
           </Button>
         </div>
       )}
@@ -178,7 +196,11 @@ const ThreeDModelViewer = ({ modelUrl, title, className = '' }: ThreeDModelViewe
           <pointLight position={[-10, -10, -5]} intensity={0.3} />
           
           <Suspense fallback={null}>
-            <Model modelUrl={modelUrl} />
+            <Model 
+              modelUrl={modelUrl} 
+              onLoadingChange={handleLoadingChange}
+              onError={handleError}
+            />
           </Suspense>
           
           <OrbitControls
@@ -215,8 +237,6 @@ const ThreeDModelViewer = ({ modelUrl, title, className = '' }: ThreeDModelViewe
             variant="ghost"
             size="sm"
             className="text-white hover:bg-gray-800"
-          >
-            <X className="w-5 h-5" />
           </Button>
         </div>
         <div className="flex-1 p-4">
