@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SplatLoader, SplatData } from '@/utils/splatLoader';
+import { GaussianSplatMaterial } from '@/utils/gaussianSplatShader';
 
 interface GaussianSplatRendererProps {
   modelData: ArrayBuffer;
@@ -26,9 +27,8 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
 
     setLoadingProgress('Processing splat file...');
 
-    // Use a smaller number of splats for better performance
-    // Large files will be sampled to maintain responsiveness
-    const maxSplats = modelData.byteLength > 10000000 ? 50000 : 150000; // 50k for files > 10MB, 150k otherwise
+    // Use fewer splats for better performance but better quality rendering
+    const maxSplats = modelData.byteLength > 10000000 ? 75000 : 200000;
     
     try {
       const loader = new SplatLoader();
@@ -53,7 +53,7 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
 
   useFrame((state, delta) => {
     if (meshRef.current && autoRotate && !error && splatData) {
-      meshRef.current.rotation.y += delta * 0.5; // Slightly faster rotation
+      meshRef.current.rotation.y += delta * 0.3;
     }
   });
 
@@ -75,13 +75,12 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     );
   }
 
-  // Create geometry from splat data with performance optimizations
+  // Create geometry from splat data
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(splatData.positions, 3));
   geometry.setAttribute('color', new THREE.BufferAttribute(splatData.colors, 3));
-  
-  // Add custom attributes for Gaussian splat rendering
   geometry.setAttribute('scale', new THREE.BufferAttribute(splatData.scales, 3));
+  geometry.setAttribute('rotation', new THREE.BufferAttribute(splatData.rotations, 4));
   geometry.setAttribute('opacity', new THREE.BufferAttribute(splatData.opacities, 1));
 
   // Compute bounds for proper centering and scaling
@@ -94,27 +93,19 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     
     console.log('GaussianSplatRenderer: Bounds - Center:', center, 'Size:', size, 'Max dimension:', maxDim);
     
-    // Center and scale the geometry
+    // Center the geometry
     geometry.translate(-center.x, -center.y, -center.z);
     
     if (maxDim > 0) {
-      const targetSize = 4;
+      const targetSize = 3; // Slightly smaller for better fitting
       const scale = targetSize / maxDim;
       geometry.scale(scale, scale, scale);
       console.log('GaussianSplatRenderer: Applied scale factor:', scale);
     }
   }
 
-  // Optimized material for better performance
-  const material = new THREE.PointsMaterial({
-    size: 0.08, // Slightly larger points to compensate for fewer splats
-    vertexColors: true,
-    sizeAttenuation: true,
-    alphaTest: 0.2, // Higher alpha test for better performance
-    transparent: true,
-    opacity: 0.9,
-    blending: THREE.NormalBlending // Normal blending for better performance than additive
-  });
+  // Use custom Gaussian splat material
+  const material = new GaussianSplatMaterial();
 
   return (
     <points

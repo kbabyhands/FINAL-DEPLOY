@@ -20,10 +20,25 @@ export class SplatLoader {
 
       console.log('Splat Loader: Loading splat file, size:', data.byteLength);
 
-      // Each splat entry is typically 32 bytes (8 floats * 4 bytes each)
-      // Position (3 floats) + Scale (3 floats) + Color (4 floats RGBA) + Rotation (4 floats quaternion)
-      const bytesPerSplat = 32;
-      const maxPossibleSplats = Math.floor(data.byteLength / bytesPerSplat);
+      // Try different splat formats - some files have different structures
+      // Standard format: position(3) + scale(3) + color(4) + rotation(4) = 14 floats = 56 bytes
+      // Compact format: position(3) + scale(3) + color(3) + opacity(1) + rotation(4) = 14 floats = 56 bytes
+      // Simple format: position(3) + scale(3) + color(4) = 10 floats = 40 bytes
+      
+      let bytesPerSplat = 56; // Try standard format first
+      let maxPossibleSplats = Math.floor(data.byteLength / bytesPerSplat);
+      
+      if (maxPossibleSplats === 0) {
+        // Try compact format
+        bytesPerSplat = 40;
+        maxPossibleSplats = Math.floor(data.byteLength / bytesPerSplat);
+      }
+
+      if (maxPossibleSplats === 0) {
+        // Try even smaller format
+        bytesPerSplat = 32;
+        maxPossibleSplats = Math.floor(data.byteLength / bytesPerSplat);
+      }
 
       if (maxPossibleSplats === 0) {
         console.error('Splat Loader: File too small to contain splat data');
@@ -32,7 +47,7 @@ export class SplatLoader {
 
       // Limit the number of splats for performance
       const targetSplatCount = Math.min(maxPossibleSplats, maxSplats || 100000);
-      console.log(`Splat Loader: Processing ${targetSplatCount} splats (max possible: ${maxPossibleSplats})`);
+      console.log(`Splat Loader: Processing ${targetSplatCount} splats (max possible: ${maxPossibleSplats}, bytes per splat: ${bytesPerSplat})`);
 
       const dataView = new DataView(data);
       const positions = new Float32Array(targetSplatCount * 3);
@@ -67,17 +82,46 @@ export class SplatLoader {
           const scaleY = dataView.getFloat32(offset + 16, true);
           const scaleZ = dataView.getFloat32(offset + 20, true);
           
-          // Read color/opacity (4 floats RGBA)
-          const r = dataView.getFloat32(offset + 24, true);
-          const g = dataView.getFloat32(offset + 28, true);
+          // Read color (3 or 4 floats depending on format)
+          let r = 0.5, g = 0.5, b = 0.5, a = 0.8;
           
-          // Check if we have enough bytes for the remaining color components
-          let b = 0, a = 0.8;
-          if (offset + 36 <= data.byteLength) {
+          if (bytesPerSplat >= 40) {
+            r = dataView.getFloat32(offset + 24, true);
+            g = dataView.getFloat32(offset + 28, true);
             b = dataView.getFloat32(offset + 32, true);
+            
+            if (bytesPerSplat >= 56) {
+              // Standard format with separate opacity
+              a = dataView.getFloat32(offset + 36, true);
+            } else {
+              // Compact format - opacity might be in the 4th color component or separate
+              if (offset + 36 < data.byteLength) {
+                a = dataView.getFloat32(offset + 36, true);
+              }
+            }
           }
-          if (offset + 40 <= data.byteLength) {
-            a = dataView.getFloat32(offset + 36, true);
+          
+          // Read rotation (4 floats quaternion) - if available
+          let qx = 0, qy = 0, qz = 0, qw = 1;
+          const rotationOffset = bytesPerSplat >= 56 ? 40 : (bytesPerSplat >= 40 ? 36 : 32);
+          
+          if (offset + rotationOffset + 16 <= data.byteLength) {
+            qx = dataView.getFloat32(offset + rotationOffset, true);
+            qy = dataView.getFloat32(offset + rotationOffset + 4, true);
+            qz = dataView.getFloat32(offset + rotationOffset + 8, true);
+            qw = dataView.getFloat32(offset + rotationOffset + 12, true);
+            
+            // Normalize quaternion
+            const qLength = Math.sqrt(qx*qx + qy*qy + qz*qz + qw*qw);
+            if (qLength > 0) {
+              qx /= qLength;
+              qy /= qLength;
+              qz /= qLength;
+              qw /= qLength;
+            } else {
+              qx = qy = qz = 0;
+              qw = 1;
+            }
           }
 
           // Validate data
@@ -92,21 +136,22 @@ export class SplatLoader {
             positions[idx3 + 1] = y;
             positions[idx3 + 2] = z;
 
-            colors[idx3] = Math.max(0, Math.min(1, r));
-            colors[idx3 + 1] = Math.max(0, Math.min(1, g));
-            colors[idx3 + 2] = Math.max(0, Math.min(1, b));
+            // Ensure colors are in valid range and enhance them
+            colors[idx3] = Math.max(0, Math.min(1, Math.abs(r)));
+            colors[idx3 + 1] = Math.max(0, Math.min(1, Math.abs(g)));
+            colors[idx3 + 2] = Math.max(0, Math.min(1, Math.abs(b)));
 
-            scales[idx3] = Math.abs(scaleX);
-            scales[idx3 + 1] = Math.abs(scaleY);
-            scales[idx3 + 2] = Math.abs(scaleZ);
+            // Apply reasonable scale limits and convert from log space if needed
+            scales[idx3] = Math.max(0.01, Math.min(2.0, Math.abs(scaleX)));
+            scales[idx3 + 1] = Math.max(0.01, Math.min(2.0, Math.abs(scaleY)));
+            scales[idx3 + 2] = Math.max(0.01, Math.min(2.0, Math.abs(scaleZ)));
 
-            // Default rotation (identity quaternion)
-            rotations[idx4] = 0;
-            rotations[idx4 + 1] = 0;
-            rotations[idx4 + 2] = 0;
-            rotations[idx4 + 3] = 1;
+            rotations[idx4] = qx;
+            rotations[idx4 + 1] = qy;
+            rotations[idx4 + 2] = qz;
+            rotations[idx4 + 3] = qw;
 
-            opacities[validSplats] = Math.max(0, Math.min(1, a));
+            opacities[validSplats] = Math.max(0.1, Math.min(1.0, Math.abs(a)));
             validSplats++;
           }
         } catch (error) {
@@ -120,7 +165,7 @@ export class SplatLoader {
         return null;
       }
 
-      console.log(`Splat Loader: Successfully loaded ${validSplats} valid splats (sampled from ${maxPossibleSplats})`);
+      console.log(`Splat Loader: Successfully loaded ${validSplats} valid splats`);
 
       return {
         positions: positions.slice(0, validSplats * 3),
