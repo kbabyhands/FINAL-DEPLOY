@@ -13,24 +13,42 @@ const MenuCardImage = ({ imageUrl, modelUrl, title }: MenuCardImageProps) => {
   const [modelData, setModelData] = useState<ArrayBuffer | null>(null);
   const [modelType, setModelType] = useState<'ply' | 'splat'>('ply');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Load 3D model data if model URL is provided
   useEffect(() => {
     if (modelUrl) {
+      console.log('MenuCardImage: Loading 3D model from:', modelUrl);
       setLoading(true);
+      setError(null);
+      
       const loadModel = async () => {
         try {
           const response = await fetch(modelUrl);
+          
+          if (!response.ok) {
+            throw new Error(`Failed to fetch model: ${response.status} ${response.statusText}`);
+          }
+          
           const data = await response.arrayBuffer();
+          
+          if (data.byteLength === 0) {
+            throw new Error('Empty model file');
+          }
+          
+          console.log('MenuCardImage: Model loaded successfully, size:', data.byteLength);
           setModelData(data);
+          
           // Determine file type from URL
-          if (modelUrl.toLowerCase().endsWith('.splat')) {
+          const lowerUrl = modelUrl.toLowerCase();
+          if (lowerUrl.endsWith('.splat')) {
             setModelType('splat');
           } else {
             setModelType('ply');
           }
         } catch (error) {
-          console.error('Failed to load 3D model:', error);
+          console.error('MenuCardImage: Failed to load 3D model:', error);
+          setError(error instanceof Error ? error.message : 'Failed to load 3D model');
         } finally {
           setLoading(false);
         }
@@ -42,6 +60,18 @@ const MenuCardImage = ({ imageUrl, modelUrl, title }: MenuCardImageProps) => {
   const renderContent = () => {
     // Priority 1: 3D Model
     if (modelUrl) {
+      if (error) {
+        return (
+          <div className="w-full h-64 bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center rounded-lg relative">
+            <div className="text-center">
+              <div className="text-red-600 text-2xl mb-2">⚠️</div>
+              <span className="text-red-600 text-sm font-medium">3D Model Error</span>
+              <p className="text-red-500 text-xs mt-1">{error}</p>
+            </div>
+          </div>
+        );
+      }
+      
       if (loading) {
         return (
           <div className="w-full h-64 bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center rounded-lg relative">

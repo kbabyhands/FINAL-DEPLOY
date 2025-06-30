@@ -40,6 +40,7 @@ const MenuCard = ({
   const hasTrackedView = useRef(false);
   const [modelData, setModelData] = useState<ArrayBuffer | null>(null);
   const [modelType, setModelType] = useState<'ply' | 'splat'>('ply');
+  const [modelError, setModelError] = useState<string | null>(null);
 
   // Track view when component mounts (only once per session)
   useEffect(() => {
@@ -56,11 +57,25 @@ const MenuCard = ({
   // Load 3D model data if model URL is provided
   useEffect(() => {
     if (modelUrl) {
+      console.log('MenuCard: Loading 3D model from:', modelUrl);
       const loadModel = async () => {
         try {
           const response = await fetch(modelUrl);
+          
+          if (!response.ok) {
+            throw new Error(`Failed to fetch: ${response.status}`);
+          }
+          
           const data = await response.arrayBuffer();
+          
+          if (data.byteLength === 0) {
+            throw new Error('Empty file');
+          }
+          
+          console.log('MenuCard: Model loaded, size:', data.byteLength);
           setModelData(data);
+          setModelError(null);
+          
           // Determine file type from URL
           if (modelUrl.toLowerCase().endsWith('.splat')) {
             setModelType('splat');
@@ -68,7 +83,8 @@ const MenuCard = ({
             setModelType('ply');
           }
         } catch (error) {
-          console.error('Failed to load 3D model:', error);
+          console.error('MenuCard: Failed to load 3D model:', error);
+          setModelError(error instanceof Error ? error.message : 'Load failed');
         }
       };
       loadModel();
@@ -77,14 +93,37 @@ const MenuCard = ({
 
   const renderPreview = () => {
     // If we have a 3D model, show it
-    if (modelUrl && modelData) {
+    if (modelUrl) {
+      if (modelError) {
+        return (
+          <div className="w-full h-48 bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
+            <div className="text-center">
+              <span className="text-red-600 text-sm font-semibold">3D Model Error</span>
+              <p className="text-red-500 text-xs">{modelError}</p>
+            </div>
+          </div>
+        );
+      }
+      
+      if (modelData) {
+        return (
+          <div className="w-full h-48 relative">
+            <ThreeDModelViewer
+              modelData={modelData}
+              filename={title}
+              type={modelType}
+            />
+          </div>
+        );
+      }
+      
+      // Loading state
       return (
-        <div className="w-full h-48 relative">
-          <ThreeDModelViewer
-            modelData={modelData}
-            filename={title}
-            type={modelType}
-          />
+        <div className="w-full h-48 bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto mb-2"></div>
+            <span className="text-purple-600 text-sm font-semibold">Loading 3D...</span>
+          </div>
         </div>
       );
     }
