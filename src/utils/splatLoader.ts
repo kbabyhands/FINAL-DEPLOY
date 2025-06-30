@@ -207,7 +207,7 @@ export class SplatLoader {
     properties: Array<{ name: string; type: string }>, 
     maxSplats?: number
   ): SplatData | null {
-    const targetSplatCount = Math.min(totalSplats, maxSplats || 150000);
+    const targetSplatCount = Math.min(totalSplats, maxSplats || 100000); // Reduced for better performance
     console.log(`SplatLoader: Loading ${targetSplatCount} of ${totalSplats} splats`);
 
     const dataView = new DataView(data, headerOffset);
@@ -243,8 +243,8 @@ export class SplatLoader {
 
       try {
         let x = 0, y = 0, z = 0;
-        let scaleX = 0.1, scaleY = 0.1, scaleZ = 0.1;
-        let r = 0.5, g = 0.5, b = 0.5, a = 0.8;
+        let scaleX = 0.03, scaleY = 0.03, scaleZ = 0.03; // Smaller default scales
+        let r = 0.8, g = 0.8, b = 0.8, a = 0.9; // Better default colors
         let qx = 0, qy = 0, qz = 0, qw = 1;
 
         // Parse properties in order
@@ -256,13 +256,19 @@ export class SplatLoader {
             case 'x': x = value; break;
             case 'y': y = value; break;
             case 'z': z = value; break;
-            case 'scale_0': case 'scale_x': scaleX = Math.exp(value); break; // Convert from log space
-            case 'scale_1': case 'scale_y': scaleY = Math.exp(value); break;
-            case 'scale_2': case 'scale_z': scaleZ = Math.exp(value); break;
-            case 'red': r = value / 255; break;
-            case 'green': g = value / 255; break;
-            case 'blue': b = value / 255; break;
-            case 'opacity': case 'alpha': a = value / 255; break;
+            case 'scale_0': case 'scale_x': 
+              scaleX = Math.abs(Math.exp(Math.min(Math.max(value, -10), 10))); // Better scale processing
+              break;
+            case 'scale_1': case 'scale_y': 
+              scaleY = Math.abs(Math.exp(Math.min(Math.max(value, -10), 10)));
+              break;
+            case 'scale_2': case 'scale_z': 
+              scaleZ = Math.abs(Math.exp(Math.min(Math.max(value, -10), 10)));
+              break;
+            case 'red': r = Math.max(0, Math.min(1, value / 255)); break;
+            case 'green': g = Math.max(0, Math.min(1, value / 255)); break;
+            case 'blue': b = Math.max(0, Math.min(1, value / 255)); break;
+            case 'opacity': case 'alpha': a = Math.max(0, Math.min(1, value / 255)); break;
             case 'rot_0': case 'qx': qx = value; break;
             case 'rot_1': case 'qy': qy = value; break;
             case 'rot_2': case 'qz': qz = value; break;
@@ -289,14 +295,15 @@ export class SplatLoader {
           maxY = Math.max(maxY, y);
           maxZ = Math.max(maxZ, z);
 
-          colors[idx3] = Math.max(0, Math.min(1, r));
-          colors[idx3 + 1] = Math.max(0, Math.min(1, g));
-          colors[idx3 + 2] = Math.max(0, Math.min(1, b));
+          // Ensure colors are bright enough
+          colors[idx3] = Math.max(0.1, r);
+          colors[idx3 + 1] = Math.max(0.1, g);
+          colors[idx3 + 2] = Math.max(0.1, b);
 
-          // Clamp scales
-          scales[idx3] = Math.max(0.001, Math.min(1.0, scaleX));
-          scales[idx3 + 1] = Math.max(0.001, Math.min(1.0, scaleY));
-          scales[idx3 + 2] = Math.max(0.001, Math.min(1.0, scaleZ));
+          // Clamp scales to reasonable range
+          scales[idx3] = Math.max(0.01, Math.min(0.3, scaleX));
+          scales[idx3 + 1] = Math.max(0.01, Math.min(0.3, scaleY));
+          scales[idx3 + 2] = Math.max(0.01, Math.min(0.3, scaleZ));
 
           // Normalize quaternion
           const qLength = Math.sqrt(qx*qx + qy*qy + qz*qz + qw*qw);
@@ -312,7 +319,7 @@ export class SplatLoader {
             rotations[idx4 + 3] = 1;
           }
 
-          opacities[validSplats] = Math.max(0.1, Math.min(1.0, a));
+          opacities[validSplats] = Math.max(0.3, Math.min(1.0, a));
           validSplats++;
         }
       } catch (error) {

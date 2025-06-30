@@ -14,8 +14,9 @@ export const gaussianSplatVertexShader = `
   
   varying vec3 vColor;
   varying float vOpacity;
-  varying vec2 vQuadOffset;
-  varying float vRadius;
+  varying vec2 vUv;
+  varying vec3 vCenter;
+  varying mat2 vCov2D;
   
   // Convert quaternion to rotation matrix
   mat3 quaternionToMatrix(vec4 q) {
@@ -35,102 +36,126 @@ export const gaussianSplatVertexShader = `
   void main() {
     vColor = splatColor;
     vOpacity = splatOpacity;
-    vQuadOffset = quadOffset;
+    vUv = quadOffset;
     
     // Transform splat center to view space
-    vec4 viewCenter = modelViewMatrix * vec4(splatPosition, 1.0);
-    
-    // Calculate the maximum extent of the splat
-    float maxScale = max(splatScale.x, max(splatScale.y, splatScale.z));
-    vRadius = maxScale;
+    vec4 center4 = modelViewMatrix * vec4(splatPosition, 1.0);
+    vec3 center = center4.xyz / center4.w;
+    vCenter = center;
     
     // Create rotation matrix from quaternion
-    mat3 rotMatrix = quaternionToMatrix(splatRotation);
+    mat3 R = quaternionToMatrix(splatRotation);
     
-    // Create a 3x3 covariance matrix from scale and rotation
-    mat3 scaleMatrix = mat3(
+    // Create scale matrix
+    mat3 S = mat3(
       splatScale.x, 0.0, 0.0,
       0.0, splatScale.y, 0.0,
       0.0, 0.0, splatScale.z
     );
     
-    mat3 M = rotMatrix * scaleMatrix;
-    mat3 Sigma = M * transpose(M);
+    // Compute 3D covariance: Cov3D = R * S * S^T * R^T
+    mat3 M = R * S;
+    mat3 Cov3D = M * transpose(M);
     
-    // Project the 3D covariance to 2D screen space
-    // This is a simplified projection - in practice, you'd use the full Jacobian
-    mat3 viewMatrix = mat3(modelViewMatrix);
-    mat3 covView = viewMatrix * Sigma * transpose(viewMatrix);
+    // Project to 2D screen space
+    // Extract view matrix (upper 3x3 of modelViewMatrix)
+    mat3 W = mat3(
+      modelViewMatrix[0].xyz,
+      modelViewMatrix[1].xyz,
+      modelViewMatrix[2].xyz
+    );
     
-    // Extract 2D covariance matrix (top-left 2x2)
-    mat2 cov2D = mat2(covView[0][0], covView[0][1], covView[1][0], covView[1][1]);
+    // Transform covariance to view space
+    mat3 Cov = transpose(W) * Cov3D * W;
     
-    // Calculate eigenvalues for proper billboard sizing
-    float a = cov2D[0][0];
-    float b = cov2D[0][1];
-    float c = cov2D[1][1];
-    float discriminant = sqrt((a - c) * (a - c) + 4.0 * b * b);
-    float lambda1 = 0.5 * (a + c + discriminant);
-    float lambda2 = 0.5 * (a + c - discriminant);
+    // Project to 2D (take upper-left 2x2 submatrix)
+    mat2 Cov2D = mat2(
+      Cov[0][0], Cov[0][1],
+      Cov[1][0], Cov[1][1]
+    );
     
-    // Calculate the size of the billboard based on eigenvalues
-    float radius1 = sqrt(max(0.0, lambda1)) * 3.0; // 3-sigma extent
-    float radius2 = sqrt(max(0.0, lambda2)) * 3.0;
+    // Add a small epsilon to diagonal for numerical stability
+    Cov2D[0][0] += 0.3;
+    Cov2D[1][1] += 0.3;
+    
+    vCov2D = Cov2D;
+    
+    // Compute eigenvalues for ellipse size
+    float a = Cov2D[0][0];
+    float b = Cov2D[0][1];
+    float c = Cov2D[1][1];
+    
+    float mid = 0.5 * (a + c);
+    float det = a * c - b * b;
+    float discriminant = mid * mid - det;
+    
+    float lambda1 = mid + sqrt(max(0.1, discriminant));
+    float lambda2 = mid - sqrt(max(0.1, discriminant));
+    
+    // 3-sigma confidence interval
+    float radius1 = 3.0 * sqrt(lambda1);
+    float radius2 = 3.0 * sqrt(lambda2);
     
     // Ensure minimum size for visibility
-    radius1 = max(radius1, 0.01);
-    radius2 = max(radius2, 0.01);
+    radius1 = max(radius1, 2.0);
+    radius2 = max(radius2, 2.0);
     
-    // Calculate eigenvectors for orientation
-    vec2 eigenvec1, eigenvec2;
-    if (abs(b) > 0.001) {
-      eigenvec1 = normalize(vec2(lambda1 - c, b));
-      eigenvec2 = normalize(vec2(-b, lambda1 - a));
-    } else if (a >= c) {
-      eigenvec1 = vec2(1.0, 0.0);
-      eigenvec2 = vec2(0.0, 1.0);
-    } else {
-      eigenvec1 = vec2(0.0, 1.0);
-      eigenvec2 = vec2(1.0, 0.0);
-    }
+    // Create billboard quad
+    vec2 offset = quadOffset * vec2(radius1, radius2);
     
-    // Create the billboard quad
-    vec2 quadPos = quadOffset.x * radius1 * eigenvec1 + quadOffset.y * radius2 * eigenvec2;
+    // Project center to screen space
+    vec4 projCenter = projectionMatrix * vec4(center, 1.0);
     
-    // Project to screen space
-    vec4 projCenter = projectionMatrix * viewCenter;
+    // Add offset in screen space
     vec4 projQuad = projCenter;
-    projQuad.xy += quadPos * projCenter.w;
+    projQuad.xy += offset * projCenter.w * vec2(1.0 / 800.0, 1.0 / 600.0); // Approximate screen size scaling
     
     gl_Position = projQuad;
   }
 `;
 
 export const gaussianSplatFragmentShader = `
+  precision highp float;
+  
   varying vec3 vColor;
   varying float vOpacity;
-  varying vec2 vQuadOffset;
-  varying float vRadius;
+  varying vec2 vUv;
+  varying vec3 vCenter;
+  varying mat2 vCov2D;
   
   void main() {
-    // Calculate distance from center of the quad
-    float dist = length(vQuadOffset);
+    // Compute inverse of covariance matrix
+    float det = vCov2D[0][0] * vCov2D[1][1] - vCov2D[0][1] * vCov2D[1][0];
     
-    // Gaussian evaluation: exp(-0.5 * x^T * Sigma^-1 * x)
-    // For a circular approximation, we use: exp(-0.5 * dist^2)
-    float gaussian = exp(-0.5 * dist * dist);
+    if (det <= 0.0) {
+      discard;
+    }
     
-    // Apply 3-sigma cutoff for proper Gaussian extent
-    if (dist > 3.0) discard;
+    mat2 invCov = mat2(
+      vCov2D[1][1], -vCov2D[0][1],
+      -vCov2D[1][0], vCov2D[0][0]
+    ) / det;
     
-    // Calculate final opacity with Gaussian falloff
+    // Compute Gaussian exponent: exp(-0.5 * uv^T * invCov * uv)
+    vec2 d = vUv;
+    float exponent = -0.5 * dot(d, invCov * d);
+    
+    // Apply 3-sigma cutoff
+    if (exponent < -4.5) discard; // exp(-4.5) ≈ 0.01
+    
+    float gaussian = exp(exponent);
+    
+    // Apply opacity
     float alpha = vOpacity * gaussian;
     
-    // Discard nearly transparent pixels to improve performance
-    if (alpha < 0.001) discard;
+    // Discard nearly transparent pixels
+    if (alpha < 0.01) discard;
     
-    // Output final color
-    gl_FragColor = vec4(vColor, alpha);
+    // Enhanced color output with gamma correction
+    vec3 color = pow(vColor, vec3(2.2)); // Convert to linear space
+    color = pow(color, vec3(1.0 / 2.2)); // Convert back to sRGB
+    
+    gl_FragColor = vec4(color, alpha);
   }
 `;
 
@@ -144,6 +169,10 @@ export class GaussianSplatMaterial extends THREE.ShaderMaterial {
       depthWrite: false,
       depthTest: true,
       side: THREE.DoubleSide,
+      // Add proper blending for Gaussian splats
+      blendSrc: THREE.OneMinusDstAlphaFactor,
+      blendDst: THREE.OneFactor,
+      blendEquation: THREE.AddEquation,
     });
   }
 }

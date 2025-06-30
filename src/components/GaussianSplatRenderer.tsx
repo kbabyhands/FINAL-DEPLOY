@@ -80,9 +80,9 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     // Use adaptive splat count based on file size and performance
     const getMaxSplats = () => {
       const fileSizeMB = modelData.byteLength / (1024 * 1024);
-      if (fileSizeMB > 50) return 100000; // Large files
-      if (fileSizeMB > 20) return 150000; // Medium files  
-      return 200000; // Small files
+      if (fileSizeMB > 50) return 50000; // Reduced for better performance
+      if (fileSizeMB > 20) return 75000; // Medium files  
+      return 100000; // Small files
     };
     
     try {
@@ -93,6 +93,22 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
         console.log('GaussianSplatRenderer: Splat loaded successfully');
         console.log('- Count:', data.count);
         console.log('- Bounds:', data.bounds);
+        
+        // Auto-adjust camera position based on model bounds
+        const maxDim = Math.max(data.bounds.size.x, data.bounds.size.y, data.bounds.size.z);
+        const distance = maxDim * 2; // Position camera at 2x the max dimension
+        
+        if (camera) {
+          camera.position.set(distance, distance * 0.5, distance);
+          camera.lookAt(data.bounds.center.x, data.bounds.center.y, data.bounds.center.z);
+          
+          if (camera instanceof THREE.PerspectiveCamera) {
+            camera.near = maxDim * 0.01;
+            camera.far = maxDim * 10;
+            camera.updateProjectionMatrix();
+          }
+        }
+        
         setSplatData(data);
         setError(null);
         setLoadingProgress('');
@@ -106,7 +122,7 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
       setError('Error loading splat file: ' + (error as Error).message);
       setLoadingProgress('');
     }
-  }, [modelData]);
+  }, [modelData, camera]);
 
   // Create geometry and material
   const { geometry, material } = useMemo(() => {
@@ -146,7 +162,7 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     }
 
     if (meshRef.current && autoRotate && !error && splatData) {
-      meshRef.current.rotation.y += delta * 0.2;
+      meshRef.current.rotation.y += delta * 0.3; // Slightly faster rotation
     }
 
     // Update LOD based on camera distance
@@ -184,14 +200,13 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     );
   }
 
-  // Main rendering
+  // Main rendering - Remove the centering translation to let auto-positioning work
   return (
     <group>
       <mesh
         ref={meshRef}
         geometry={geometry}
         material={material}
-        position={[-splatData.bounds.center.x, -splatData.bounds.center.y, -splatData.bounds.center.z]}
       />
       
       {/* Performance debug info - only visible in dev mode */}
