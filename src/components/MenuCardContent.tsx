@@ -19,6 +19,7 @@ interface MenuCardContentProps {
   isGlutenFree?: boolean;
   isNutFree?: boolean;
   imageUrl?: string;
+  modelUrl?: string;
 }
 
 const MenuCardContent = ({
@@ -31,7 +32,8 @@ const MenuCardContent = ({
   isVegan,
   isGlutenFree,
   isNutFree,
-  imageUrl
+  imageUrl,
+  modelUrl
 }: MenuCardContentProps) => {
   return (
     <>
@@ -40,6 +42,7 @@ const MenuCardContent = ({
       <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 mt-6">
         <MenuCardImage
           imageUrl={imageUrl}
+          modelUrl={modelUrl}
           title={title}
         />
         

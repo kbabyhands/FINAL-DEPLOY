@@ -24,7 +24,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400&h=300&fit=crop",
     is_active: true,
-    restaurant_id: "your_restaurant_id"
+    restaurant_id: "your_restaurant_id",
+    model_url: null
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440002",
@@ -39,7 +40,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop",
     is_active: true,
-    restaurant_id: "your_restaurant_id"
+    restaurant_id: "your_restaurant_id",
+    model_url: null
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440003",
@@ -54,7 +56,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
     is_active: true,
-    restaurant_id: "your_restaurant_id"
+    restaurant_id: "your_restaurant_id",
+    model_url: null
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440004",
@@ -69,7 +72,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
     is_active: true,
-    restaurant_id: "your_restaurant_id"
+    restaurant_id: "your_restaurant_id",
+    model_url: null
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440005",
@@ -84,7 +88,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&h=300&fit=crop",
     is_active: true,
-    restaurant_id: "your_restaurant_id"
+    restaurant_id: "your_restaurant_id",
+    model_url: null
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440006",
@@ -99,7 +104,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop",
     is_active: true,
-    restaurant_id: "your_restaurant_id"
+    restaurant_id: "your_restaurant_id",
+    model_url: null
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440007",
@@ -114,7 +120,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_nut_free: true,
     image_url: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop",
     is_active: true,
-    restaurant_id: "your_restaurant_id"
+    restaurant_id: "your_restaurant_id",
+    model_url: null
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440008",
@@ -129,7 +136,8 @@ const placeholderMenuItems: MenuItem[] = [
     is_nut_free: false,
     image_url: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=400&h=300&fit=crop",
     is_active: true,
-    restaurant_id: "your_restaurant_id"
+    restaurant_id: "your_restaurant_id",
+    model_url: null
   }
 ];
 
@@ -415,6 +423,7 @@ const Index = () => {
                 isGlutenFree={item.is_gluten_free}
                 isNutFree={item.is_nut_free}
                 imageUrl={item.image_url}
+                modelUrl={item.model_url}
               />
             ))}
           </div>
