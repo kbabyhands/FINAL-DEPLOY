@@ -38,20 +38,28 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
           geo.computeBoundingBox();
           geo.computeBoundingSphere();
           
-          // Center and scale the geometry
-          if (geo.boundingBox) {
+          // Center and scale the geometry appropriately
+          if (geo.boundingBox && geo.boundingSphere) {
             const center = geo.boundingBox.getCenter(new THREE.Vector3());
             const size = geo.boundingBox.getSize(new THREE.Vector3());
             const maxDim = Math.max(size.x, size.y, size.z);
             
+            console.log('ModelMesh: Original bounds - Center:', center, 'Size:', size, 'Max dimension:', maxDim);
+            
             // Center the geometry
             geo.translate(-center.x, -center.y, -center.z);
             
-            // Scale to fit in a reasonable size (normalize to ~2 units)
+            // Scale to fit in a reasonable size (normalize to ~4 units for better visibility)
             if (maxDim > 0) {
-              const scale = 2 / maxDim;
+              const targetSize = 4;
+              const scale = targetSize / maxDim;
               geo.scale(scale, scale, scale);
+              console.log('ModelMesh: Applied scale factor:', scale);
             }
+            
+            // Recompute bounds after transformations
+            geo.computeBoundingBox();
+            geo.computeBoundingSphere();
           }
           
           setGeometry(geo);
@@ -81,7 +89,7 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
 
   useFrame((state, delta) => {
     if (meshRef.current && autoRotate && !error && geometry) {
-      meshRef.current.rotation.y += delta * 0.3;
+      meshRef.current.rotation.y += delta * 0.2;
     }
   });
 
@@ -103,9 +111,9 @@ const ModelMesh = ({ modelData, type }: { modelData: ArrayBuffer; type: 'ply' | 
     );
   }
 
-  // Create material for point cloud with better visibility
+  // Create material for point cloud with enhanced visibility
   const material = new THREE.PointsMaterial({
-    size: 0.015,
+    size: 0.02, // Increased point size
     vertexColors: true,
     sizeAttenuation: true,
     alphaTest: 0.1,
@@ -126,8 +134,8 @@ const CameraController = () => {
   const { camera } = useThree();
   
   useEffect(() => {
-    // Position camera for optimal viewing of centered model
-    camera.position.set(3, 3, 3);
+    // Position camera for optimal viewing of point cloud
+    camera.position.set(5, 5, 5);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
   }, [camera]);
@@ -198,16 +206,16 @@ export const ThreeDModelViewer = ({ modelData, filename, type }: ModelViewerProp
             powerPreference: "high-performance",
             failIfMajorPerformanceCaveat: false
           }}
-          camera={{ position: [3, 3, 3], fov: 60 }}
+          camera={{ position: [5, 5, 5], fov: 60 }}
         >
           <CameraController />
           
-          {/* Enhanced lighting setup */}
-          <ambientLight intensity={0.8} />
-          <directionalLight position={[5, 5, 5]} intensity={1.2} />
-          <directionalLight position={[-5, -5, -5]} intensity={0.8} />
-          <directionalLight position={[0, 10, 0]} intensity={0.6} />
-          <pointLight position={[10, 10, 10]} intensity={0.5} />
+          {/* Enhanced lighting setup for point clouds */}
+          <ambientLight intensity={1.0} />
+          <directionalLight position={[10, 10, 10]} intensity={1.5} />
+          <directionalLight position={[-10, -10, -10]} intensity={1.0} />
+          <directionalLight position={[0, 10, 0]} intensity={0.8} />
+          <pointLight position={[15, 15, 15]} intensity={0.7} />
           
           <ModelMesh modelData={modelData} type={type} />
           
