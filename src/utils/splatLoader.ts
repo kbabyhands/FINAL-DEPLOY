@@ -11,7 +11,7 @@ export interface SplatData {
 }
 
 export class SplatLoader {
-  load(data: ArrayBuffer): SplatData | null {
+  load(data: ArrayBuffer, maxSplats?: number): SplatData | null {
     try {
       if (!data || data.byteLength === 0) {
         console.error('Splat Loader: No data provided');
@@ -23,26 +23,39 @@ export class SplatLoader {
       // Each splat entry is typically 32 bytes (8 floats * 4 bytes each)
       // Position (3 floats) + Scale (3 floats) + Color (4 floats RGBA) + Rotation (4 floats quaternion)
       const bytesPerSplat = 32;
-      const splatCount = Math.floor(data.byteLength / bytesPerSplat);
+      const maxPossibleSplats = Math.floor(data.byteLength / bytesPerSplat);
 
-      if (splatCount === 0) {
+      if (maxPossibleSplats === 0) {
         console.error('Splat Loader: File too small to contain splat data');
         return null;
       }
 
-      console.log(`Splat Loader: Processing ${splatCount} splats`);
+      // Limit the number of splats for performance
+      const targetSplatCount = Math.min(maxPossibleSplats, maxSplats || 100000);
+      console.log(`Splat Loader: Processing ${targetSplatCount} splats (max possible: ${maxPossibleSplats})`);
 
       const dataView = new DataView(data);
-      const positions = new Float32Array(splatCount * 3);
-      const colors = new Float32Array(splatCount * 3);
-      const scales = new Float32Array(splatCount * 3);
-      const rotations = new Float32Array(splatCount * 4);
-      const opacities = new Float32Array(splatCount);
+      const positions = new Float32Array(targetSplatCount * 3);
+      const colors = new Float32Array(targetSplatCount * 3);
+      const scales = new Float32Array(targetSplatCount * 3);
+      const rotations = new Float32Array(targetSplatCount * 4);
+      const opacities = new Float32Array(targetSplatCount);
 
       let offset = 0;
       let validSplats = 0;
 
-      for (let i = 0; i < splatCount && offset + bytesPerSplat <= data.byteLength; i++) {
+      // Sample splats evenly across the file for better representation
+      const skipInterval = Math.max(1, Math.floor(maxPossibleSplats / targetSplatCount));
+
+      for (let i = 0; i < maxPossibleSplats && validSplats < targetSplatCount; i += skipInterval) {
+        offset = i * bytesPerSplat;
+        
+        // Safety check for remaining bytes
+        if (offset + bytesPerSplat > data.byteLength) {
+          console.warn(`Splat Loader: Reached end of file at splat ${i}, stopping`);
+          break;
+        }
+
         try {
           // Read position (3 floats)
           const x = dataView.getFloat32(offset, true);
@@ -57,8 +70,15 @@ export class SplatLoader {
           // Read color/opacity (4 floats RGBA)
           const r = dataView.getFloat32(offset + 24, true);
           const g = dataView.getFloat32(offset + 28, true);
-          const b = dataView.getFloat32(offset + 32, true);
-          const a = dataView.getFloat32(offset + 36, true);
+          
+          // Check if we have enough bytes for the remaining color components
+          let b = 0, a = 0.8;
+          if (offset + 36 <= data.byteLength) {
+            b = dataView.getFloat32(offset + 32, true);
+          }
+          if (offset + 40 <= data.byteLength) {
+            a = dataView.getFloat32(offset + 36, true);
+          }
 
           // Validate data
           if (isFinite(x) && isFinite(y) && isFinite(z) && 
@@ -89,8 +109,6 @@ export class SplatLoader {
             opacities[validSplats] = Math.max(0, Math.min(1, a));
             validSplats++;
           }
-
-          offset += bytesPerSplat;
         } catch (error) {
           console.warn(`Splat Loader: Error reading splat ${i}:`, error);
           break;
@@ -102,7 +120,7 @@ export class SplatLoader {
         return null;
       }
 
-      console.log(`Splat Loader: Successfully loaded ${validSplats} valid splats`);
+      console.log(`Splat Loader: Successfully loaded ${validSplats} valid splats (sampled from ${maxPossibleSplats})`);
 
       return {
         positions: positions.slice(0, validSplats * 3),

@@ -13,6 +13,7 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
   const meshRef = useRef<THREE.Points>(null);
   const [splatData, setSplatData] = useState<SplatData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState<string>('');
 
   useEffect(() => {
     console.log('GaussianSplatRenderer: Loading splat data, size:', modelData?.byteLength);
@@ -23,27 +24,36 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
       return;
     }
 
+    setLoadingProgress('Processing splat file...');
+
+    // Use a smaller number of splats for better performance
+    // Large files will be sampled to maintain responsiveness
+    const maxSplats = modelData.byteLength > 10000000 ? 50000 : 150000; // 50k for files > 10MB, 150k otherwise
+    
     try {
       const loader = new SplatLoader();
-      const data = loader.load(modelData);
+      const data = loader.load(modelData, maxSplats);
       
       if (data) {
         console.log('GaussianSplatRenderer: Splat loaded successfully, count:', data.count);
         setSplatData(data);
         setError(null);
+        setLoadingProgress('');
       } else {
         console.error('GaussianSplatRenderer: Splat loader returned null');
         setError('Failed to parse splat file - invalid format');
+        setLoadingProgress('');
       }
     } catch (error) {
       console.error('GaussianSplatRenderer: Failed to load splat file:', error);
       setError('Error loading splat file: ' + (error as Error).message);
+      setLoadingProgress('');
     }
   }, [modelData]);
 
   useFrame((state, delta) => {
     if (meshRef.current && autoRotate && !error && splatData) {
-      meshRef.current.rotation.y += delta * 0.2;
+      meshRef.current.rotation.y += delta * 0.5; // Slightly faster rotation
     }
   });
 
@@ -65,7 +75,7 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
     );
   }
 
-  // Create geometry from splat data
+  // Create geometry from splat data with performance optimizations
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(splatData.positions, 3));
   geometry.setAttribute('color', new THREE.BufferAttribute(splatData.colors, 3));
@@ -76,9 +86,8 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
 
   // Compute bounds for proper centering and scaling
   geometry.computeBoundingBox();
-  geometry.computeBoundingSphere();
-
-  if (geometry.boundingBox && geometry.boundingSphere) {
+  
+  if (geometry.boundingBox) {
     const center = geometry.boundingBox.getCenter(new THREE.Vector3());
     const size = geometry.boundingBox.getSize(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
@@ -94,20 +103,17 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
       geometry.scale(scale, scale, scale);
       console.log('GaussianSplatRenderer: Applied scale factor:', scale);
     }
-    
-    geometry.computeBoundingBox();
-    geometry.computeBoundingSphere();
   }
 
-  // Enhanced material for better Gaussian splat visualization
+  // Optimized material for better performance
   const material = new THREE.PointsMaterial({
-    size: 0.05, // Larger points for splats
+    size: 0.08, // Slightly larger points to compensate for fewer splats
     vertexColors: true,
     sizeAttenuation: true,
-    alphaTest: 0.1,
+    alphaTest: 0.2, // Higher alpha test for better performance
     transparent: true,
-    opacity: 0.8,
-    blending: THREE.AdditiveBlending // Better blending for overlapping splats
+    opacity: 0.9,
+    blending: THREE.NormalBlending // Normal blending for better performance than additive
   });
 
   return (
