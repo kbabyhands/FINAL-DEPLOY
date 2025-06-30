@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 
 export const gaussianSplatVertexShader = `
@@ -16,15 +15,22 @@ export const gaussianSplatVertexShader = `
   varying float vOpacity;
   varying vec2 vUv;
   varying float vRadius;
+  varying vec2 vConic;
   
   uniform vec2 screenSize;
+  uniform float focalX;
+  uniform float focalY;
   
   mat3 quaternionToMatrix(vec4 q) {
     float w = q.w, x = q.x, y = q.y, z = q.z;
+    float xx = x * x, yy = y * y, zz = z * z;
+    float xy = x * y, xz = x * z, yz = y * z;
+    float wx = w * x, wy = w * y, wz = w * z;
+    
     return mat3(
-      1.0 - 2.0 * (y * y + z * z), 2.0 * (x * y + w * z), 2.0 * (x * z - w * y),
-      2.0 * (x * y - w * z), 1.0 - 2.0 * (x * x + z * z), 2.0 * (y * z + w * x),
-      2.0 * (x * z + w * y), 2.0 * (y * z - w * x), 1.0 - 2.0 * (x * x + y * y)
+      1.0 - 2.0 * (yy + zz), 2.0 * (xy + wz), 2.0 * (xz - wy),
+      2.0 * (xy - wz), 1.0 - 2.0 * (xx + zz), 2.0 * (yz + wx),
+      2.0 * (xz + wy), 2.0 * (yz - wx), 1.0 - 2.0 * (xx + yy)
     );
   }
   
@@ -33,49 +39,74 @@ export const gaussianSplatVertexShader = `
     vOpacity = splatOpacity;
     vUv = quadOffset;
     
-    // Transform to view space
+    // Transform splat center to view space
     vec4 viewPos = modelViewMatrix * vec4(splatPosition, 1.0);
     
-    // Create covariance in 3D
+    // Create scaling matrix
+    mat3 S = mat3(
+      splatScale.x, 0.0, 0.0,
+      0.0, splatScale.y, 0.0,
+      0.0, 0.0, splatScale.z
+    );
+    
+    // Create rotation matrix from quaternion
     mat3 R = quaternionToMatrix(splatRotation);
-    mat3 S = mat3(splatScale.x, 0.0, 0.0, 0.0, splatScale.y, 0.0, 0.0, 0.0, splatScale.z);
-    mat3 M = R * S;
-    mat3 Sigma = M * transpose(M);
     
-    // Transform to view space
-    mat3 J = mat3(modelViewMatrix);
-    mat3 W = transpose(J) * Sigma * J;
+    // Combine rotation and scaling
+    mat3 RS = R * S;
     
-    // Project to 2D
-    mat2 Cov2D = mat2(W[0][0], W[0][1], W[1][0], W[1][1]);
+    // Transform to world coordinates, then to view space
+    mat3 modelView3x3 = mat3(modelViewMatrix);
+    mat3 Sigma3D = transpose(RS) * RS;
+    mat3 Cov3D = modelView3x3 * Sigma3D * transpose(modelView3x3);
     
-    // Add regularization
-    Cov2D[0][0] += 0.3;
-    Cov2D[1][1] += 0.3;
+    // Project to 2D covariance
+    float focal = focalX;
+    float t = viewPos.z;
+    float limx = 1.3 * screenSize.x;
+    float limy = 1.3 * screenSize.y;
+    float txtz = t * t;
     
-    // Compute eigenvalues for size
-    float a = Cov2D[0][0];
-    float b = Cov2D[0][1];
-    float c = Cov2D[1][1];
+    mat3 J = mat3(
+      focal / t, 0.0, -(focal * viewPos.x) / txtz,
+      0.0, focal / t, -(focal * viewPos.y) / txtz,
+      0.0, 0.0, 0.0
+    );
     
-    float det = a * c - b * b;
-    float trace = a + c;
-    float discriminant = trace * trace - 4.0 * det;
+    mat3 W = transpose(J) * Cov3D * J;
     
-    float lambda1 = 0.5 * (trace + sqrt(max(0.1, discriminant)));
-    float lambda2 = 0.5 * (trace - sqrt(max(0.1, discriminant)));
+    // Add small regularization
+    mat2 Cov2D = mat2(W[0][0] + 0.3, W[0][1], W[1][0], W[1][1] + 0.3);
     
-    float radius = 3.0 * sqrt(max(lambda1, lambda2));
+    // Compute eigenvalues for ellipse size
+    float det = Cov2D[0][0] * Cov2D[1][1] - Cov2D[0][1] * Cov2D[1][0];
+    float trace = Cov2D[0][0] + Cov2D[1][1];
+    float mid = 0.5 * trace;
+    float lambda1 = mid + sqrt(max(0.1, mid * mid - det));
+    float lambda2 = mid - sqrt(max(0.1, mid * mid - det));
+    
+    float radius = ceil(3.0 * sqrt(max(lambda1, lambda2)));
     vRadius = max(radius, 4.0);
     
-    // Project center
+    // Compute conic parameters for fragment shader
+    float detInv = 1.0 / det;
+    vConic = vec2(Cov2D[1][1] * detInv, -Cov2D[0][1] * detInv);
+    
+    // Project center to screen
     vec4 clipPos = projectionMatrix * viewPos;
+    vec2 ndc = clipPos.xy / clipPos.w;
     
-    // Billboard in screen space
-    vec2 screenOffset = quadOffset * vRadius / screenSize * clipPos.w;
+    // Convert to screen coordinates
+    vec2 screenPos = (ndc * 0.5 + 0.5) * screenSize;
     
-    gl_Position = clipPos;
-    gl_Position.xy += screenOffset;
+    // Apply billboard offset
+    vec2 offset = quadOffset * vRadius;
+    screenPos += offset;
+    
+    // Convert back to NDC
+    vec2 finalNDC = (screenPos / screenSize) * 2.0 - 1.0;
+    
+    gl_Position = vec4(finalNDC * clipPos.w, clipPos.z, clipPos.w);
   }
 `;
 
@@ -86,18 +117,23 @@ export const gaussianSplatFragmentShader = `
   varying float vOpacity;
   varying vec2 vUv;
   varying float vRadius;
+  varying vec2 vConic;
   
   void main() {
-    float d = dot(vUv, vUv);
+    vec2 d = vUv;
     
-    if (d > 1.0) discard;
+    // Compute power using conic form
+    float power = -0.5 * (vConic.x * d.x * d.x + vConic.y * d.x * d.y + vConic.x * d.y * d.y);
     
-    float gaussian = exp(-0.5 * d);
-    float alpha = vOpacity * gaussian;
+    if (power > 0.0) discard;
+    
+    float alpha = exp(power);
     
     if (alpha < 0.02) discard;
     
-    gl_FragColor = vec4(vColor, alpha);
+    alpha *= vOpacity;
+    
+    gl_FragColor = vec4(vColor * alpha, alpha);
   }
 `;
 
@@ -107,7 +143,9 @@ export class GaussianSplatMaterial extends THREE.ShaderMaterial {
       vertexShader: gaussianSplatVertexShader,
       fragmentShader: gaussianSplatFragmentShader,
       uniforms: {
-        screenSize: { value: new THREE.Vector2(1920, 1080) }
+        screenSize: { value: new THREE.Vector2(1920, 1080) },
+        focalX: { value: 1000.0 },
+        focalY: { value: 1000.0 }
       },
       transparent: true,
       blending: THREE.NormalBlending,
@@ -119,6 +157,9 @@ export class GaussianSplatMaterial extends THREE.ShaderMaterial {
   
   updateScreenSize(width: number, height: number) {
     this.uniforms.screenSize.value.set(width, height);
+    // Update focal length based on screen size for proper projection
+    this.uniforms.focalX.value = width * 0.5;
+    this.uniforms.focalY.value = height * 0.5;
   }
 }
 

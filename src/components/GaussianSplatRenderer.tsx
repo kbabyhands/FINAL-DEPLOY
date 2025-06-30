@@ -26,23 +26,36 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
 
     try {
       const loader = new SplatLoader();
-      const data = loader.load(modelData, 30000); // Reduced for better performance
+      const data = loader.load(modelData, 50000); // Increased for better quality
       
       if (data) {
         console.log('Splat loaded successfully');
         console.log('Count:', data.count);
         console.log('Bounds:', data.bounds);
         
+        // Fix coordinate system - flip Y to correct upside-down orientation
+        const positions = data.positions;
+        for (let i = 1; i < positions.length; i += 3) {
+          positions[i] = -positions[i]; // Flip Y coordinate
+        }
+        
+        // Update bounds after flipping
+        const temp = data.bounds.min.y;
+        data.bounds.min.y = -data.bounds.max.y;
+        data.bounds.max.y = -temp;
+        data.bounds.center.y = -data.bounds.center.y;
+        
         // Position camera appropriately
         const maxDim = Math.max(data.bounds.size.x, data.bounds.size.y, data.bounds.size.z);
-        const distance = maxDim * 3;
+        const distance = maxDim * 2;
         
-        camera.position.set(distance, distance * 0.5, distance);
+        camera.position.set(distance * 0.8, distance * 0.3, distance * 0.8);
         camera.lookAt(data.bounds.center.x, data.bounds.center.y, data.bounds.center.z);
         
         if (camera instanceof THREE.PerspectiveCamera) {
-          camera.near = maxDim * 0.01;
-          camera.far = maxDim * 10;
+          camera.near = maxDim * 0.001;
+          camera.far = maxDim * 20;
+          camera.fov = 50; // Slightly narrower FOV for better view
           camera.updateProjectionMatrix();
         }
         
@@ -71,12 +84,22 @@ const GaussianSplatRenderer = ({ modelData, autoRotate }: GaussianSplatRendererP
 
   useFrame((state, delta) => {
     if (meshRef.current && autoRotate && !error && splatData) {
-      meshRef.current.rotation.y += delta * 0.3;
+      meshRef.current.rotation.y += delta * 0.2; // Slower rotation
     }
     
-    // Update screen size for shader
+    // Update material uniforms for responsive rendering
     if (material) {
       material.updateScreenSize(size.width, size.height);
+      
+      // Update camera-dependent uniforms
+      if (camera instanceof THREE.PerspectiveCamera) {
+        const aspect = size.width / size.height;
+        const fov = camera.fov * Math.PI / 180;
+        const focal = (size.height / 2) / Math.tan(fov / 2);
+        
+        material.uniforms.focalX.value = focal;
+        material.uniforms.focalY.value = focal;
+      }
     }
   });
 
