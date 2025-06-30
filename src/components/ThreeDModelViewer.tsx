@@ -237,6 +237,8 @@ const ThreeDModelViewer = ({ modelUrl, title, className = '' }: ThreeDModelViewe
             variant="ghost"
             size="sm"
             className="text-white hover:bg-gray-800"
+          >
+            <X className="w-4 h-4" />
           </Button>
         </div>
         <div className="flex-1 p-4">
