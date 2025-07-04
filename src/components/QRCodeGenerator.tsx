@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, QrCode } from 'lucide-react';
+import { Download, QrCode, Share } from 'lucide-react';
 
 interface QRCodeGeneratorProps {
   restaurantId: string;
@@ -48,6 +48,33 @@ const QRCodeGenerator = ({ restaurantId, restaurantName }: QRCodeGeneratorProps)
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const shareViaText = () => {
+    const menuUrl = `${window.location.origin}/`;
+    const message = `Check out ${restaurantName}'s digital menu! Scan the QR code or visit: ${menuUrl}`;
+    
+    // Try to use Web Share API first (mobile-friendly)
+    if (navigator.share) {
+      navigator.share({
+        title: `${restaurantName} Menu`,
+        text: message,
+        url: menuUrl
+      }).catch(err => {
+        console.log('Share failed:', err);
+        // Fallback to SMS
+        fallbackToSMS(message);
+      });
+    } else {
+      // Fallback to SMS
+      fallbackToSMS(message);
+    }
+  };
+
+  const fallbackToSMS = (message: string) => {
+    const encodedMessage = encodeURIComponent(message);
+    const smsUrl = `sms:?body=${encodedMessage}`;
+    window.open(smsUrl, '_self');
   };
 
   const printQRCode = () => {
@@ -158,6 +185,10 @@ const QRCodeGenerator = ({ restaurantId, restaurantName }: QRCodeGeneratorProps)
           <Button onClick={downloadQRCode} variant="outline">
             <Download className="w-4 h-4 mr-2" />
             Download
+          </Button>
+          <Button onClick={shareViaText} variant="outline">
+            <Share className="w-4 h-4 mr-2" />
+            Share via Text
           </Button>
           <Button onClick={printQRCode} variant="outline">
             Print
