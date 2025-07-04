@@ -71,7 +71,7 @@ const MenuCard = ({
       <DialogTrigger asChild>
         <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
           <div className="relative overflow-hidden rounded-t-lg">
-            {splatUrl ? (
+            {splatUrl && splatUrl.trim() ? (
               <div className="w-full h-48">
                 <PlayCanvasViewer splatUrl={splatUrl} className="h-full" />
               </div>
@@ -124,7 +124,7 @@ const MenuCard = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* 3D Model/Image Section */}
           <div className="space-y-4">
-            {splatUrl ? (
+            {splatUrl && splatUrl.trim() ? (
               <div className="w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
                 <PlayCanvasViewer splatUrl={splatUrl} className="h-full" />
               </div>
