@@ -18,6 +18,30 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
     setLoading(true);
     setError(null);
 
+    // Check if it's a PlayCanvas URL first - if so, use iframe instead
+    if (splatUrl && splatUrl.includes('playcanv.as')) {
+      console.log('PlayCanvasViewer: Detected PlayCanvas URL, embedding via iframe');
+      
+      // Create and insert iframe
+      const iframe = document.createElement('iframe');
+      iframe.src = splatUrl;
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      iframe.style.borderRadius = '8px';
+      iframe.setAttribute('allowfullscreen', '');
+      
+      // Replace canvas with iframe
+      const canvas = canvasRef.current;
+      if (canvas && canvas.parentNode) {
+        canvas.style.display = 'none';
+        canvas.parentNode.appendChild(iframe);
+      }
+      
+      setLoading(false);
+      return;
+    }
+
     let app: pc.Application;
     
     try {
@@ -142,37 +166,6 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
       const loadModel = async () => {
         try {
           console.log('PlayCanvasViewer: Starting model load...');
-          
-          // Check if it's a PlayCanvas URL
-          if (splatUrl.includes('playcanv.as')) {
-            console.log('PlayCanvasViewer: Detected PlayCanvas URL, embedding via iframe');
-            
-            // For PlayCanvas URLs, we need to embed them via iframe
-            // Clean up the canvas since we'll use an iframe instead
-            if (appRef.current) {
-              appRef.current.destroy();
-              appRef.current = null;
-            }
-            
-            // Create and insert iframe
-            const iframe = document.createElement('iframe');
-            iframe.src = splatUrl;
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-            iframe.style.border = 'none';
-            iframe.style.borderRadius = '8px';
-            iframe.setAttribute('allowfullscreen', '');
-            
-            // Replace canvas with iframe
-            const canvas = canvasRef.current;
-            if (canvas && canvas.parentNode) {
-              canvas.style.display = 'none';
-              canvas.parentNode.appendChild(iframe);
-            }
-            
-            setLoading(false);
-            return;
-          }
           
           const fileExtension = splatUrl.split('.').pop()?.toLowerCase();
           console.log('PlayCanvasViewer: File extension:', fileExtension);
@@ -303,6 +296,10 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
         canvas.removeEventListener('mousemove', handleMouseMove);
         canvas.removeEventListener('mouseup', handleMouseUp);
         canvas.removeEventListener('wheel', handleWheel);
+        
+        // Clean up any iframes
+        const iframes = canvas.parentNode?.querySelectorAll('iframe');
+        iframes?.forEach(iframe => iframe.remove());
       }
       
       if (appRef.current) {
