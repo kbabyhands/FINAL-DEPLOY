@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Leaf, Wheat, Shield, Nut } from "lucide-react";
 import ReviewsSection from "./ReviewsSection";
-import SplineViewer from "./SplineViewer";
+import PlayCanvasViewer from "./PlayCanvasViewer";
 import { useMenuItemViews } from "@/hooks/useMenuItemViews";
 
 interface MenuCardProps {
@@ -73,7 +73,7 @@ const MenuCard = ({
           <div className="relative overflow-hidden rounded-t-lg">
             {splatUrl ? (
               <div className="w-full h-48">
-                <SplineViewer splineUrl={splatUrl} className="h-full" />
+                <PlayCanvasViewer splatUrl={splatUrl} className="h-full" />
               </div>
             ) : imageUrl ? (
               <img 
@@ -126,7 +126,7 @@ const MenuCard = ({
           <div className="space-y-4">
             {splatUrl ? (
               <div className="w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
-                <SplineViewer splineUrl={splatUrl} className="h-full" />
+                <PlayCanvasViewer splatUrl={splatUrl} className="h-full" />
               </div>
             ) : imageUrl ? (
               <img 
