@@ -129,45 +129,89 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
     app.scene.ambientLight = new pc.Color(0.2, 0.2, 0.3);
 
     // Load 3D model
-    if (splatUrl) {
+    console.log('PlayCanvasViewer: Loading model from URL:', splatUrl);
+    
+    if (splatUrl && splatUrl.trim()) {
       const loadModel = async () => {
         try {
+          console.log('PlayCanvasViewer: Starting model load...');
+          
+          // Check if it's a PlayCanvas URL
+          if (splatUrl.includes('playcanv.as')) {
+            console.log('PlayCanvasViewer: Detected PlayCanvas URL, creating placeholder');
+            // For PlayCanvas URLs, we'll create a placeholder since we can't directly embed them
+            const material = new pc.StandardMaterial();
+            material.diffuse = new pc.Color(0.2, 0.6, 1.0);
+            material.metalness = 0.1;
+            material.gloss = 0.9;
+            material.update();
+
+            const entity = new pc.Entity('playcanvas-placeholder');
+            entity.addComponent('render', {
+              type: 'sphere',
+              material: material
+            });
+            
+            app.root.addChild(entity);
+            setLoading(false);
+            
+            // Add rotation animation
+            let angle = 0;
+            app.on('update', (dt: number) => {
+              angle += dt * 0.5;
+              entity.setEulerAngles(0, angle * 57.2958, 0);
+            });
+            return;
+          }
+          
           const fileExtension = splatUrl.split('.').pop()?.toLowerCase();
+          console.log('PlayCanvasViewer: File extension:', fileExtension);
           
           if (fileExtension === 'glb' || fileExtension === 'gltf') {
-            // Load GLB/GLTF model
+            console.log('PlayCanvasViewer: Loading GLB/GLTF model');
+            
+            // Create asset for the model
             const asset = new pc.Asset('model', 'container', {
               url: splatUrl
             });
 
             asset.ready(() => {
-              // Instantiate the model directly
-              const entity = new pc.Entity('model');
-              entity.addComponent('render', {
-                type: 'asset',
-                asset: asset
-              });
-              
-              app.root.addChild(entity);
-              setLoading(false);
-              
-              // Add subtle rotation animation
-              let angle = 0;
-              app.on('update', (dt: number) => {
-                angle += dt * 0.2;
-                entity.setEulerAngles(0, angle * 57.2958, 0); // Convert to degrees
-              });
+              console.log('PlayCanvasViewer: Model asset ready');
+              try {
+                // Create entity and add model component
+                const modelEntity = new pc.Entity('loaded-model');
+                modelEntity.addComponent('model', {
+                  asset: asset
+                });
+                
+                app.root.addChild(modelEntity);
+                setLoading(false);
+                console.log('PlayCanvasViewer: Model successfully added to scene');
+                
+                // Add subtle rotation animation
+                let angle = 0;
+                app.on('update', (dt: number) => {
+                  angle += dt * 0.2;
+                  modelEntity.setEulerAngles(0, angle * 57.2958, 0);
+                });
+              } catch (instantiateError) {
+                console.error('PlayCanvasViewer: Error creating model:', instantiateError);
+                setError('Failed to create model from loaded data');
+                setLoading(false);
+              }
             });
 
-            asset.on('error', (err: string) => {
-              console.error('Model loading error:', err);
-              setError('Failed to load 3D model');
+            asset.on('error', (err: any) => {
+              console.error('PlayCanvasViewer: Model loading error:', err);
+              setError('Failed to load 3D model file');
               setLoading(false);
             });
 
+            console.log('PlayCanvasViewer: Adding and loading asset...');
             app.assets.add(asset);
             app.assets.load(asset);
           } else {
+            console.log('PlayCanvasViewer: Creating placeholder for unsupported format');
             // Fallback for other formats or create a placeholder
             const material = new pc.StandardMaterial();
             material.diffuse = new pc.Color(0.7, 0.5, 0.8);
@@ -192,7 +236,7 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
             });
           }
         } catch (err) {
-          console.error('Error loading model:', err);
+          console.error('PlayCanvasViewer: Error in loadModel:', err);
           setError('Failed to load 3D model');
           setLoading(false);
         }
@@ -200,6 +244,19 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
 
       loadModel();
     } else {
+      console.log('PlayCanvasViewer: No URL provided, showing placeholder');
+      // Create a default placeholder when no URL is provided
+      const material = new pc.StandardMaterial();
+      material.diffuse = new pc.Color(0.5, 0.5, 0.5);
+      material.update();
+
+      const entity = new pc.Entity('default-placeholder');
+      entity.addComponent('render', {
+        type: 'box',
+        material: material
+      });
+      
+      app.root.addChild(entity);
       setLoading(false);
     }
 
