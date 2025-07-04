@@ -18,21 +18,28 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
     setLoading(true);
     setError(null);
 
-    // Create PlayCanvas application
-    const app = new pc.Application(canvasRef.current, {
-      mouse: new pc.Mouse(canvasRef.current),
-      touch: new pc.TouchDevice(canvasRef.current),
-      keyboard: new pc.Keyboard(window),
-    });
+    let app: pc.Application;
+    
+    try {
+      // Create PlayCanvas application with error handling
+      app = new pc.Application(canvasRef.current, {
+        mouse: new pc.Mouse(canvasRef.current),
+        touch: new pc.TouchDevice(canvasRef.current),
+        keyboard: new pc.Keyboard(window),
+      });
 
-    appRef.current = app;
+      appRef.current = app;
 
-    // Fill the available space
-    app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
-    app.setCanvasResolution(pc.RESOLUTION_AUTO);
-
-    // Resize the canvas to fit the container
-    app.resizeCanvas();
+      // Configure canvas settings
+      app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
+      app.setCanvasResolution(pc.RESOLUTION_AUTO);
+      app.resizeCanvas();
+    } catch (initError) {
+      console.error('PlayCanvasViewer: Failed to initialize PlayCanvas:', initError);
+      setError('Failed to initialize 3D viewer');
+      setLoading(false);
+      return;
+    }
 
     // Create camera entity
     const camera = new pc.Entity('camera');
@@ -140,27 +147,39 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
           if (splatUrl.includes('playcanv.as')) {
             console.log('PlayCanvasViewer: Detected PlayCanvas URL, creating placeholder');
             // For PlayCanvas URLs, we'll create a placeholder since we can't directly embed them
-            const material = new pc.StandardMaterial();
-            material.diffuse = new pc.Color(0.2, 0.6, 1.0);
-            material.metalness = 0.1;
-            material.gloss = 0.9;
-            material.update();
+            try {
+              const material = new pc.StandardMaterial();
+              material.diffuse = new pc.Color(0.2, 0.6, 1.0);
+              material.metalness = 0.1;
+              material.gloss = 0.9;
+              material.update();
 
-            const entity = new pc.Entity('playcanvas-placeholder');
-            entity.addComponent('render', {
-              type: 'sphere',
-              material: material
-            });
-            
-            app.root.addChild(entity);
-            setLoading(false);
-            
-            // Add rotation animation
-            let angle = 0;
-            app.on('update', (dt: number) => {
-              angle += dt * 0.5;
-              entity.setEulerAngles(0, angle * 57.2958, 0);
-            });
+              const entity = new pc.Entity('playcanvas-placeholder');
+              entity.addComponent('model', {
+                type: 'sphere'
+              });
+              
+              // Apply material to the model
+              if (entity.model?.meshInstances) {
+                entity.model.meshInstances.forEach((meshInstance: any) => {
+                  meshInstance.material = material;
+                });
+              }
+              
+              app.root.addChild(entity);
+              setLoading(false);
+              
+              // Add rotation animation
+              let angle = 0;
+              app.on('update', (dt: number) => {
+                angle += dt * 0.5;
+                entity.setEulerAngles(0, angle * 57.2958, 0);
+              });
+            } catch (placeholderError) {
+              console.error('PlayCanvasViewer: Error creating placeholder:', placeholderError);
+              setError('Failed to create 3D placeholder');
+              setLoading(false);
+            }
             return;
           }
           
@@ -213,27 +232,39 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
           } else {
             console.log('PlayCanvasViewer: Creating placeholder for unsupported format');
             // Fallback for other formats or create a placeholder
-            const material = new pc.StandardMaterial();
-            material.diffuse = new pc.Color(0.7, 0.5, 0.8);
-            material.metalness = 0.3;
-            material.gloss = 0.8;
-            material.update();
+            try {
+              const material = new pc.StandardMaterial();
+              material.diffuse = new pc.Color(0.7, 0.5, 0.8);
+              material.metalness = 0.3;
+              material.gloss = 0.8;
+              material.update();
 
-            const entity = new pc.Entity('placeholder');
-            entity.addComponent('render', {
-              type: 'box',
-              material: material
-            });
-            
-            app.root.addChild(entity);
-            setLoading(false);
-            
-            // Add rotation animation
-            let angle = 0;
-            app.on('update', (dt: number) => {
-              angle += dt;
-              entity.setEulerAngles(angle * 15, angle * 30, 0);
-            });
+              const entity = new pc.Entity('placeholder');
+              entity.addComponent('model', {
+                type: 'box'
+              });
+              
+              // Apply material to the model
+              if (entity.model?.meshInstances) {
+                entity.model.meshInstances.forEach((meshInstance: any) => {
+                  meshInstance.material = material;
+                });
+              }
+              
+              app.root.addChild(entity);
+              setLoading(false);
+              
+              // Add rotation animation
+              let angle = 0;
+              app.on('update', (dt: number) => {
+                angle += dt;
+                entity.setEulerAngles(angle * 15, angle * 30, 0);
+              });
+            } catch (placeholderError) {
+              console.error('PlayCanvasViewer: Error creating placeholder:', placeholderError);
+              setError('Failed to create placeholder');
+              setLoading(false);
+            }
           }
         } catch (err) {
           console.error('PlayCanvasViewer: Error in loadModel:', err);
@@ -246,18 +277,30 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
     } else {
       console.log('PlayCanvasViewer: No URL provided, showing placeholder');
       // Create a default placeholder when no URL is provided
-      const material = new pc.StandardMaterial();
-      material.diffuse = new pc.Color(0.5, 0.5, 0.5);
-      material.update();
+      try {
+        const material = new pc.StandardMaterial();
+        material.diffuse = new pc.Color(0.5, 0.5, 0.5);
+        material.update();
 
-      const entity = new pc.Entity('default-placeholder');
-      entity.addComponent('render', {
-        type: 'box',
-        material: material
-      });
-      
-      app.root.addChild(entity);
-      setLoading(false);
+        const entity = new pc.Entity('default-placeholder');
+        entity.addComponent('model', {
+          type: 'box'
+        });
+        
+        // Apply material to the model
+        if (entity.model?.meshInstances) {
+          entity.model.meshInstances.forEach((meshInstance: any) => {
+            meshInstance.material = material;
+          });
+        }
+        
+        app.root.addChild(entity);
+        setLoading(false);
+      } catch (placeholderError) {
+        console.error('PlayCanvasViewer: Error creating default placeholder:', placeholderError);
+        setError('Failed to create default placeholder');
+        setLoading(false);
+      }
     }
 
     // Start the application
