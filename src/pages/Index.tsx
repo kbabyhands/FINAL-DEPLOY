@@ -6,7 +6,7 @@ import CategoryFilter from "@/components/CategoryFilter";
 import DietaryFilter from "@/components/DietaryFilter";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, Share } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface MenuItem {
@@ -289,6 +289,34 @@ const Index = () => {
     return true;
   });
 
+  const shareViaText = () => {
+    const menuUrl = `${window.location.origin}/`;
+    const restaurantName = restaurant?.name || 'Our Menu';
+    const message = `Check out ${restaurantName}'s digital menu! Visit: ${menuUrl}`;
+    
+    // Try to use Web Share API first (mobile-friendly)
+    if (navigator.share) {
+      navigator.share({
+        title: `${restaurantName} Menu`,
+        text: message,
+        url: menuUrl
+      }).catch(err => {
+        console.log('Share failed:', err);
+        // Fallback to SMS
+        fallbackToSMS(message);
+      });
+    } else {
+      // Fallback to SMS
+      fallbackToSMS(message);
+    }
+  };
+
+  const fallbackToSMS = (message: string) => {
+    const encodedMessage = encodeURIComponent(message);
+    const smsUrl = `sms:?body=${encodedMessage}`;
+    window.open(smsUrl, '_self');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -361,8 +389,12 @@ const Index = () => {
             {restaurant?.description || 'Explore our delicious offerings. Filter by category or dietary needs.'}
           </p>
           
-          {/* Admin Link */}
-          <div className="absolute top-4 right-4">
+          {/* Action buttons */}
+          <div className="absolute top-4 right-4 flex gap-2">
+            <Button onClick={shareViaText} variant="outline" size="sm">
+              <Share className="w-4 h-4 mr-2" />
+              Share Menu
+            </Button>
             <Link to="/admin">
               <Button variant="outline" size="sm">
                 <Settings className="w-4 h-4 mr-2" />
