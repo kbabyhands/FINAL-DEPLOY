@@ -1,0 +1,25 @@
+export const shareViaText = (restaurantName?: string) => {
+  const menuUrl = `${window.location.origin}/`;
+  const name = restaurantName || 'Our Menu';
+  const message = `Check out ${name}'s digital menu! Visit: ${menuUrl}`;
+  
+  // Try to use Web Share API first (mobile-friendly) - text only
+  if (navigator.share) {
+    navigator.share({
+      text: message
+    }).catch(err => {
+      console.log('Share failed:', err);
+      // Fallback to SMS
+      fallbackToSMS(message);
+    });
+  } else {
+    // Fallback to SMS
+    fallbackToSMS(message);
+  }
+};
+
+const fallbackToSMS = (message: string) => {
+  const encodedMessage = encodeURIComponent(message);
+  const smsUrl = `sms:?body=${encodedMessage}`;
+  window.open(smsUrl, '_self');
+};
