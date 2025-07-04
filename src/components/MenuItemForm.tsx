@@ -220,14 +220,25 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
               label="Menu Item Image"
               accept="image/*"
             />
-            <FileUpload
-              bucket="3d-models"
-              currentUrl={formData.model_url}
-              onUpload={(url) => setFormData({ ...formData, model_url: url })}
-              onRemove={() => setFormData({ ...formData, model_url: '' })}
-              label="3D Model"
-              accept=".glb,.gltf,.obj,.fbx"
-            />
+            <div className="space-y-4">
+              <FileUpload
+                bucket="3d-models"
+                currentUrl={formData.model_url}
+                onUpload={(url) => setFormData({ ...formData, model_url: url })}
+                onRemove={() => setFormData({ ...formData, model_url: '' })}
+                label="3D Model File"
+                accept=".glb,.gltf,.obj,.fbx"
+              />
+              <div>
+                <Label htmlFor="playcanvas-url">Or PlayCanvas Link</Label>
+                <Input
+                  id="playcanvas-url"
+                  value={formData.model_url}
+                  onChange={(e) => setFormData({ ...formData, model_url: e.target.value })}
+                  placeholder="https://playcanv.as/p/..."
+                />
+              </div>
+            </div>
           </div>
 
           <div>
