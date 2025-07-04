@@ -294,12 +294,10 @@ const Index = () => {
     const restaurantName = restaurant?.name || 'Our Menu';
     const message = `Check out ${restaurantName}'s digital menu! Visit: ${menuUrl}`;
     
-    // Try to use Web Share API first (mobile-friendly)
+    // Try to use Web Share API first (mobile-friendly) - text only
     if (navigator.share) {
       navigator.share({
-        title: `${restaurantName} Menu`,
-        text: message,
-        url: menuUrl
+        text: message
       }).catch(err => {
         console.log('Share failed:', err);
         // Fallback to SMS
