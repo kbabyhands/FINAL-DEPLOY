@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import MenuCard from "@/components/MenuCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import DietaryFilter from "@/components/DietaryFilter";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Settings, Share } from "lucide-react";
@@ -389,6 +390,7 @@ const Index = () => {
           
           {/* Action buttons */}
           <div className="absolute top-4 right-4 flex gap-2">
+            <DarkModeToggle />
             <Button onClick={shareViaText} variant="outline" size="sm">
               <Share className="w-4 h-4 mr-2" />
               Share Menu
