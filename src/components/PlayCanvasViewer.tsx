@@ -145,41 +145,32 @@ const PlayCanvasViewer = ({ splatUrl, className = "" }: PlayCanvasViewerProps) =
           
           // Check if it's a PlayCanvas URL
           if (splatUrl.includes('playcanv.as')) {
-            console.log('PlayCanvasViewer: Detected PlayCanvas URL, creating placeholder');
-            // For PlayCanvas URLs, we'll create a placeholder since we can't directly embed them
-            try {
-              const material = new pc.StandardMaterial();
-              material.diffuse = new pc.Color(0.2, 0.6, 1.0);
-              material.metalness = 0.1;
-              material.gloss = 0.9;
-              material.update();
-
-              const entity = new pc.Entity('playcanvas-placeholder');
-              entity.addComponent('model', {
-                type: 'sphere'
-              });
-              
-              // Apply material to the model
-              if (entity.model?.meshInstances) {
-                entity.model.meshInstances.forEach((meshInstance: any) => {
-                  meshInstance.material = material;
-                });
-              }
-              
-              app.root.addChild(entity);
-              setLoading(false);
-              
-              // Add rotation animation
-              let angle = 0;
-              app.on('update', (dt: number) => {
-                angle += dt * 0.5;
-                entity.setEulerAngles(0, angle * 57.2958, 0);
-              });
-            } catch (placeholderError) {
-              console.error('PlayCanvasViewer: Error creating placeholder:', placeholderError);
-              setError('Failed to create 3D placeholder');
-              setLoading(false);
+            console.log('PlayCanvasViewer: Detected PlayCanvas URL, embedding via iframe');
+            
+            // For PlayCanvas URLs, we need to embed them via iframe
+            // Clean up the canvas since we'll use an iframe instead
+            if (appRef.current) {
+              appRef.current.destroy();
+              appRef.current = null;
             }
+            
+            // Create and insert iframe
+            const iframe = document.createElement('iframe');
+            iframe.src = splatUrl;
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.style.borderRadius = '8px';
+            iframe.setAttribute('allowfullscreen', '');
+            
+            // Replace canvas with iframe
+            const canvas = canvasRef.current;
+            if (canvas && canvas.parentNode) {
+              canvas.style.display = 'none';
+              canvas.parentNode.appendChild(iframe);
+            }
+            
+            setLoading(false);
             return;
           }
           
