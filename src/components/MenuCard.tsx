@@ -111,13 +111,14 @@ const MenuCard = ({
     ).join(", ");
   };
 
-  const openDialogIn3D = () => {
+  const openDialog = () => {
     // Preload immediately if not already done
     if (splatUrl?.trim() && !hasPreloaded.current) {
       preloadModel(splatUrl);
       hasPreloaded.current = true;
     }
-    setIs3DMode(true);
+    // Always open in 3D mode if 3D model is available
+    setIs3DMode(Boolean(splatUrl?.trim()));
     setIsDialogOpen(true);
   };
 
@@ -128,7 +129,7 @@ const MenuCard = ({
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Card ref={cardRef} className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
+        <Card ref={cardRef} className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group" onClick={openDialog}>
           <div className="relative overflow-hidden rounded-t-lg">
             {imageUrl ? (
               <img 
@@ -150,7 +151,7 @@ const MenuCard = ({
                   className="bg-white/90 text-black hover:bg-white backdrop-blur-sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    openDialogIn3D();
+                    openDialog();
                   }}
                 >
                   <Eye className="w-3 h-3 mr-1" />
