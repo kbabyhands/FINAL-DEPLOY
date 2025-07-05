@@ -1,9 +1,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Leaf, Wheat, Shield, Nut } from "lucide-react";
+import { Leaf, Wheat, Shield, Nut, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ReviewsSection from "./ReviewsSection";
 import PlayCanvasViewer from "./PlayCanvasViewer";
 import { useMenuItemViews } from "@/hooks/useMenuItemViews";
@@ -36,6 +38,7 @@ const MenuCard = ({
   splatUrl
 }: MenuCardProps) => {
   const { trackView } = useMenuItemViews();
+  const navigate = useNavigate();
   const hasTrackedView = useRef(false);
 
   // Track view when component mounts (only once per session)
@@ -71,11 +74,7 @@ const MenuCard = ({
       <DialogTrigger asChild>
         <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
           <div className="relative overflow-hidden rounded-t-lg">
-            {splatUrl && splatUrl.trim() ? (
-              <div className="w-full h-48">
-                <PlayCanvasViewer splatUrl={splatUrl} className="h-full" />
-              </div>
-            ) : imageUrl ? (
+            {imageUrl ? (
               <img 
                 src={imageUrl} 
                 alt={title}
@@ -91,6 +90,22 @@ const MenuCard = ({
                 ${price.toFixed(2)}
               </Badge>
             </div>
+            {splatUrl && splatUrl.trim() && (
+              <div className="absolute bottom-2 right-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="bg-white/90 text-black hover:bg-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/menu-item/${menuItemId}`);
+                  }}
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  View in 3D
+                </Button>
+              </div>
+            )}
           </div>
           
           <CardContent className="p-4">
@@ -122,13 +137,9 @@ const MenuCard = ({
         </DialogHeader>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* 3D Model/Image Section */}
+          {/* Image/3D Model Section */}
           <div className="space-y-4">
-            {splatUrl && splatUrl.trim() ? (
-              <div className="w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
-                <PlayCanvasViewer splatUrl={splatUrl} className="h-full" />
-              </div>
-            ) : imageUrl ? (
+            {imageUrl ? (
               <img 
                 src={imageUrl} 
                 alt={title}
@@ -138,6 +149,16 @@ const MenuCard = ({
               <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center rounded-lg">
                 <span className="text-blue-600 text-lg font-semibold">No Preview Available</span>
               </div>
+            )}
+            {splatUrl && splatUrl.trim() && (
+              <Button
+                onClick={() => navigate(`/menu-item/${menuItemId}`)}
+                variant="outline"
+                className="w-full"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                View in 3D
+              </Button>
             )}
           </div>
           
