@@ -1,14 +1,14 @@
 
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuCheckboxItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface DietaryFilterProps {
   filters: {
@@ -42,21 +42,33 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
                 : 'Select dietary options'
               }
             </span>
-            <Check className="h-4 w-4 opacity-50" />
+            <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="start">
           <DropdownMenuLabel>Dietary Options</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {filterOptions.map((option) => (
-            <DropdownMenuCheckboxItem
-              key={option.key}
-              checked={option.checked}
-              onCheckedChange={(checked) => onFilterChange(option.key, !!checked)}
-            >
-              {option.label}
-            </DropdownMenuCheckboxItem>
-          ))}
+          <div className="p-2 space-y-2">
+            {filterOptions.map((option) => (
+              <div 
+                key={option.key} 
+                className="flex items-center space-x-3 p-2 hover:bg-muted rounded-sm cursor-pointer"
+                onClick={() => onFilterChange(option.key, !option.checked)}
+              >
+                <Checkbox
+                  id={option.key}
+                  checked={option.checked}
+                  onCheckedChange={(checked) => onFilterChange(option.key, !!checked)}
+                />
+                <label 
+                  htmlFor={option.key} 
+                  className="text-sm cursor-pointer flex-1"
+                >
+                  {option.label}
+                </label>
+              </div>
+            ))}
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
