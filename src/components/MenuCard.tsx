@@ -94,6 +94,22 @@ const MenuCard = ({
                 <span className="text-blue-600 text-lg font-semibold">No Preview</span>
               </div>
             )}
+            {splatUrl && splatUrl.trim() && (
+              <div className="absolute bottom-2 right-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="bg-white/90 text-black hover:bg-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openDialogIn3D();
+                  }}
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  View in 3D
+                </Button>
+              </div>
+            )}
           </div>
           
           <CardContent className="p-4">
@@ -113,24 +129,11 @@ const MenuCard = ({
               })}
             </div>
 
-            {/* Price and 3D button at bottom */}
-            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+            {/* Price at bottom */}
+            <div className="flex items-center justify-start pt-2 border-t border-gray-100">
               <Badge variant="secondary" className="font-bold">
                 ${price.toFixed(2)}
               </Badge>
-              {splatUrl && splatUrl.trim() && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openDialogIn3D();
-                  }}
-                >
-                  <Eye className="w-3 h-3 mr-1" />
-                  View in 3D
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
