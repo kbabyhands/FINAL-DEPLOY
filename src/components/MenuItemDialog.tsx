@@ -2,6 +2,7 @@ import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/c
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield, ArrowLeft } from "lucide-react";
+import { formatPrice } from "@/utils/formatters";
 import DietaryBadges from "./DietaryBadges";
 import ViewerToggle from "./ViewerToggle";
 import ReviewsSection from "./ReviewsSection";
@@ -22,6 +23,17 @@ interface MenuItemDialogProps {
   onClose: () => void;
 }
 
+/**
+ * MenuItemDialog Component - Detailed view of a menu item in modal format
+ * 
+ * Features:
+ * - Comprehensive item information display
+ * - 3D model and image viewing
+ * - Dietary information section
+ * - Allergen information display
+ * - Reviews and rating system
+ * - Accessible navigation
+ */
 const MenuItemDialog = ({
   menuItemId,
   title,
@@ -39,6 +51,7 @@ const MenuItemDialog = ({
 }: MenuItemDialogProps) => {
   return (
     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      {/* Dialog Header with Navigation */}
       <DialogHeader>
         <div className="flex items-center gap-3 mb-2">
           <Button
@@ -46,8 +59,9 @@ const MenuItemDialog = ({
             size="sm"
             onClick={onClose}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            aria-label="Close dialog and return to menu"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
             Back to Menu
           </Button>
         </div>
@@ -57,28 +71,30 @@ const MenuItemDialog = ({
         </DialogDescription>
       </DialogHeader>
       
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        {/* Image/3D Model Section */}
-        <div className="space-y-4">
-          <ViewerToggle
-            splatUrl={splatUrl}
-            imageUrl={imageUrl}
-            title={title}
-            performanceMode={performanceMode}
-          />
-        </div>
+        {/* Media Section - Image/3D Model Viewer */}
+        <ViewerToggle
+          splatUrl={splatUrl}
+          imageUrl={imageUrl}
+          title={title}
+          performanceMode={performanceMode}
+        />
         
         {/* Details Section */}
         <div className="space-y-6">
+          {/* Price Display */}
           <div className="flex items-center gap-4">
             <Badge variant="outline" className="text-2xl font-bold px-4 py-2">
-              ${price.toFixed(2)}
+              {formatPrice(price)}
             </Badge>
           </div>
           
-          {/* Dietary Information */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-lg">Dietary Information</h4>
+          {/* Dietary Information Section */}
+          <section aria-labelledby="dietary-info-title">
+            <h4 id="dietary-info-title" className="font-semibold text-lg mb-3">
+              Dietary Information
+            </h4>
             <DietaryBadges
               isVegetarian={isVegetarian}
               isVegan={isVegan}
@@ -86,25 +102,25 @@ const MenuItemDialog = ({
               isNutFree={isNutFree}
               variant="detailed"
             />
-          </div>
+          </section>
           
-          {/* Allergen Information */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-lg flex items-center gap-2">
-              <Shield className="w-5 h-5" />
+          {/* Allergen Information Section */}
+          <section aria-labelledby="allergen-info-title">
+            <h4 id="allergen-info-title" className="font-semibold text-lg flex items-center gap-2 mb-3">
+              <Shield className="w-5 h-5" aria-hidden="true" />
               Allergen Information
             </h4>
             <p className="text-muted-foreground">
               <strong>Contains:</strong> {allergens?.length > 0 ? allergens.join(", ") : "None"}
             </p>
-          </div>
+          </section>
         </div>
       </div>
       
       {/* Reviews Section */}
-      <div className="mt-8">
+      <section className="mt-8" aria-labelledby="reviews-title">
         <ReviewsSection menuItemId={menuItemId} menuItemTitle={title} />
-      </div>
+      </section>
     </DialogContent>
   );
 };

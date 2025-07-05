@@ -10,16 +10,31 @@ interface ViewerToggleProps {
   performanceMode: boolean;
 }
 
+/**
+ * ViewerToggle Component - Manages switching between image and 3D model views
+ * 
+ * Features:
+ * - Automatic 3D mode detection based on model availability
+ * - Performance mode consideration
+ * - Accessible toggle button
+ * - Fallback for missing media
+ */
 const ViewerToggle = ({ splatUrl, imageUrl, title, performanceMode }: ViewerToggleProps) => {
   const [is3DMode, setIs3DMode] = useState(Boolean(splatUrl?.trim()));
 
+  /**
+   * Toggles between 3D model and image view
+   */
   const toggle3DMode = () => {
     setIs3DMode(!is3DMode);
   };
 
+  const has3DModel = Boolean(splatUrl?.trim());
+
   return (
     <div className="space-y-4">
-      {is3DMode && splatUrl && splatUrl.trim() ? (
+      {/* Media Display Area */}
+      {is3DMode && has3DModel ? (
         <div className="w-full h-64 rounded-lg overflow-hidden">
           <PlayCanvasViewer
             splatUrl={splatUrl}
@@ -37,23 +52,28 @@ const ViewerToggle = ({ splatUrl, imageUrl, title, performanceMode }: ViewerTogg
         />
       ) : (
         <div className="w-full h-64 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center rounded-lg">
-          <span className="text-muted-foreground text-lg font-medium">No Preview Available</span>
+          <span className="text-muted-foreground text-lg font-medium">
+            No Preview Available
+          </span>
         </div>
       )}
-      {splatUrl && splatUrl.trim() && (
+      
+      {/* Toggle Button */}
+      {has3DModel && (
         <Button
           onClick={toggle3DMode}
           variant="outline"
           className="w-full"
+          aria-label={is3DMode ? 'Switch to image view' : 'Switch to 3D view'}
         >
           {is3DMode ? (
             <>
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
               Back to Image
             </>
           ) : (
             <>
-              <Eye className="w-4 h-4 mr-2" />
+              <Eye className="w-4 h-4 mr-2" aria-hidden="true" />
               {performanceMode ? 'View in 3D (Performance Mode)' : 'View in 3D'}
             </>
           )}
