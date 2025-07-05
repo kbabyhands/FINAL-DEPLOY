@@ -12,53 +12,31 @@ interface DietaryFilterProps {
 }
 
 const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
+  const filterOptions = [
+    { key: 'vegetarian', label: '🌱 Vegetarian', checked: filters.vegetarian },
+    { key: 'vegan', label: '🥬 Vegan', checked: filters.vegan },
+    { key: 'glutenFree', label: '🌾 Gluten-Free', checked: filters.glutenFree },
+    { key: 'nutFree', label: '🥜 Nut-Free', checked: filters.nutFree },
+  ];
+
   return (
-    <div className="mb-8">
-      <h2 className="text-lg font-semibold text-gray-700 mb-4">Dietary Options</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="vegetarian"
-            checked={filters.vegetarian}
-            onCheckedChange={(checked) => onFilterChange('vegetarian', !!checked)}
-          />
-          <label htmlFor="vegetarian" className="text-sm text-gray-700 cursor-pointer">
-            🌱 Vegetarian
-          </label>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="vegan"
-            checked={filters.vegan}
-            onCheckedChange={(checked) => onFilterChange('vegan', !!checked)}
-          />
-          <label htmlFor="vegan" className="text-sm text-gray-700 cursor-pointer">
-            🥬 Vegan
-          </label>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="glutenFree"
-            checked={filters.glutenFree}
-            onCheckedChange={(checked) => onFilterChange('glutenFree', !!checked)}
-          />
-          <label htmlFor="glutenFree" className="text-sm text-gray-700 cursor-pointer">
-            🌾 Gluten-Free
-          </label>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="nutFree"
-            checked={filters.nutFree}
-            onCheckedChange={(checked) => onFilterChange('nutFree', !!checked)}
-          />
-          <label htmlFor="nutFree" className="text-sm text-gray-700 cursor-pointer">
-            🥜 Nut-Free
-          </label>
-        </div>
+    <div className="px-4 sm:px-6 lg:px-8 py-4">
+      <div className="flex flex-wrap gap-4">
+        {filterOptions.map((option) => (
+          <div key={option.key} className="flex items-center space-x-2">
+            <Checkbox
+              id={option.key}
+              checked={option.checked}
+              onCheckedChange={(checked) => onFilterChange(option.key, !!checked)}
+            />
+            <label 
+              htmlFor={option.key} 
+              className="text-sm text-foreground cursor-pointer whitespace-nowrap"
+            >
+              {option.label}
+            </label>
+          </div>
+        ))}
       </div>
     </div>
   );

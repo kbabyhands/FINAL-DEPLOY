@@ -13,24 +13,25 @@ interface CategoryFilterProps {
 
 const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: CategoryFilterProps) => {
   return (
-    <div className="mb-8">
-      <h2 className="text-lg font-semibold text-gray-700 mb-4">Categories</h2>
-      <div className="flex flex-wrap gap-2">
-        {categories.map((category) => (
-          <Button
-            key={category.id}
-            variant={activeCategory === category.id ? "default" : "outline"}
-            onClick={() => onCategoryChange(category.id)}
-            className={`${
-              activeCategory === category.id 
-                ? "bg-blue-800 hover:bg-blue-900 text-white" 
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-            }`}
-          >
-            <span className="mr-2">{category.icon}</span>
-            {category.name}
-          </Button>
-        ))}
+    <div className="border-b border-border">
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex space-x-1 py-3 overflow-x-auto scrollbar-hide">
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={activeCategory === category.id ? "default" : "ghost"}
+              onClick={() => onCategoryChange(category.id)}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                activeCategory === category.id 
+                  ? "bg-primary text-primary-foreground shadow-sm" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+            >
+              <span className="mr-2">{category.icon}</span>
+              {category.name}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   );

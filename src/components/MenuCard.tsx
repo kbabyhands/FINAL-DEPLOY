@@ -66,7 +66,7 @@ const MenuCard = ({
       const timer = setTimeout(() => {
         trackView(menuItemId);
         hasTrackedView.current = true;
-      }, 1000); // Wait 1 second to ensure the user actually viewed the item
+      }, 1000);
 
       return () => clearTimeout(timer);
     }
@@ -79,7 +79,6 @@ const MenuCard = ({
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting && !hasPreloaded.current) {
-              // Preload with a slight delay to avoid overwhelming the system
               setTimeout(() => {
                 preloadModel(splatUrl);
                 hasPreloaded.current = true;
@@ -97,27 +96,18 @@ const MenuCard = ({
 
   const getDietaryBadges = () => {
     const badges = [];
-    if (isVegetarian) badges.push({ icon: Leaf, label: "Vegetarian", color: "bg-green-100 text-green-800" });
-    if (isVegan) badges.push({ icon: Leaf, label: "Vegan", color: "bg-green-200 text-green-900" });
-    if (isGlutenFree) badges.push({ icon: Wheat, label: "Gluten Free", color: "bg-yellow-100 text-yellow-800" });
-    if (isNutFree) badges.push({ icon: Nut, label: "Nut Free", color: "bg-orange-100 text-orange-800" });
+    if (isVegetarian) badges.push({ icon: Leaf, label: "Vegetarian", color: "text-green-600" });
+    if (isVegan) badges.push({ icon: Leaf, label: "Vegan", color: "text-green-700" });
+    if (isGlutenFree) badges.push({ icon: Wheat, label: "Gluten Free", color: "text-amber-600" });
+    if (isNutFree) badges.push({ icon: Nut, label: "Nut Free", color: "text-orange-600" });
     return badges;
   };
 
-  const formatAllergens = (allergens: string[]) => {
-    if (!allergens || allergens.length === 0) return "None";
-    return allergens.map(allergen => 
-      allergen.charAt(0).toUpperCase() + allergen.slice(1)
-    ).join(", ");
-  };
-
   const openDialog = () => {
-    // Preload immediately if not already done
     if (splatUrl?.trim() && !hasPreloaded.current) {
       preloadModel(splatUrl);
       hasPreloaded.current = true;
     }
-    // Always open in 3D mode if 3D model is available
     setIs3DMode(Boolean(splatUrl?.trim()));
     setIsDialogOpen(true);
   };
@@ -129,60 +119,64 @@ const MenuCard = ({
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Card ref={cardRef} className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group" onClick={openDialog}>
-          <div className="relative overflow-hidden rounded-t-lg">
-            {imageUrl ? (
-              <img 
-                src={imageUrl} 
-                alt={title}
-                className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                loading="lazy"
-              />
-            ) : (
-              <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                <span className="text-blue-600 text-lg font-semibold">No Preview</span>
-              </div>
-            )}
-            {splatUrl && splatUrl.trim() && (
-              <div className="absolute bottom-2 right-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="bg-white/90 text-black hover:bg-white backdrop-blur-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openDialog();
-                  }}
-                >
-                  <Eye className="w-3 h-3 mr-1" />
-                  View in 3D
-                </Button>
-              </div>
-            )}
-          </div>
-          
+        <Card 
+          ref={cardRef} 
+          className="cursor-pointer transition-all duration-200 hover:shadow-md border-0 border-b border-border rounded-none hover:bg-muted/50" 
+          onClick={openDialog}
+        >
           <CardContent className="p-4">
-            <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
-            <p className="text-gray-600 text-sm mb-3 line-clamp-3">{description}</p>
-            
-            {/* Dietary badges */}
-            <div className="flex flex-wrap gap-1 mb-3">
-              {getDietaryBadges().map((badge, index) => {
-                const IconComponent = badge.icon;
-                return (
-                  <div key={index} className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${badge.color}`}>
-                    <IconComponent className="w-3 h-3" />
-                    <span>{badge.label}</span>
+            <div className="flex space-x-4">
+              {/* Image */}
+              <div className="w-20 h-20 flex-shrink-0 relative">
+                {imageUrl ? (
+                  <img 
+                    src={imageUrl} 
+                    alt={title}
+                    className="w-full h-full object-cover rounded-lg"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
+                    <span className="text-muted-foreground text-xs">No Image</span>
                   </div>
-                );
-              })}
-            </div>
+                )}
+                {splatUrl && splatUrl.trim() && (
+                  <div className="absolute -top-1 -right-1">
+                    <div className="bg-primary text-primary-foreground rounded-full p-1">
+                      <Eye className="w-3 h-3" />
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            {/* Price at bottom */}
-            <div className="flex items-center justify-end pt-2 border-t border-gray-300 dark:border-gray-100">
-              <Badge variant="secondary" className="font-bold">
-                ${price.toFixed(2)}
-              </Badge>
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start mb-1">
+                  <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-1">
+                    {title}
+                  </h3>
+                  <Badge variant="secondary" className="ml-2 font-semibold">
+                    ${price.toFixed(2)}
+                  </Badge>
+                </div>
+                
+                <p className="text-muted-foreground text-sm line-clamp-2 mb-2">
+                  {description}
+                </p>
+
+                {/* Dietary badges */}
+                <div className="flex flex-wrap gap-1">
+                  {getDietaryBadges().map((badge, index) => {
+                    const IconComponent = badge.icon;
+                    return (
+                      <div key={index} className={`flex items-center ${badge.color}`}>
+                        <IconComponent className="w-3 h-3 mr-1" />
+                        <span className="text-xs">{badge.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -216,8 +210,8 @@ const MenuCard = ({
                 loading="lazy"
               />
             ) : (
-              <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center rounded-lg">
-                <span className="text-blue-600 text-lg font-semibold">No Preview Available</span>
+              <div className="w-full h-64 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center rounded-lg">
+                <span className="text-muted-foreground text-lg font-medium">No Preview Available</span>
               </div>
             )}
             {splatUrl && splatUrl.trim() && (
@@ -256,7 +250,7 @@ const MenuCard = ({
                 {getDietaryBadges().map((badge, index) => {
                   const IconComponent = badge.icon;
                   return (
-                    <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${badge.color}`}>
+                    <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg bg-muted ${badge.color}`}>
                       <IconComponent className="w-4 h-4" />
                       <span className="font-medium">{badge.label}</span>
                     </div>
@@ -271,8 +265,8 @@ const MenuCard = ({
                 <Shield className="w-5 h-5" />
                 Allergen Information
               </h4>
-              <p className="text-gray-700">
-                <strong>Contains:</strong> {formatAllergens(allergens)}
+              <p className="text-muted-foreground">
+                <strong>Contains:</strong> {allergens?.length > 0 ? allergens.join(", ") : "None"}
               </p>
             </div>
           </div>

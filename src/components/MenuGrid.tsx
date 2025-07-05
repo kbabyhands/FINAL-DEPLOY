@@ -19,7 +19,7 @@ export const MenuGrid = ({ filteredItems, totalItemsCount }: MenuGridProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="space-y-4">
       {filteredItems.map((item) => (
         <MenuCard
           key={item.id}
