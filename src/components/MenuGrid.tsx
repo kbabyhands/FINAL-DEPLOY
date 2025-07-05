@@ -1,6 +1,7 @@
 import MenuCard from "@/components/MenuCard";
 import { MenuItem } from "@/data/placeholderMenuItems";
 import { EmptyMenuState } from "@/components/EmptyMenuState";
+import { useMenuPreloader } from "@/hooks/useMenuPreloader";
 
 interface MenuGridProps {
   filteredItems: MenuItem[];
@@ -8,6 +9,11 @@ interface MenuGridProps {
 }
 
 export const MenuGrid = ({ filteredItems, totalItemsCount }: MenuGridProps) => {
+  // Aggressively preload all 3D models for instant loading
+  useMenuPreloader(filteredItems.map(item => ({
+    model_url: item.model_url
+  })));
+
   if (filteredItems.length === 0) {
     return <EmptyMenuState hasItems={totalItemsCount > 0} />;
   }

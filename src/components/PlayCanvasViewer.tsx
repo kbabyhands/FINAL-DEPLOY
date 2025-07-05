@@ -42,7 +42,7 @@ const PlayCanvasViewer = ({
   const [isPaused, setIsPaused] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  const { getPreloadedModel, getInstance, returnInstance } = usePlayCanvasPreloader();
+  const { getPreloadedModel, getInstance, returnInstance, getCanvas, returnCanvas } = usePlayCanvasPreloader();
 
   // Intersection Observer for lazy loading
   useEffect(() => {
@@ -153,7 +153,7 @@ const PlayCanvasViewer = ({
       iframe.style.border = 'none';
       iframe.style.borderRadius = '8px';
       iframe.setAttribute('allowfullscreen', '');
-      iframe.loading = 'lazy';
+      iframe.loading = 'eager'; // Load immediately for better performance
       
       const canvas = canvasRef.current;
       if (canvas && canvas.parentNode) {
@@ -250,40 +250,69 @@ const PlayCanvasViewer = ({
     canvas.addEventListener('mouseup', handleMouseUp);
     canvas.addEventListener('wheel', handleWheel, { passive: false });
 
+    // Create instant placeholder while loading real model
+    const createPlaceholder = () => {
+      const material = new pc.StandardMaterial();
+      material.diffuse = new pc.Color(0.7, 0.5, 0.8);
+      if (!performanceMode) {
+        material.metalness = 0.3;
+        material.gloss = 0.8;
+      }
+      material.update();
+
+      const entity = new pc.Entity('instant-placeholder');
+      entity.addComponent('model', { type: 'box' });
+      
+      if (entity.model?.meshInstances) {
+        entity.model.meshInstances.forEach((meshInstance: any) => {
+          meshInstance.material = material;
+        });
+      }
+      
+      app.root.addChild(entity);
+      
+      // Add gentle rotation
+      if (!performanceMode) {
+        let angle = 0;
+        const rotationHandler = (dt: number) => {
+          if (!isPaused) {
+            angle += dt * 0.5;
+            entity.setEulerAngles(0, angle * 57.2958, 0);
+          }
+        };
+        app.on('update', rotationHandler);
+      }
+      
+      return entity;
+    };
+
     // Load model with preloader integration
     const loadModel = async () => {
+      // Always show placeholder immediately for instant feedback
+      const placeholder = createPlaceholder();
+      setLoading(false); // Remove loading spinner immediately
+      
       if (!splatUrl?.trim()) {
-        // Create optimized placeholder
-        const material = new pc.StandardMaterial();
-        material.diffuse = new pc.Color(0.5, 0.5, 0.5);
-        material.update();
-
-        const entity = new pc.Entity('placeholder');
-        entity.addComponent('model', { type: 'box' });
-        
-        if (entity.model?.meshInstances) {
-          entity.model.meshInstances.forEach((meshInstance: any) => {
-            meshInstance.material = material;
-          });
-        }
-        
-        app.root.addChild(entity);
-        setLoading(false);
-        return;
+        return; // Keep placeholder for items without models
       }
 
       try {
+        console.log(`PlayCanvasViewer: Loading model ${splatUrl}`);
         setLoadingProgress(10);
         
-        // Check preloader cache first
+        // Check preloader cache first - this should be instant if preloaded
         const preloadedAsset = getPreloadedModel(splatUrl);
         if (preloadedAsset) {
+          console.log(`PlayCanvasViewer: Found preloaded model ${splatUrl}`);
           setLoadingProgress(80);
+          
+          // Remove placeholder
+          placeholder.destroy();
+          
           const modelEntity = new pc.Entity('preloaded-model');
           modelEntity.addComponent('model', { asset: preloadedAsset });
           app.root.addChild(modelEntity);
           setLoadingProgress(100);
-          setLoading(false);
           
           // Optional animation (disabled in performance mode)
           if (!performanceMode) {

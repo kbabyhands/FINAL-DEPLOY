@@ -16,15 +16,60 @@ class PlayCanvasPreloader {
   private static instance: PlayCanvasPreloader;
   private modelCache = new Map<string, PreloadedModel>();
   private instancePool: PreloadedInstance[] = [];
+  private canvasPool: HTMLCanvasElement[] = [];
   private maxCacheSize = 50;
-  private maxPoolSize = 3;
+  private maxPoolSize = 5;
+  private maxCanvasPool = 3;
   private cacheTimeout = 5 * 60 * 1000; // 5 minutes
+  private isPreloadingBatch = false;
 
   static getInstance(): PlayCanvasPreloader {
     if (!PlayCanvasPreloader.instance) {
       PlayCanvasPreloader.instance = new PlayCanvasPreloader();
+      // Initialize canvas pool immediately
+      PlayCanvasPreloader.instance.initializeCanvasPool();
     }
     return PlayCanvasPreloader.instance;
+  }
+
+  // Pre-create canvas elements for instant use
+  private initializeCanvasPool(): void {
+    for (let i = 0; i < this.maxCanvasPool; i++) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.display = 'block';
+      this.canvasPool.push(canvas);
+    }
+  }
+
+  // Get a pre-created canvas
+  getCanvas(): HTMLCanvasElement | null {
+    if (this.canvasPool.length > 0) {
+      return this.canvasPool.pop() || null;
+    }
+    // Fallback: create new canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.display = 'block';
+    return canvas;
+  }
+
+  // Return canvas to pool
+  returnCanvas(canvas: HTMLCanvasElement): void {
+    if (this.canvasPool.length < this.maxCanvasPool) {
+      // Clear the canvas
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      this.canvasPool.push(canvas);
+    }
   }
 
   // Preload model in background
@@ -137,7 +182,34 @@ class PlayCanvasPreloader {
     }
   }
 
-  // Batch preload multiple models
+  // Aggressive batch preload - starts immediately and preloads everything
+  async aggressiveBatchPreload(urls: string[]): Promise<void> {
+    if (this.isPreloadingBatch) return;
+    this.isPreloadingBatch = true;
+
+    const validUrls = urls.filter(url => url?.trim() && !this.modelCache.has(url));
+    console.log(`PlayCanvasPreloader: Starting aggressive preload of ${validUrls.length} models`);
+    
+    // Preload all models concurrently with higher batch size
+    const batchSize = 5;
+    const promises: Promise<void>[] = [];
+    
+    for (let i = 0; i < validUrls.length; i += batchSize) {
+      const batch = validUrls.slice(i, i + batchSize);
+      promises.push(
+        Promise.allSettled(batch.map(url => this.preloadModel(url)))
+          .then(() => {
+            console.log(`PlayCanvasPreloader: Completed batch ${i / batchSize + 1}/${Math.ceil(validUrls.length / batchSize)}`);
+          })
+      );
+    }
+    
+    await Promise.allSettled(promises);
+    this.isPreloadingBatch = false;
+    console.log(`PlayCanvasPreloader: Completed aggressive preloading. Cache size: ${this.modelCache.size}`);
+  }
+
+  // Batch preload multiple models (original method for compatibility)
   async batchPreload(urls: string[]): Promise<void> {
     const validUrls = urls.filter(url => url?.trim() && !this.modelCache.has(url));
     
@@ -170,6 +242,10 @@ export const usePlayCanvasPreloader = () => {
     await preloader.current.batchPreload(urls);
   }, []);
 
+  const aggressiveBatchPreload = useCallback(async (urls: string[]) => {
+    await preloader.current.aggressiveBatchPreload(urls);
+  }, []);
+
   const getPreloadedModel = useCallback((url: string) => {
     return preloader.current.getPreloadedModel(url);
   }, []);
@@ -182,6 +258,14 @@ export const usePlayCanvasPreloader = () => {
     preloader.current.returnInstance(app);
   }, []);
 
+  const getCanvas = useCallback(() => {
+    return preloader.current.getCanvas();
+  }, []);
+
+  const returnCanvas = useCallback((canvas: HTMLCanvasElement) => {
+    preloader.current.returnCanvas(canvas);
+  }, []);
+
   const getCacheStats = useCallback(() => {
     return preloader.current.getCacheStats();
   }, []);
@@ -189,9 +273,12 @@ export const usePlayCanvasPreloader = () => {
   return {
     preloadModel,
     batchPreload,
+    aggressiveBatchPreload,
     getPreloadedModel,
     getInstance,
     returnInstance,
+    getCanvas,
+    returnCanvas,
     getCacheStats
   };
 };
