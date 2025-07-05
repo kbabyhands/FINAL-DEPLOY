@@ -121,7 +121,7 @@ const MenuCard = ({
       <DialogTrigger asChild>
         <Card 
           ref={cardRef} 
-          className="cursor-pointer transition-all duration-200 hover:shadow-md border-0 border-b border-border rounded-none hover:bg-muted/50" 
+          className="cursor-pointer transition-all duration-200 hover:shadow-lg border border-border rounded-lg shadow-sm hover:bg-muted/50 bg-card" 
           onClick={openDialog}
         >
           <CardContent className="p-4">
