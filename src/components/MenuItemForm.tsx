@@ -111,10 +111,21 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
           description: "Menu item updated successfully"
         });
       } else {
-        // Create new item
+        // Create new item - get the next sort_order
+        const { data: maxOrderData } = await supabase
+          .from('menu_items')
+          .select('sort_order')
+          .eq('restaurant_id', restaurantId)
+          .order('sort_order', { ascending: false })
+          .limit(1);
+        
+        const nextSortOrder = maxOrderData && maxOrderData.length > 0 
+          ? (maxOrderData[0].sort_order || 0) + 1 
+          : 1;
+
         const { error } = await supabase
           .from('menu_items')
-          .insert([menuItemData]);
+          .insert([{ ...menuItemData, sort_order: nextSortOrder }]);
 
         if (error) throw error;
 

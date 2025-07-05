@@ -51,7 +51,7 @@ export const useMenuData = () => {
         .from('menu_items')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('sort_order', { ascending: true });
 
       if (error) throw error;
 

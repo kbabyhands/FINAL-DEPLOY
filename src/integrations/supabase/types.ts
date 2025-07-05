@@ -98,6 +98,7 @@ export type Database = {
           model_url: string | null
           price: number
           restaurant_id: string
+          sort_order: number | null
           title: string
           updated_at: string
           view_count: number | null
@@ -117,6 +118,7 @@ export type Database = {
           model_url?: string | null
           price: number
           restaurant_id: string
+          sort_order?: number | null
           title: string
           updated_at?: string
           view_count?: number | null
@@ -136,6 +138,7 @@ export type Database = {
           model_url?: string | null
           price?: number
           restaurant_id?: string
+          sort_order?: number | null
           title?: string
           updated_at?: string
           view_count?: number | null

@@ -41,6 +41,7 @@ interface MenuItem {
   model_url?: string;
   image_url?: string;
   is_active: boolean;
+  sort_order: number;
 }
 
 interface AdminDashboardProps {
@@ -80,7 +81,7 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
           .from('menu_items')
           .select('*')
           .eq('restaurant_id', restaurantData.id)
-          .order('created_at', { ascending: false });
+          .order('sort_order', { ascending: true });
 
         if (menuError) throw menuError;
         setMenuItems(menuData || []);
@@ -119,6 +120,10 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
   const handleEditMenuItem = (item: MenuItem) => {
     setEditingItem(item);
     setShowMenuForm(true);
+  };
+
+  const handleReorderItems = (items: MenuItem[]) => {
+    setMenuItems(items);
   };
 
   if (loading) {
@@ -170,6 +175,7 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
                 onAddMenuItem={handleAddMenuItem}
                 onEditMenuItem={handleEditMenuItem}
                 onDeleteMenuItem={loadRestaurantData}
+                onReorderItems={handleReorderItems}
               />
             ) : (
               <AnalyticsTab restaurantId={restaurant.id} />

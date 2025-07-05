@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
-import MenuItemsList from '../MenuItemsList';
+import SortableMenuItemsList from './SortableMenuItemsList';
 
 interface MenuItem {
   id: string;
@@ -19,6 +19,7 @@ interface MenuItem {
   model_url?: string;
   image_url?: string;
   is_active: boolean;
+  sort_order: number;
 }
 
 interface MenuManagementTabProps {
@@ -26,13 +27,15 @@ interface MenuManagementTabProps {
   onAddMenuItem: () => void;
   onEditMenuItem: (item: MenuItem) => void;
   onDeleteMenuItem: () => void;
+  onReorderItems: (items: MenuItem[]) => void;
 }
 
 const MenuManagementTab = ({ 
   menuItems, 
   onAddMenuItem, 
   onEditMenuItem, 
-  onDeleteMenuItem 
+  onDeleteMenuItem,
+  onReorderItems 
 }: MenuManagementTabProps) => {
   return (
     <Card>
@@ -51,10 +54,11 @@ const MenuManagementTab = ({
         </div>
       </CardHeader>
       <CardContent>
-        <MenuItemsList
+        <SortableMenuItemsList
           menuItems={menuItems}
           onEdit={onEditMenuItem}
           onDelete={onDeleteMenuItem}
+          onReorder={onReorderItems}
         />
       </CardContent>
     </Card>
