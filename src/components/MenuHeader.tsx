@@ -55,10 +55,6 @@ export const MenuHeader = ({ restaurant }: MenuHeaderProps) => {
                   <Star className="w-4 h-4 text-yellow-500 mr-1" />
                   <span>4.6 (500+ ratings)</span>
                 </div>
-                <span>•</span>
-                <span>25-40 min</span>
-                <span>•</span>
-                <span>$2.99 delivery</span>
               </div>
               <p className="text-muted-foreground">
                 {restaurant?.description || 'Explore our delicious offerings'}
