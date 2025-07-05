@@ -4,25 +4,24 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Eye } from "lucide-react";
+import { APP_CONFIG } from "@/constants";
+import { detectDeviceCapabilities } from "@/utils/device";
+import { formatPrice } from "@/utils/formatters";
+import type { MenuCardProps } from "@/types";
 import DietaryBadges from "./DietaryBadges";
 import MenuItemDialog from "./MenuItemDialog";
 import { useMenuItemViews } from "@/hooks/useMenuItemViews";
 import { usePlayCanvasPreloader } from "@/hooks/usePlayCanvasPreloader";
 
-interface MenuCardProps {
-  menuItemId: string;
-  title: string;
-  description: string;
-  price: number;
-  allergens: string[];
-  isVegetarian?: boolean;
-  isVegan?: boolean;
-  isGlutenFree?: boolean;
-  isNutFree?: boolean;
-  imageUrl?: string;
-  splatUrl?: string;
-}
-
+/**
+ * MenuCard Component - Displays a menu item in card format
+ * 
+ * Handles:
+ * - Performance optimization based on device capabilities
+ * - View tracking and analytics
+ * - 3D model preloading
+ * - Modal dialog opening
+ */
 const MenuCard = ({ 
   menuItemId,
   title, 
@@ -36,41 +35,35 @@ const MenuCard = ({
   imageUrl,
   splatUrl
 }: MenuCardProps) => {
+  // Hooks for analytics and 3D preloading
   const { trackView } = useMenuItemViews();
   const { preloadModel } = usePlayCanvasPreloader();
+  
+  // Refs and state for component lifecycle management
   const hasTrackedView = useRef(false);
   const hasPreloaded = useRef(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [performanceMode, setPerformanceMode] = useState(false);
+  const [deviceCapabilities, setDeviceCapabilities] = useState(detectDeviceCapabilities());
 
-  // Detect performance mode based on device capabilities
+  // Update device capabilities on mount
   useEffect(() => {
-    const detectPerformanceMode = () => {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const hasLowMemory = (navigator as any).deviceMemory && (navigator as any).deviceMemory < 4;
-      const hasSlowConnection = (navigator as any).connection && 
-        ((navigator as any).connection.effectiveType === 'slow-2g' || (navigator as any).connection.effectiveType === '2g');
-      
-      setPerformanceMode(isMobile || hasLowMemory || hasSlowConnection);
-    };
-
-    detectPerformanceMode();
+    setDeviceCapabilities(detectDeviceCapabilities());
   }, []);
 
-  // Track view when component mounts (only once per session)
+  // Track view when component becomes visible (analytics)
   useEffect(() => {
     if (!hasTrackedView.current) {
       const timer = setTimeout(() => {
         trackView(menuItemId);
         hasTrackedView.current = true;
-      }, 1000);
+      }, APP_CONFIG.DELAYS.VIEW_TRACKING_MS);
 
       return () => clearTimeout(timer);
     }
   }, [menuItemId, trackView]);
 
-  // Preload 3D model when card comes into view
+  // Preload 3D model when card comes into viewport
   useEffect(() => {
     if (!hasPreloaded.current && splatUrl?.trim() && cardRef.current) {
       const observer = new IntersectionObserver(
@@ -80,11 +73,14 @@ const MenuCard = ({
               setTimeout(() => {
                 preloadModel(splatUrl);
                 hasPreloaded.current = true;
-              }, 500);
+              }, APP_CONFIG.DELAYS.MODEL_PRELOAD_MS);
             }
           });
         },
-        { threshold: 0.2, rootMargin: '50px' }
+        { 
+          threshold: APP_CONFIG.INTERSECTION_OBSERVER.THRESHOLD, 
+          rootMargin: APP_CONFIG.INTERSECTION_OBSERVER.ROOT_MARGIN 
+        }
       );
 
       observer.observe(cardRef.current);
@@ -92,7 +88,11 @@ const MenuCard = ({
     }
   }, [splatUrl, preloadModel]);
 
-  const openDialog = () => {
+  /**
+   * Handles opening the menu item dialog
+   * Ensures 3D model is preloaded before opening
+   */
+  const handleOpenDialog = () => {
     if (splatUrl?.trim() && !hasPreloaded.current) {
       preloadModel(splatUrl);
       hasPreloaded.current = true;
@@ -100,17 +100,29 @@ const MenuCard = ({
     setIsDialogOpen(true);
   };
 
+  /**
+   * Handles closing the menu item dialog
+   */
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+  };
+
+  const has3DModel = Boolean(splatUrl?.trim());
+
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Card 
           ref={cardRef} 
           className="cursor-pointer transition-all duration-200 hover:shadow-lg border border-border rounded-lg shadow-sm hover:bg-muted/50 bg-card" 
-          onClick={openDialog}
+          onClick={handleOpenDialog}
+          role="button"
+          tabIndex={0}
+          aria-label={`View details for ${title}`}
         >
           <CardContent className="p-4">
             <div className="flex space-x-4">
-              {/* Image */}
+              {/* Menu Item Image */}
               <div className="w-20 h-20 flex-shrink-0 relative">
                 {imageUrl ? (
                   <img 
@@ -124,8 +136,10 @@ const MenuCard = ({
                     <span className="text-muted-foreground text-xs">No Image</span>
                   </div>
                 )}
-                {splatUrl && splatUrl.trim() && (
-                  <div className="absolute -top-1 -right-1">
+                
+                {/* 3D Model Indicator */}
+                {has3DModel && (
+                  <div className="absolute -top-1 -right-1" title="3D model available">
                     <div className="bg-primary text-primary-foreground rounded-full p-1">
                       <Eye className="w-3 h-3" />
                     </div>
@@ -133,14 +147,14 @@ const MenuCard = ({
                 )}
               </div>
 
-              {/* Content */}
+              {/* Menu Item Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-1">
                   <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-1">
                     {title}
                   </h3>
                   <Badge variant="secondary" className="ml-2 font-semibold">
-                    ${price.toFixed(2)}
+                    {formatPrice(price)}
                   </Badge>
                 </div>
                 
@@ -148,7 +162,7 @@ const MenuCard = ({
                   {description}
                 </p>
 
-                {/* Dietary badges */}
+                {/* Dietary Information Badges */}
                 <DietaryBadges
                   isVegetarian={isVegetarian}
                   isVegan={isVegan}
@@ -162,6 +176,7 @@ const MenuCard = ({
         </Card>
       </DialogTrigger>
       
+      {/* Menu Item Detail Dialog */}
       <MenuItemDialog
         menuItemId={menuItemId}
         title={title}
@@ -174,8 +189,8 @@ const MenuCard = ({
         isNutFree={isNutFree}
         imageUrl={imageUrl}
         splatUrl={splatUrl}
-        performanceMode={performanceMode}
-        onClose={() => setIsDialogOpen(false)}
+        performanceMode={deviceCapabilities.performanceMode}
+        onClose={handleCloseDialog}
       />
     </Dialog>
   );
