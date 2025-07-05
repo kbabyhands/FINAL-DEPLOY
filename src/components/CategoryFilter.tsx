@@ -1,5 +1,11 @@
 
-import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CategoryFilterProps {
   categories: Array<{
@@ -12,27 +18,31 @@ interface CategoryFilterProps {
 }
 
 const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: CategoryFilterProps) => {
+  const activeItem = categories.find(cat => cat.id === activeCategory);
+  
   return (
-    <div className="border-b border-border">
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex space-x-1 py-3 overflow-x-auto scrollbar-hide">
+    <div className="flex items-center space-x-4">
+      <span className="text-sm font-medium text-foreground whitespace-nowrap">Category:</span>
+      <Select value={activeCategory} onValueChange={onCategoryChange}>
+        <SelectTrigger className="w-48">
+          <SelectValue>
+            <div className="flex items-center">
+              <span className="mr-2">{activeItem?.icon}</span>
+              {activeItem?.name}
+            </div>
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
           {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={activeCategory === category.id ? "default" : "ghost"}
-              onClick={() => onCategoryChange(category.id)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeCategory === category.id 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <span className="mr-2">{category.icon}</span>
-              {category.name}
-            </Button>
+            <SelectItem key={category.id} value={category.id}>
+              <div className="flex items-center">
+                <span className="mr-2">{category.icon}</span>
+                {category.name}
+              </div>
+            </SelectItem>
           ))}
-        </div>
-      </div>
+        </SelectContent>
+      </Select>
     </div>
   );
 };

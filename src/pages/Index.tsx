@@ -32,15 +32,19 @@ const Index = () => {
       {/* Sticky Filters Section */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-40">
         <div className="max-w-7xl mx-auto">
-          <CategoryFilter
-            categories={categories}
-            activeCategory={activeCategory}
-            onCategoryChange={handleCategoryChange}
-          />
-          <DietaryFilter
-            filters={dietaryFilters}
-            onFilterChange={handleFilterChange}
-          />
+          <div className="flex items-center justify-between py-3 px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center space-x-6">
+              <CategoryFilter
+                categories={categories}
+                activeCategory={activeCategory}
+                onCategoryChange={handleCategoryChange}
+              />
+              <DietaryFilter
+                filters={dietaryFilters}
+                onFilterChange={handleFilterChange}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
