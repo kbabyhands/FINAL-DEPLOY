@@ -94,27 +94,6 @@ const MenuCard = ({
                 <span className="text-blue-600 text-lg font-semibold">No Preview</span>
               </div>
             )}
-            <div className="absolute top-2 right-2">
-              <Badge variant="secondary" className="bg-white/90 text-black font-bold">
-                ${price.toFixed(2)}
-              </Badge>
-            </div>
-            {splatUrl && splatUrl.trim() && (
-              <div className="absolute bottom-2 right-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="bg-white/90 text-black hover:bg-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openDialogIn3D();
-                  }}
-                >
-                  <Eye className="w-3 h-3 mr-1" />
-                  View in 3D
-                </Button>
-              </div>
-            )}
           </div>
           
           <CardContent className="p-4">
@@ -122,7 +101,7 @@ const MenuCard = ({
             <p className="text-gray-600 text-sm mb-3 line-clamp-3">{description}</p>
             
             {/* Dietary badges */}
-            <div className="flex flex-wrap gap-1 mb-2">
+            <div className="flex flex-wrap gap-1 mb-3">
               {getDietaryBadges().map((badge, index) => {
                 const IconComponent = badge.icon;
                 return (
@@ -132,6 +111,26 @@ const MenuCard = ({
                   </div>
                 );
               })}
+            </div>
+
+            {/* Price and 3D button at bottom */}
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <Badge variant="secondary" className="font-bold">
+                ${price.toFixed(2)}
+              </Badge>
+              {splatUrl && splatUrl.trim() && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openDialogIn3D();
+                  }}
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  View in 3D
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
