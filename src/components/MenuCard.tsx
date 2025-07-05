@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Leaf, Wheat, Shield, Nut, Eye } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Leaf, Wheat, Shield, Nut, Eye, ArrowLeft } from "lucide-react";
 import ReviewsSection from "./ReviewsSection";
 import PlayCanvasViewer from "./PlayCanvasViewer";
 import { useMenuItemViews } from "@/hooks/useMenuItemViews";
@@ -38,8 +37,9 @@ const MenuCard = ({
   splatUrl
 }: MenuCardProps) => {
   const { trackView } = useMenuItemViews();
-  const navigate = useNavigate();
   const hasTrackedView = useRef(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [is3DMode, setIs3DMode] = useState(false);
 
   // Track view when component mounts (only once per session)
   useEffect(() => {
@@ -69,8 +69,17 @@ const MenuCard = ({
     ).join(", ");
   };
 
+  const openDialogIn3D = () => {
+    setIs3DMode(true);
+    setIsDialogOpen(true);
+  };
+
+  const toggle3DMode = () => {
+    setIs3DMode(!is3DMode);
+  };
+
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
           <div className="relative overflow-hidden rounded-t-lg">
@@ -98,7 +107,7 @@ const MenuCard = ({
                   className="bg-white/90 text-black hover:bg-white"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/menu-item/${menuItemId}`);
+                    openDialogIn3D();
                   }}
                 >
                   <Eye className="w-3 h-3 mr-1" />
@@ -139,7 +148,14 @@ const MenuCard = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* Image/3D Model Section */}
           <div className="space-y-4">
-            {imageUrl ? (
+            {is3DMode && splatUrl && splatUrl.trim() ? (
+              <div className="w-full h-64 rounded-lg overflow-hidden">
+                <PlayCanvasViewer
+                  splatUrl={splatUrl}
+                  className="h-full"
+                />
+              </div>
+            ) : imageUrl ? (
               <img 
                 src={imageUrl} 
                 alt={title}
@@ -152,12 +168,21 @@ const MenuCard = ({
             )}
             {splatUrl && splatUrl.trim() && (
               <Button
-                onClick={() => navigate(`/menu-item/${menuItemId}`)}
+                onClick={toggle3DMode}
                 variant="outline"
                 className="w-full"
               >
-                <Eye className="w-4 h-4 mr-2" />
-                View in 3D
+                {is3DMode ? (
+                  <>
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Image
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4 mr-2" />
+                    View in 3D
+                  </>
+                )}
               </Button>
             )}
           </div>
