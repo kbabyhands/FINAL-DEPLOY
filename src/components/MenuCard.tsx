@@ -130,7 +130,7 @@ const MenuCard = ({
             </div>
 
             {/* Price at bottom */}
-            <div className="flex items-center justify-start pt-2 border-t border-gray-100">
+            <div className="flex items-center justify-end pt-2 border-t border-gray-300 dark:border-gray-100">
               <Badge variant="secondary" className="font-bold">
                 ${price.toFixed(2)}
               </Badge>
