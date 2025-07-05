@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as pc from 'playcanvas';
+import { usePlayCanvasPreloader } from '@/hooks/usePlayCanvasPreloader';
 
 interface PlayCanvasViewerProps {
   splatUrl: string;
@@ -8,8 +9,7 @@ interface PlayCanvasViewerProps {
   lazyLoad?: boolean;
 }
 
-// Global instance pool for reusing PlayCanvas applications
-const instancePool: pc.Application[] = [];
+// Legacy cache - now handled by preloader
 const modelCache = new Map<string, any>();
 
 // Throttle function for event handling
@@ -40,6 +40,9 @@ const PlayCanvasViewer = ({
   const [error, setError] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(!lazyLoad);
   const [isPaused, setIsPaused] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+  const { getPreloadedModel, getInstance, returnInstance } = usePlayCanvasPreloader();
 
   // Intersection Observer for lazy loading
   useEffect(() => {
@@ -93,12 +96,18 @@ const PlayCanvasViewer = ({
       console.error('PlayCanvasViewer: Failed to create PlayCanvas instance:', error);
       return null;
     }
-  }, [performanceMode]);
+  }, [performanceMode, getInstance]);
 
-  // Simplified cleanup - just destroy the app
+  // Simplified cleanup - return to pool or destroy
   const cleanupInstance = useCallback((app: pc.Application) => {
-    app.destroy();
-  }, []);
+    try {
+      returnInstance(app);
+    } catch (error) {
+      // If return to pool fails, destroy the app
+      console.warn('PlayCanvasViewer: Failed to return to pool, destroying:', error);
+      app.destroy();
+    }
+  }, [returnInstance]);
 
   // Throttled mouse handlers
   const throttledMouseMove = useCallback(
@@ -241,7 +250,7 @@ const PlayCanvasViewer = ({
     canvas.addEventListener('mouseup', handleMouseUp);
     canvas.addEventListener('wheel', handleWheel, { passive: false });
 
-    // Load model with caching
+    // Load model with preloader integration
     const loadModel = async () => {
       if (!splatUrl?.trim()) {
         // Create optimized placeholder
@@ -264,12 +273,40 @@ const PlayCanvasViewer = ({
       }
 
       try {
-        // Check cache first
+        setLoadingProgress(10);
+        
+        // Check preloader cache first
+        const preloadedAsset = getPreloadedModel(splatUrl);
+        if (preloadedAsset) {
+          setLoadingProgress(80);
+          const modelEntity = new pc.Entity('preloaded-model');
+          modelEntity.addComponent('model', { asset: preloadedAsset });
+          app.root.addChild(modelEntity);
+          setLoadingProgress(100);
+          setLoading(false);
+          
+          // Optional animation (disabled in performance mode)
+          if (!performanceMode) {
+            let angle = 0;
+            const updateHandler = (dt: number) => {
+              if (!isPaused) {
+                angle += dt * 0.2;
+                modelEntity.setEulerAngles(0, angle * 57.2958, 0);
+              }
+            };
+            app.on('update', updateHandler);
+          }
+          return;
+        }
+
+        // Check legacy cache
         if (modelCache.has(splatUrl)) {
+          setLoadingProgress(70);
           const cachedAsset = modelCache.get(splatUrl);
           const modelEntity = new pc.Entity('cached-model');
           modelEntity.addComponent('model', { asset: cachedAsset });
           app.root.addChild(modelEntity);
+          setLoadingProgress(100);
           setLoading(false);
           return;
         }
@@ -277,16 +314,19 @@ const PlayCanvasViewer = ({
         const fileExtension = splatUrl.split('.').pop()?.toLowerCase();
         
         if (fileExtension === 'glb' || fileExtension === 'gltf') {
+          setLoadingProgress(20);
           const asset = new pc.Asset('model', 'container', { url: splatUrl });
 
           asset.ready(() => {
             try {
+              setLoadingProgress(90);
               // Cache the asset
               modelCache.set(splatUrl, asset);
               
               const modelEntity = new pc.Entity('loaded-model');
               modelEntity.addComponent('model', { asset });
               app.root.addChild(modelEntity);
+              setLoadingProgress(100);
               setLoading(false);
               
               // Optional animation (disabled in performance mode)
@@ -313,9 +353,13 @@ const PlayCanvasViewer = ({
             setLoading(false);
           });
 
+          // Track loading progress
+          asset.on('load', () => setLoadingProgress(60));
+
           app.assets.add(asset);
           app.assets.load(asset);
         } else {
+          setLoadingProgress(50);
           // Optimized placeholder for unsupported formats
           const material = new pc.StandardMaterial();
           material.diffuse = new pc.Color(0.7, 0.5, 0.8);
@@ -335,6 +379,7 @@ const PlayCanvasViewer = ({
           }
           
           app.root.addChild(entity);
+          setLoadingProgress(100);
           setLoading(false);
           
           // Optional animation
@@ -399,6 +444,14 @@ const PlayCanvasViewer = ({
             <p className="text-sm text-gray-600">
               {lazyLoad && !isVisible ? 'Preparing 3D viewer...' : 'Loading 3D model...'}
             </p>
+            {loadingProgress > 0 && (
+              <div className="w-32 h-1 bg-gray-200 rounded-full mx-auto mt-2">
+                <div 
+                  className="h-1 bg-blue-600 rounded-full transition-all duration-300"
+                  style={{ width: `${loadingProgress}%` }}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

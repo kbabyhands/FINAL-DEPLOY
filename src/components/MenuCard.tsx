@@ -8,6 +8,7 @@ import { Leaf, Wheat, Shield, Nut, Eye, ArrowLeft } from "lucide-react";
 import ReviewsSection from "./ReviewsSection";
 import PlayCanvasViewer from "./PlayCanvasViewer";
 import { useMenuItemViews } from "@/hooks/useMenuItemViews";
+import { usePlayCanvasPreloader } from "@/hooks/usePlayCanvasPreloader";
 
 interface MenuCardProps {
   menuItemId: string;
@@ -37,9 +38,27 @@ const MenuCard = ({
   splatUrl
 }: MenuCardProps) => {
   const { trackView } = useMenuItemViews();
+  const { preloadModel } = usePlayCanvasPreloader();
   const hasTrackedView = useRef(false);
+  const hasPreloaded = useRef(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [is3DMode, setIs3DMode] = useState(false);
+  const [performanceMode, setPerformanceMode] = useState(false);
+
+  // Detect performance mode based on device capabilities
+  useEffect(() => {
+    const detectPerformanceMode = () => {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const hasLowMemory = (navigator as any).deviceMemory && (navigator as any).deviceMemory < 4;
+      const hasSlowConnection = (navigator as any).connection && 
+        ((navigator as any).connection.effectiveType === 'slow-2g' || (navigator as any).connection.effectiveType === '2g');
+      
+      setPerformanceMode(isMobile || hasLowMemory || hasSlowConnection);
+    };
+
+    detectPerformanceMode();
+  }, []);
 
   // Track view when component mounts (only once per session)
   useEffect(() => {
@@ -52,6 +71,29 @@ const MenuCard = ({
       return () => clearTimeout(timer);
     }
   }, [menuItemId, trackView]);
+
+  // Preload 3D model when card comes into view
+  useEffect(() => {
+    if (!hasPreloaded.current && splatUrl?.trim() && cardRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !hasPreloaded.current) {
+              // Preload with a slight delay to avoid overwhelming the system
+              setTimeout(() => {
+                preloadModel(splatUrl);
+                hasPreloaded.current = true;
+              }, 500);
+            }
+          });
+        },
+        { threshold: 0.2, rootMargin: '50px' }
+      );
+
+      observer.observe(cardRef.current);
+      return () => observer.disconnect();
+    }
+  }, [splatUrl, preloadModel]);
 
   const getDietaryBadges = () => {
     const badges = [];
@@ -70,6 +112,11 @@ const MenuCard = ({
   };
 
   const openDialogIn3D = () => {
+    // Preload immediately if not already done
+    if (splatUrl?.trim() && !hasPreloaded.current) {
+      preloadModel(splatUrl);
+      hasPreloaded.current = true;
+    }
     setIs3DMode(true);
     setIsDialogOpen(true);
   };
@@ -81,13 +128,14 @@ const MenuCard = ({
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Card className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
+        <Card ref={cardRef} className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 group">
           <div className="relative overflow-hidden rounded-t-lg">
             {imageUrl ? (
               <img 
                 src={imageUrl} 
                 alt={title}
                 className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
@@ -99,7 +147,7 @@ const MenuCard = ({
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="bg-white/90 text-black hover:bg-white"
+                  className="bg-white/90 text-black hover:bg-white backdrop-blur-sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     openDialogIn3D();
@@ -155,6 +203,8 @@ const MenuCard = ({
                 <PlayCanvasViewer
                   splatUrl={splatUrl}
                   className="h-full"
+                  performanceMode={performanceMode}
+                  lazyLoad={false}
                 />
               </div>
             ) : imageUrl ? (
@@ -162,6 +212,7 @@ const MenuCard = ({
                 src={imageUrl} 
                 alt={title}
                 className="w-full h-64 object-cover rounded-lg"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center rounded-lg">
@@ -182,7 +233,7 @@ const MenuCard = ({
                 ) : (
                   <>
                     <Eye className="w-4 h-4 mr-2" />
-                    View in 3D
+                    {performanceMode ? 'View in 3D (Performance Mode)' : 'View in 3D'}
                   </>
                 )}
               </Button>
