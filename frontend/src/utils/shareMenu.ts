@@ -1,6 +1,6 @@
 export const shareViaText = (restaurantName?: string) => {
   // Use the backend URL from environment variable for sharing
-  const backendUrl = import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL;
   const menuUrl = backendUrl || `${window.location.origin}/`;
   const name = restaurantName || 'Our Menu';
   const message = `Check out ${name}'s digital menu! Visit: ${menuUrl}`;
