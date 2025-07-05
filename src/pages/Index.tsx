@@ -4,6 +4,7 @@ import DietaryFilter from "@/components/DietaryFilter";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { MenuHeader } from "@/components/MenuHeader";
 import { MenuGrid } from "@/components/MenuGrid";
+import FeaturedItems from "@/components/FeaturedItems";
 import { useMenuData } from "@/hooks/useMenuData";
 import { useMenuFilters } from "@/hooks/useMenuFilters";
 
@@ -24,6 +25,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <MenuHeader restaurant={restaurant} />
+
+      {/* Featured Items Section */}
+      <FeaturedItems />
 
       {/* Sticky Filters Section */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-40">
