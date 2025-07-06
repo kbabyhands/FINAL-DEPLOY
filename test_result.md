@@ -102,13 +102,13 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Please test the Share Menu functionality to ensure it works correctly with the emergent URL."
+user_problem_statement: "Please test the updated meta tags and sharing functionality. I've made significant changes to fix the Lovable preview issue."
 
 frontend:
-  - task: "Share Menu Functionality"
+  - task: "Meta Tags and Sharing Functionality"
     implemented: true
     working: true
-    file: "/app/frontend/src/components/MenuHeader.tsx"
+    file: "/app/frontend/index.html"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
@@ -119,16 +119,19 @@ frontend:
         -working: true
         -agent: "testing"
         -comment: "Retested the Share Menu functionality after the environment variable fix. The Share button is visible and clickable. When clicked, it successfully triggers the sharing mechanism. We were able to confirm that the SMS fallback is working correctly, with the correct emergent URL (https://49e09ef0-ae85-4640-ad76-dd2c5da64bfc.preview.emergentagent.com) being included in the share message. The environment variable VITE_REACT_APP_BACKEND_URL is being properly used in the shareMenu.ts file. No errors were observed during testing."
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the updated meta tags and sharing functionality. The page title correctly shows 'Digital Menu - Interactive Restaurant Menu'. All meta tags are properly set with restaurant menu content instead of Lovable branding. The OG URL meta tag has the correct emergent URL (https://49e09ef0-ae85-4640-ad76-dd2c5da64bfc.preview.emergentagent.com). The OG Image meta tag uses a restaurant image (https://images.unsplash.com/photo-1414235077428-338989a2e8c0) instead of Lovable branding. The Share button is visible and clickable, and when clicked, it correctly uses the emergent URL for sharing. The dynamic meta tag updates in Index.tsx are working as expected. Only minor issue: the canonical URL has a trailing slash that doesn't match exactly with the OG URL."
 
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: true
 
 test_plan:
   current_focus:
-    - "Share Menu Functionality"
+    - "Meta Tags and Sharing Functionality"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -138,3 +141,5 @@ agent_communication:
     -message: "I've tested the Share Menu functionality. The Share button is visible and clickable on the main menu page. Based on code review and testing, I can confirm that the implementation correctly uses the emergent URL (https://49e09ef0-ae85-4640-ad76-dd2c5da64bfc.preview.emergentagent.com) from the REACT_APP_BACKEND_URL environment variable for sharing. The sharing mechanism is triggered when the button is clicked, although due to browser limitations in the testing environment, I couldn't directly verify the Web Share API or SMS fallback functionality. Overall, the Share Menu functionality is working as expected with the emergent URL."
     -agent: "testing"
     -message: "I've retested the Share Menu functionality after the environment variable fix. The Share button is visible and clickable on the main menu page. When clicked, it successfully triggers the sharing mechanism. I was able to confirm that the SMS fallback is working correctly, with the correct emergent URL (https://49e09ef0-ae85-4640-ad76-dd2c5da64bfc.preview.emergentagent.com) being included in the share message. The environment variable VITE_REACT_APP_BACKEND_URL is being properly used in the shareMenu.ts file. No errors were observed during testing. The Share Menu functionality is now working correctly with the updated environment variable."
+    -agent: "testing"
+    -message: "I've tested the updated meta tags and sharing functionality. The page title correctly shows 'Digital Menu - Interactive Restaurant Menu'. All meta tags are properly set with restaurant menu content instead of Lovable branding. The OG URL meta tag has the correct emergent URL, and the OG Image meta tag uses a restaurant image instead of Lovable branding. The Share button is visible and clickable, and when clicked, it correctly uses the emergent URL for sharing. The dynamic meta tag updates in Index.tsx are working as expected. There's only a minor issue with the canonical URL having a trailing slash that doesn't match exactly with the OG URL, but this doesn't affect functionality. Overall, the meta tags and sharing functionality are working correctly with proper restaurant branding instead of Lovable."
