@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import CategoryFilter from "@/components/CategoryFilter";
 import DietaryFilter from "@/components/DietaryFilter";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -17,6 +18,53 @@ const Index = () => {
     handleCategoryChange, 
     handleFilterChange 
   } = useMenuFilters(menuItems);
+
+  // Update document meta tags when restaurant data loads
+  useEffect(() => {
+    if (restaurant) {
+      // Update page title
+      document.title = `${restaurant.name} - Digital Menu`;
+      
+      // Update meta description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', 
+          `Explore ${restaurant.name}'s interactive digital menu. ${restaurant.description || 'Delicious food with 3D models, dietary filters, and detailed information.'}`
+        );
+      }
+      
+      // Update Open Graph title
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.setAttribute('content', `${restaurant.name} - Digital Menu`);
+      }
+      
+      // Update Open Graph description
+      const ogDescription = document.querySelector('meta[property="og:description"]');
+      if (ogDescription) {
+        ogDescription.setAttribute('content', 
+          `Explore ${restaurant.name}'s interactive digital menu. ${restaurant.description || 'Delicious food with 3D models, dietary filters, and detailed information.'}`
+        );
+      }
+
+      // Update Twitter title
+      const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      if (twitterTitle) {
+        twitterTitle.setAttribute('content', `${restaurant.name} - Digital Menu`);
+      }
+
+      // Update Twitter description
+      const twitterDescription = document.querySelector('meta[name="twitter:description"]');
+      if (twitterDescription) {
+        twitterDescription.setAttribute('content', 
+          `Explore ${restaurant.name}'s interactive digital menu. ${restaurant.description || 'Delicious food with 3D models, dietary filters, and detailed information.'}`
+        );
+      }
+    } else {
+      // Fallback title when no restaurant data
+      document.title = "Digital Menu - Interactive Restaurant Menu";
+    }
+  }, [restaurant]);
 
   if (loading) {
     return <LoadingSpinner />;
