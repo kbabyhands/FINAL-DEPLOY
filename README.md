@@ -228,13 +228,13 @@ pip install -r requirements.txt
 
 ## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is proprietary software. All rights reserved. Unauthorized copying, distribution, or modification is prohibited.
 
 ## 🆘 Support
 
 For support and questions:
-- Create an issue in the repository
-- Check the documentation
+- Contact the development team
+- Check the internal documentation
 - Review the API documentation at `/docs`
 
 ## 🏗️ Architecture Overview
