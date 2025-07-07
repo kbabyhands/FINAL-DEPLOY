@@ -16,9 +16,9 @@ This is proprietary software. Deployment is restricted to authorized environment
 - SSL certificate (for production)
 
 #### Steps
-1. **Clone the repository**
+1. **Access authorized repository**
    ```bash
-   git clone <your-repo-url>
+   git clone <authorized-internal-repo-url>
    cd restaurant-menu-system
    ```
 
