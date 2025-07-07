@@ -120,10 +120,10 @@ This is proprietary software. Deployment is restricted to authorized environment
    sudo apt install nginx -y
    ```
 
-2. **Application Setup**
+2. **Application Setup (Internal Use Only)**
    ```bash
-   # Clone repository
-   git clone <your-repo-url> /var/www/restaurant-menu
+   # Access authorized repository
+   git clone <authorized-internal-repo> /var/www/restaurant-menu
    cd /var/www/restaurant-menu
    
    # Setup frontend
