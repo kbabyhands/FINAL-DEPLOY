@@ -1,8 +1,12 @@
 # Deployment Guide
 
-This guide covers various deployment options for the Restaurant Menu Management System.
+This guide covers deployment options for the Restaurant Menu Management System (Proprietary Software).
 
-## 🚀 Deployment Options
+## ⚠️ Important Notice
+
+This is proprietary software. Deployment is restricted to authorized environments only. All deployment procedures must follow company security and compliance policies.
+
+## 🚀 Authorized Deployment Options
 
 ### 1. Docker Deployment (Recommended)
 
