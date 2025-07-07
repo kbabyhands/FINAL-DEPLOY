@@ -270,25 +270,27 @@ Enable debug logging in development:
 localStorage.setItem('debug', 'menu:*');
 ```
 
-## 🤝 Contributing
+## 🤝 Internal Development
 
-### Development Workflow
-1. Create feature branch
-2. Implement changes with TypeScript
-3. Add/update tests
-4. Run linting and type checking
-5. Create pull request
+This is proprietary software. Development is limited to authorized team members only.
 
-### Code Standards
-- Follow existing patterns and conventions
-- Write meaningful component and function names
-- Add JSDoc comments for complex logic
-- Ensure responsive design compatibility
+### Team Development Workflow
+1. Access requires authorization
+2. Create feature branch from develop
+3. Follow internal coding standards
+4. Add comprehensive tests
+5. Update internal documentation
+6. Submit internal pull request for review
 
-## 📚 Additional Resources
+### Team Standards
+- Follow company coding guidelines
+- Use approved libraries and tools
+- Implement security best practices
+- Maintain confidentiality protocols
 
-- [React Documentation](https://reactjs.org/)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [TailwindCSS Documentation](https://tailwindcss.com/docs)
-- [Vite Guide](https://vitejs.dev/guide/)
-- [React Query Documentation](https://tanstack.com/query/latest)
+## 📚 Internal Resources
+
+- Internal team documentation
+- Company style guides
+- Security guidelines
+- Team communication channels
