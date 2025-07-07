@@ -97,9 +97,10 @@ This is proprietary software. Deployment is restricted to authorized environment
 - SSL certificate (Let's Encrypt recommended)
 
 #### Steps
-1. **Server Setup**
+1. **Server Setup (Authorized Personnel Only)**
    ```bash
-   # Update system
+   # Note: Follow company security protocols
+   # Update system with security patches
    sudo apt update && sudo apt upgrade -y
    
    # Install Node.js
