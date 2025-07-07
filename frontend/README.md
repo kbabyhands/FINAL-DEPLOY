@@ -1,6 +1,10 @@
 # Restaurant Menu Frontend
 
-The frontend application for the Restaurant Menu Management System, built with React, TypeScript, and modern web technologies.
+The frontend application for the Restaurant Menu Management System (Proprietary Software).
+
+## ⚠️ Confidential Notice
+
+This is proprietary software. Access is restricted to authorized team members only. All code and documentation are confidential and proprietary.
 
 ## 🚀 Quick Start
 
