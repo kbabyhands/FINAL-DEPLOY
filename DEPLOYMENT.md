@@ -317,10 +317,14 @@ Set up health check endpoints:
 - [ ] Monitoring and alerting set up
 - [ ] Backup strategy implemented
 
-## 📞 Support
+## 📞 Internal Support
 
-For deployment issues:
-- Check the troubleshooting section
-- Review application logs
-- Create an issue in the repository
-- Consult cloud provider documentation
+For deployment issues (Authorized Personnel Only):
+- Contact the internal development team
+- Review internal documentation
+- Follow company escalation procedures
+- Use internal communication channels only
+
+## 🔒 Confidentiality Notice
+
+This deployment guide contains proprietary information. Distribution is restricted to authorized personnel only. All deployments must comply with company security policies and confidentiality agreements.
