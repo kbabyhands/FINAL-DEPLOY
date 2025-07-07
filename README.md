@@ -220,11 +220,16 @@ pip install -r requirements.txt
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+This is proprietary software. Contributions are limited to authorized team members only.
+
+### Internal Development Workflow
+1. Create feature branch from develop
+2. Implement changes following coding standards
+3. Add/update tests as necessary
+4. Update documentation if needed
+5. Submit pull request for team review
+6. Code review by senior developers
+7. Merge after approval
 
 ## 📝 License
 
