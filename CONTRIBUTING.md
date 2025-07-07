@@ -1,211 +1,215 @@
-# Contributing to Restaurant Menu Management System
+# Development Guidelines for Restaurant Menu Management System
 
-Thank you for considering contributing to the Restaurant Menu Management System! This document provides guidelines and information for contributors.
+This document provides guidelines and information for authorized team members working on the Restaurant Menu Management System.
 
-## 🤝 How to Contribute
+## ⚠️ Important Notice
+
+This is proprietary software. All code, documentation, and related materials are confidential and proprietary. Access is restricted to authorized team members only.
+
+## 👥 Team Development Guidelines
+
+### Access and Permissions
+- Only authorized team members may access this codebase
+- All changes must be reviewed by senior developers
+- External contributions are not accepted
+- Confidentiality agreements must be signed
 
 ### Reporting Issues
-- Use the GitHub Issues page to report bugs or request features
-- Search existing issues before creating new ones
-- Provide detailed information including steps to reproduce
-- Include system information and browser details when relevant
+- Use internal issue tracking system
+- Report bugs and feature requests to team leads
+- Include detailed information and reproduction steps
+- Mark issues with appropriate priority levels
 
 ### Submitting Changes
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes following the coding standards
-4. Add or update tests as necessary
-5. Update documentation if needed
-6. Commit your changes (`git commit -m 'Add some amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
+1. Create feature branch from develop
+2. Follow established coding standards
+3. Add comprehensive tests
+4. Update internal documentation
+5. Submit pull request for team review
+6. Address feedback from code review
+7. Merge only after approval
 
 ## 🏗️ Development Setup
 
 ### Prerequisites
-- Node.js 16+
-- Python 3.8+
-- MongoDB
-- Git
+- Node.js 16+ (internal approved version)
+- Python 3.8+ (internal approved version)
+- MongoDB (team database instance)
+- Access to internal development tools
 
-### Local Development
-1. Clone your fork
-2. Install dependencies:
-   ```bash
-   cd frontend && yarn install
-   cd ../backend && pip install -r requirements.txt
-   ```
-3. Set up environment variables
-4. Start development servers
-5. Make your changes
-6. Test thoroughly
+### Internal Development Environment
+1. Request repository access from team lead
+2. Set up development environment per team standards
+3. Configure internal environment variables
+4. Connect to team database instances
+5. Follow security protocols for API keys
 
 ## 📝 Coding Standards
 
 ### Frontend (React/TypeScript)
-- Use TypeScript for all new code
-- Follow existing component patterns
-- Use functional components with hooks
-- Implement proper error boundaries
-- Write meaningful component names
-- Add JSDoc comments for complex logic
+- Follow team TypeScript style guide
+- Use approved component libraries only
+- Implement security best practices
+- Follow internal design system
+- Add comprehensive documentation
 
 ### Backend (Python/FastAPI)
-- Follow PEP 8 style guidelines
-- Use type hints for all functions
-- Write docstrings for modules and functions
-- Use async/await for database operations
-- Implement proper error handling
+- Follow team Python style guidelines
+- Use approved security libraries
+- Implement proper authentication
+- Follow database access patterns
+- Add comprehensive logging
 
-### General Guidelines
-- Write clear, self-documenting code
-- Add comments for complex business logic
-- Use meaningful variable and function names
-- Keep functions small and focused
-- Follow existing patterns and conventions
+### Security Guidelines
+- Never commit sensitive information
+- Use team-approved secret management
+- Follow internal security protocols
+- Implement proper access controls
+- Regular security code reviews
 
-## 🧪 Testing
+## 🧪 Testing Standards
 
-### Frontend Testing
-- Write unit tests for components
-- Use React Testing Library for component testing
-- Test user interactions and edge cases
-- Ensure accessibility compliance
+### Testing Requirements
+- Minimum 80% code coverage
+- Unit tests for all components
+- Integration tests for critical paths
+- Security testing for sensitive features
+- Performance testing for optimization
 
-### Backend Testing
-- Write unit tests for API endpoints
-- Test database operations
-- Verify error handling
-- Check authentication and authorization
+### Testing Environment
+- Use team testing infrastructure
+- Follow internal testing protocols
+- Document test cases thoroughly
+- Automated testing in CI/CD pipeline
 
-### Running Tests
-```bash
-# Frontend tests
-cd frontend && yarn test
-
-# Backend tests
-cd backend && python -m pytest
-```
-
-## 📖 Documentation
+## 📖 Documentation Standards
 
 ### Code Documentation
-- Add JSDoc comments for React components
-- Document props and their types
-- Explain complex algorithms or business logic
-- Update README files when adding features
+- Comprehensive JSDoc for all functions
+- Document all component props
+- Explain complex business logic
+- Keep README files current
 
-### API Documentation
-- Update OpenAPI schemas when modifying endpoints
-- Document new environment variables
-- Explain configuration options
+### Internal Documentation
+- Update architecture documents
+- Document API changes
+- Maintain deployment guides
+- Update troubleshooting guides
 
-## 🚀 Feature Development
+## 🚀 Development Workflow
 
-### New Features
-1. Discuss major features in issues first
-2. Break large features into smaller PRs
-3. Update documentation
-4. Add appropriate tests
-5. Consider backward compatibility
+### Feature Development
+1. Discuss requirements with product team
+2. Create technical design document
+3. Get approval from technical lead
+4. Implement with proper testing
+5. Code review by senior developers
+6. QA testing and validation
+7. Deployment to staging environment
+8. Production deployment approval
 
-### 3D Model Support
-- Test with various file formats
-- Ensure mobile device compatibility
-- Implement proper fallbacks
-- Consider performance implications
+### Code Review Process
+- All code must be reviewed
+- Security review for sensitive changes
+- Performance review for critical paths
+- Documentation review for public APIs
+- Approval required from senior developers
 
-### UI/UX Changes
-- Maintain accessibility standards
-- Test on multiple devices and browsers
-- Follow existing design patterns
-- Consider internationalization
+### Version Control
+- Use Git flow branching strategy
+- Meaningful commit messages
+- No direct commits to main branch
+- Regular branch cleanup
+- Tag releases properly
 
-## 🔄 Pull Request Process
+## 🔐 Security and Compliance
 
-### Before Submitting
-- [ ] Code follows project standards
-- [ ] Tests pass locally
-- [ ] Documentation is updated
-- [ ] Branch is up to date with main
-- [ ] Commit messages are clear
+### Security Requirements
+- Follow company security policies
+- Regular security training required
+- Secure coding practices mandatory
+- Regular vulnerability assessments
+- Incident response procedures
 
-### PR Description
-- Clearly describe the changes
-- Link related issues
-- Include screenshots for UI changes
-- List any breaking changes
-- Mention if new dependencies are added
+### Compliance
+- Follow internal compliance guidelines
+- Data protection and privacy laws
+- Regular compliance audits
+- Documentation for regulatory requirements
 
-### Review Process
-- Maintainers will review PRs
-- Address feedback promptly
-- Keep discussions respectful and constructive
-- Be open to suggestions and improvements
+## 🛠️ Tools and Infrastructure
 
-## 🏷️ Commit Message Format
+### Approved Tools
+- Development IDEs (team approved)
+- Testing frameworks (internal standard)
+- CI/CD pipelines (company infrastructure)
+- Monitoring and logging (team tools)
 
-Use clear, descriptive commit messages:
-```
-feat: add 3D model preloading for better performance
-fix: resolve menu item filtering issue
-docs: update API documentation
-test: add unit tests for menu component
-refactor: improve error handling in API service
-```
+### Infrastructure Access
+- VPN required for database access
+- Multi-factor authentication mandatory
+- Regular access reviews
+- Principle of least privilege
 
-## 🌟 Code Review Guidelines
+## 📚 Training and Resources
 
-### For Contributors
-- Be open to feedback
-- Explain complex changes
-- Respond to review comments
-- Keep PRs focused and manageable
+### Required Training
+- Company security training
+- Code review guidelines
+- Testing best practices
+- Documentation standards
 
-### For Reviewers
-- Be constructive and helpful
-- Explain suggestions clearly
-- Focus on code quality and best practices
-- Consider performance and security implications
-
-## 📚 Resources
-
-### Documentation
-- [React Documentation](https://reactjs.org/)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-
-### Project Specific
-- Project README for setup instructions
-- API documentation at `/docs` endpoint
-- Component documentation in Storybook (if available)
-
-## ❓ Questions and Support
-
-- Create an issue for questions about contributing
-- Join discussions in existing issues
-- Check documentation first
-- Be patient and respectful
-
-## 🎯 Areas for Contribution
-
-### High Priority
-- Performance optimizations
-- Accessibility improvements
-- Mobile experience enhancements
-- Test coverage improvements
-
-### Features
-- New 3D model formats
-- Additional dietary filters
-- Analytics dashboard enhancements
-- Multi-language support
-
-### Documentation
-- API examples and tutorials
-- Component usage guides
-- Deployment instructions
+### Internal Resources
+- Team knowledge base
 - Architecture documentation
+- API documentation (internal)
+- Troubleshooting guides
 
-Thank you for contributing to making restaurant digital menus better for everyone! 🍽️
+## 🎯 Quality Standards
+
+### Code Quality
+- Follow established patterns
+- Write maintainable code
+- Optimize for performance
+- Consider scalability
+- Document architectural decisions
+
+### Review Criteria
+- Functionality and correctness
+- Security and privacy
+- Performance and scalability
+- Maintainability and readability
+- Documentation completeness
+
+## ❓ Internal Support
+
+### Getting Help
+- Contact team lead for guidance
+- Use internal communication channels
+- Escalate to senior developers
+- Document solutions for team
+
+### Knowledge Sharing
+- Regular team meetings
+- Code review sessions
+- Internal tech talks
+- Documentation updates
+
+## 📊 Performance and Monitoring
+
+### Monitoring Requirements
+- Application performance monitoring
+- Error tracking and alerting
+- User experience metrics
+- Security event monitoring
+
+### Performance Standards
+- Response time requirements
+- Scalability targets
+- Resource usage limits
+- Availability requirements
+
+---
+
+**Confidential and Proprietary**
+This document contains confidential and proprietary information. Distribution is restricted to authorized team members only.
