@@ -116,15 +116,15 @@ const MenuCard = ({
       <DialogTrigger asChild>
         <Card 
           ref={cardRef} 
-          className="cursor-pointer transition-all duration-300 card-elevated border-0 rounded-2xl bg-white dark:bg-card overflow-hidden group" 
+          className="cursor-pointer transition-all duration-300 card-elevated border-0 rounded-2xl bg-white dark:bg-card overflow-hidden group h-[420px] flex flex-col" 
           onClick={handleOpenDialog}
           role="button"
           tabIndex={0}
           aria-label={`View details for ${title}`}
         >
-          <CardContent className="p-0">
-            {/* Menu Item Image */}
-            <div className="relative w-full h-48 overflow-hidden">
+          <CardContent className="p-0 flex flex-col h-full">
+            {/* Menu Item Image - Fixed Height */}
+            <div className="relative w-full h-48 overflow-hidden flex-shrink-0">
               {imageUrl ? (
                 <img 
                   src={imageUrl} 
@@ -148,31 +148,41 @@ const MenuCard = ({
               )}
             </div>
 
-            {/* Menu Item Content */}
-            <div className="p-6">
-              <h3 className="font-semibold text-lg text-foreground mb-2 line-clamp-2">
-                {title}
-              </h3>
-              
-              <p className="text-muted-foreground text-sm line-clamp-2 mb-4 leading-relaxed">
-                {description}
-              </p>
-
-              {/* Review Rating Display */}
-              {reviewCount !== undefined && reviewCount > 0 && (
-                <div className="flex items-center gap-1 mb-4">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-medium text-foreground">
-                    {averageRating?.toFixed(1) || '0.0'}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
-                  </span>
+            {/* Menu Item Content - Flexible Height */}
+            <div className="p-6 flex flex-col justify-between flex-grow">
+              <div className="flex-grow">
+                {/* Title - Fixed Height */}
+                <h3 className="font-semibold text-lg text-foreground mb-2 line-clamp-2 h-14 flex items-start">
+                  {title}
+                </h3>
+                
+                {/* Description - Fixed Height */}
+                <div className="h-10 mb-4">
+                  <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed">
+                    {description || '\u00A0'}
+                  </p>
                 </div>
-              )}
 
-              {/* Price and Dietary Badges Row */}
-              <div className="flex items-center justify-between">
+                {/* Review Rating Display - Fixed Height */}
+                <div className="h-6 mb-4">
+                  {reviewCount !== undefined && reviewCount > 0 ? (
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm font-medium text-foreground">
+                        {averageRating?.toFixed(1) || '0.0'}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+                      </span>
+                    </div>
+                  ) : (
+                    <div>&nbsp;</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Price and Dietary Badges Row - Fixed at Bottom */}
+              <div className="flex items-center justify-between mt-auto">
                 <div className="text-xl font-bold text-foreground">
                   {formatPrice(price)}
                 </div>
