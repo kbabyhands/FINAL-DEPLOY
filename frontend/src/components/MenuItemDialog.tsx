@@ -50,7 +50,7 @@ const MenuItemDialog = ({
   onClose
 }: MenuItemDialogProps) => {
   return (
-    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-amber-50/80 to-orange-50/80 dark:from-amber-950/80 dark:to-orange-950/80 backdrop-blur-sm border-amber-200 dark:border-amber-800 rounded-2xl">
+    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-amber-50/80 to-orange-50/80 backdrop-blur-sm border-amber-200 rounded-2xl">
       {/* Dialog Header with Navigation */}
       <DialogHeader className="relative">
         <div className="flex items-center gap-3 mb-6">
