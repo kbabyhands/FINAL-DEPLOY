@@ -152,7 +152,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "FileUpload Component Enhancement"
+    - "Dark Mode Color Scheme Update"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
