@@ -56,7 +56,7 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
                 : 'All Dietary Options'
               }
             </span>
-            <ChevronDown className="h-4 w-4 ml-2 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+            <ChevronDown className="h-4 w-4 ml-2 text-amber-600" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         
