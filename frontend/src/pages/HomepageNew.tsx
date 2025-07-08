@@ -1,23 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Camera, 
-  Smartphone, 
-  Zap, 
-  RefreshCw,
-  Scan,
-  CheckCircle,
-  Monitor,
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  Star,
-  Upload,
-  MousePointer
-} from "lucide-react";
+import React from 'react';
 
-const Homepage = () => {
+const HomePage = () => {
   const [currentDemoIndex, setCurrentDemoIndex] = useState(0);
 
   // Professional demo menu items with realistic placeholders
