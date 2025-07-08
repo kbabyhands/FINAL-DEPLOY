@@ -97,9 +97,9 @@ const MenuItemDialog = ({
           </div>
           
           {/* Dietary Information Section */}
-          <section aria-labelledby="dietary-info-title" className="bg-white/60 dark:bg-amber-950/40 rounded-2xl p-6 shadow-lg border border-amber-200/50 dark:border-amber-800/50">
-            <h4 id="dietary-info-title" className="font-semibold text-xl text-amber-900 dark:text-amber-100 mb-4 flex items-center gap-2">
-              <div className="w-2 h-2 bg-amber-600 dark:bg-amber-400 rounded-full"></div>
+          <section aria-labelledby="dietary-info-title" className="bg-white/60 rounded-2xl p-6 shadow-lg border border-amber-200/50">
+            <h4 id="dietary-info-title" className="font-semibold text-xl text-amber-900 mb-4 flex items-center gap-2">
+              <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
               Dietary Information
             </h4>
             <DietaryBadges
