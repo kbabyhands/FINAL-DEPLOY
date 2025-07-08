@@ -93,6 +93,7 @@ export interface MenuCardProps {
   splatUrl?: string;
   averageRating?: number;
   reviewCount?: number;
+  size?: 'regular' | 'featured';
 }
 
 export interface DietaryBadgesProps {
