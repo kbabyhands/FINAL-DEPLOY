@@ -127,7 +127,7 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
                 {averageRating > 0 ? averageRating.toFixed(1) : "No ratings"}
               </span>
             </div>
-            <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+            <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
               <MessageSquare className="w-3 h-3" />
               {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
             </div>
