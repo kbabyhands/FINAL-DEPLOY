@@ -60,7 +60,7 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent className="w-64 bg-white/95 dark:bg-amber-950/95 backdrop-blur-sm border-amber-200 dark:border-amber-800 rounded-xl shadow-xl" align="start">
+        <DropdownMenuContent className="w-64 bg-white/95 backdrop-blur-sm border-amber-200 rounded-xl shadow-xl" align="start">
           <DropdownMenuLabel className="text-amber-800 dark:text-amber-200 font-medium px-4 py-3">
             Dietary Preferences
           </DropdownMenuLabel>
