@@ -71,16 +71,16 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-amber-50/30 to-white dark:from-background dark:via-amber-950/10 dark:to-background">
+    <div className="min-h-screen bg-gradient-to-b from-white via-amber-50/30 to-white">
       <MenuHeader restaurant={restaurant} />
 
       {/* Featured Items Section */}
       <FeaturedItems />
 
       {/* Main Menu Section */}
-      <section className="py-12 bg-white dark:bg-background">
+      <section className="py-12 bg-white">
         {/* Filters Section */}
-        <div className="sticky top-0 z-40 bg-white/95 dark:bg-background/95 backdrop-blur-sm border-b border-border/20 py-4 mb-8">
+        <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-border/20 py-4 mb-8">
           <div className="max-w-6xl mx-auto px-6">
             <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-8">
               <CategoryFilter 
