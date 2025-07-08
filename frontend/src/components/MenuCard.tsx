@@ -167,6 +167,19 @@ const MenuCard = ({
                   {description}
                 </p>
 
+                {/* Review Rating Display */}
+                {reviewCount !== undefined && reviewCount > 0 && (
+                  <div className="flex items-center gap-1 mb-2">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm font-medium text-foreground">
+                      {averageRating?.toFixed(1) || '0.0'}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+                    </span>
+                  </div>
+                )}
+
                 {/* Dietary Information Badges */}
                 <DietaryBadges
                   isVegetarian={isVegetarian}
