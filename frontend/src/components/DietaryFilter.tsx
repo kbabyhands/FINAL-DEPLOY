@@ -61,7 +61,7 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
         </DropdownMenuTrigger>
         
         <DropdownMenuContent className="w-64 bg-white/95 backdrop-blur-sm border-amber-200 rounded-xl shadow-xl" align="start">
-          <DropdownMenuLabel className="text-amber-800 dark:text-amber-200 font-medium px-4 py-3">
+          <DropdownMenuLabel className="text-amber-800 font-medium px-4 py-3">
             Dietary Preferences
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-amber-200 dark:bg-amber-800" />
