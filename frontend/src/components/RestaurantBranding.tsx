@@ -306,6 +306,8 @@ const RestaurantBranding = ({ restaurant, onUpdate }: RestaurantBrandingProps) =
             onRemove={() => setBrandingData({ ...brandingData, background_image_url: '' })}
             label="Background Image (Optional)"
             accept="image/*"
+            recommendedSize="1920×1080px"
+            description="High-resolution image for page background. Will be automatically optimized."
           />
 
           {/* Preview */}
