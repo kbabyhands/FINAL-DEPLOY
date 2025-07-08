@@ -61,41 +61,41 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 7%;        /* Very dark gray background like Reddit */
+    --foreground: 0 0% 95%;       /* Light gray text */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 10%;             /* Dark gray cards */
+    --card-foreground: 0 0% 95%;  /* Light gray text on cards */
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 10%;          /* Dark gray popovers */
+    --popover-foreground: 0 0% 95%; /* Light gray text in popovers */
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 0 0% 95%;          /* Light gray for primary elements */
+    --primary-foreground: 0 0% 10%; /* Dark text on primary elements */
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 15%;        /* Medium dark gray for secondary elements */
+    --secondary-foreground: 0 0% 90%; /* Light gray text on secondary */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 15%;            /* Medium dark gray for muted elements */
+    --muted-foreground: 0 0% 60%; /* Medium gray for muted text */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 0 0% 15%;           /* Medium dark gray for accents */
+    --accent-foreground: 0 0% 95%; /* Light gray text on accents */
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 30.6%; /* Keep red for destructive actions */
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 0 0% 20%;           /* Dark gray borders */
+    --input: 0 0% 15%;            /* Dark gray inputs */
+    --ring: 0 0% 50%;             /* Medium gray focus rings */
+    --sidebar-background: 0 0% 5%; /* Very dark sidebar background */
+    --sidebar-foreground: 0 0% 90%; /* Light gray sidebar text */
+    --sidebar-primary: 0 0% 95%;   /* Light gray sidebar primary */
+    --sidebar-primary-foreground: 0 0% 10%; /* Dark text on sidebar primary */
+    --sidebar-accent: 0 0% 12%;    /* Dark gray sidebar accent */
+    --sidebar-accent-foreground: 0 0% 90%; /* Light gray sidebar accent text */
+    --sidebar-border: 0 0% 20%;    /* Dark gray sidebar borders */
+    --sidebar-ring: 0 0% 50%;      /* Medium gray sidebar focus rings */
   }
 }
 
