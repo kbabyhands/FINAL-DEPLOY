@@ -6,24 +6,30 @@ import {
   RefreshCw,
   Scan,
   CheckCircle,
-  Monitor
+  Monitor,
+  ArrowRight,
+  Star,
+  Play,
+  Globe
 } from 'lucide-react';
 
 const HomePage = () => {
   return (
-    <div className="bg-black text-white min-h-screen font-sans">
+    <div className="bg-white text-gray-900 min-h-screen font-sans">
       {/* Header */}
-      <header className="flex justify-between items-center px-6 py-6 border-b border-gray-800">
-        <h1 className="text-3xl font-bold tracking-tight">TAST3D</h1>
-        <div className="flex items-center space-x-4">
+      <header className="flex justify-between items-center px-6 lg:px-12 py-6 bg-white border-b border-gray-200">
+        <div className="flex items-center">
+          <h1 className="text-3xl font-bold text-gray-900">TAST3D</h1>
+        </div>
+        <div className="flex items-center space-x-6">
           <button 
-            className="bg-transparent border border-gray-600 text-gray-300 px-6 py-2.5 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-200"
+            className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
             onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
           >
-            Request a Demo
+            Contact Sales
           </button>
           <button 
-            className="bg-white text-black px-6 py-2.5 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium"
             onClick={() => window.location.href = "/admin"}
           >
             Restaurant Login
@@ -32,202 +38,365 @@ const HomePage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="text-center px-6 py-20">
-        <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-          Bring Your Menu to Life in 3D
-        </h2>
-        <p className="text-xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-          Interactive 3D visualizations help customers see what they're ordering
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <button 
-            className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium text-lg"
-            onClick={() => window.location.href = "/menu"}
-          >
-            View Sample Menu
-          </button>
-          <button 
-            className="bg-transparent border border-gray-600 text-gray-300 px-8 py-4 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-200 font-medium text-lg"
-            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            Contact Us
-          </button>
-        </div>
-        
-        {/* Hero Visual */}
-        <div className="max-w-md mx-auto">
-          <div className="w-64 h-64 mx-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center border border-gray-700 shadow-2xl">
-            <div className="text-center">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-2xl">3D</span>
+      <section className="text-center px-6 py-20 lg:py-32 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-sm font-medium text-blue-600 mb-4 uppercase tracking-wider">
+            3D Menu Visualization
+          </div>
+          <h1 className="text-6xl lg:text-8xl font-bold mb-8 leading-tight">
+            <span className="text-gray-900">tast</span><span className="text-blue-600">3d</span>
+          </h1>
+          <p className="text-xl lg:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
+            Transform your restaurant experience with interactive 3D menu visualization. 
+            Help customers see what they're ordering — effortlessly.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <button 
+              className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium text-lg flex items-center justify-center"
+              onClick={() => window.location.href = "/menu"}
+            >
+              Get Started
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </button>
+            <button 
+              className="bg-white border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg hover:border-gray-400 transition-all duration-200 font-medium text-lg flex items-center justify-center"
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <Play className="mr-2 w-5 h-5" />
+              Schedule a Demo
+            </button>
+          </div>
+
+          <div className="text-sm text-gray-500 mb-8">
+            Over 500+ Five Star Reviews
+          </div>
+          
+          {/* Hero Visual */}
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-12 shadow-lg border border-gray-200">
+              <div className="grid grid-cols-3 gap-8">
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <span className="text-orange-600 font-bold text-lg">3D</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Burger</h3>
+                  <p className="text-sm text-gray-500">Interactive Model</p>
+                </div>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-xl flex items-center justify-center">
+                    <span className="text-green-600 font-bold text-lg">3D</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Salad</h3>
+                  <p className="text-sm text-gray-500">Interactive Model</p>
+                </div>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <span className="text-purple-600 font-bold text-lg">3D</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Dessert</h3>
+                  <p className="text-sm text-gray-500">Interactive Model</p>
+                </div>
               </div>
-              <p className="text-gray-400 text-sm">Interactive Food Model</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-16 border-t border-b border-gray-800">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      {/* About Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <div className="text-sm font-medium text-blue-600 mb-4 uppercase tracking-wider">
+              About Us
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6">Building Success</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Together, we're creating a seamless experience that puts your customers in control of their dining choices.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Camera className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-2xl flex items-center justify-center">
+                <Camera className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="font-semibold mb-2">Real Food Scans</h3>
-              <p className="text-sm text-gray-400">Professional 3D scanning</p>
+              <p className="text-sm text-gray-600">Professional 3D scanning</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Smartphone className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-2xl flex items-center justify-center">
+                <Smartphone className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="font-semibold mb-2">No App Needed</h3>
-              <p className="text-sm text-gray-400">Works in any browser</p>
+              <p className="text-sm text-gray-600">Works in any browser</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Zap className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-2xl flex items-center justify-center">
+                <Zap className="w-8 h-8 text-purple-600" />
               </div>
               <h3 className="font-semibold mb-2">Fast & Light</h3>
-              <p className="text-sm text-gray-400">Optimized performance</p>
+              <p className="text-sm text-gray-600">Optimized performance</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                <RefreshCw className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-2xl flex items-center justify-center">
+                <RefreshCw className="w-8 h-8 text-orange-600" />
               </div>
               <h3 className="font-semibold mb-2">Live Updates</h3>
-              <p className="text-sm text-gray-400">Real-time changes</p>
+              <p className="text-sm text-gray-600">Real-time changes</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg border border-gray-200">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold mb-4">At TAST3D, we believe that showcasing your menu should be simple and stunning.</h3>
+              <button 
+                className="text-blue-600 hover:text-blue-700 font-medium flex items-center mx-auto"
+                onClick={() => window.location.href = "/menu"}
+              >
+                View Demo
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="text-center py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <h3 className="text-4xl font-bold mb-16">How It Works</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-xl">
-                <Scan className="w-10 h-10 text-white" />
-              </div>
-              <h4 className="text-2xl font-semibold mb-4">Scan</h4>
-              <p className="text-gray-400 leading-relaxed">
-                We professionally scan your dishes using advanced 3D technology
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center shadow-xl">
-                <CheckCircle className="w-10 h-10 text-white" />
-              </div>
-              <h4 className="text-2xl font-semibold mb-4">Approve</h4>
-              <p className="text-gray-400 leading-relaxed">
-                Review and approve your 3D models before they go live
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl flex items-center justify-center shadow-xl">
-                <Monitor className="w-10 h-10 text-white" />
-              </div>
-              <h4 className="text-2xl font-semibold mb-4">Display</h4>
-              <p className="text-gray-400 leading-relaxed">
-                Customers interact with your 3D menu on any device
-              </p>
-            </div>
+      {/* How It Works Process */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6">How It Works</h2>
           </div>
-        </div>
-      </section>
 
-      {/* Menu Demos */}
-      <section className="text-center py-20 bg-gray-900">
-        <div className="max-w-6xl mx-auto px-6">
-          <h3 className="text-4xl font-bold mb-16">Live 3D Menu Demo</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { name: "Cheeseburger", category: "Main Course" },
-              { name: "Salad", category: "Appetizer" },
-              { name: "Doughnut", category: "Dessert" }
-            ].map((item, i) => (
-              <div key={i} className="bg-gray-800 rounded-xl p-8 shadow-lg border border-gray-700 hover:border-gray-600 transition-all duration-200">
-                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-700 to-gray-800 rounded-xl flex items-center justify-center border border-gray-600">
-                  <span className="text-white font-bold text-lg">3D</span>
+          <div className="space-y-24">
+            {/* Step 1 */}
+            <div className="flex flex-col lg:flex-row items-center gap-12">
+              <div className="lg:w-1/2">
+                <div className="text-sm font-medium text-blue-600 mb-4 uppercase tracking-wider">
+                  STEP 01
                 </div>
-                <h4 className="text-xl font-semibold mb-2">{item.name}</h4>
-                <p className="text-gray-400 text-sm">{item.category}</p>
+                <h3 className="text-3xl font-bold mb-6">Sign Up & Connect</h3>
+                <h4 className="text-xl font-semibold text-blue-600 mb-4">Connect Your Restaurant</h4>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Create your account and set up your restaurant profile. We'll help you get started with our professional 3D scanning service to capture your dishes.
+                </p>
               </div>
-            ))}
+              <div className="lg:w-1/2">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 lg:p-12">
+                  <div className="w-24 h-24 mx-auto bg-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                    <Scan className="w-12 h-12 text-white" />
+                  </div>
+                  <h4 className="text-center text-xl font-semibold">Professional Scanning</h4>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex flex-col lg:flex-row-reverse items-center gap-12">
+              <div className="lg:w-1/2">
+                <div className="text-sm font-medium text-green-600 mb-4 uppercase tracking-wider">
+                  STEP 02
+                </div>
+                <h3 className="text-3xl font-bold mb-6">Review & Approve</h3>
+                <h4 className="text-xl font-semibold text-green-600 mb-4">Quality Control</h4>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Review your 3D models and approve them before they go live. Our team ensures every model meets our quality standards for the best customer experience.
+                </p>
+              </div>
+              <div className="lg:w-1/2">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 lg:p-12">
+                  <div className="w-24 h-24 mx-auto bg-green-600 rounded-2xl flex items-center justify-center mb-6">
+                    <CheckCircle className="w-12 h-12 text-white" />
+                  </div>
+                  <h4 className="text-center text-xl font-semibold">Quality Assurance</h4>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex flex-col lg:flex-row items-center gap-12">
+              <div className="lg:w-1/2">
+                <div className="text-sm font-medium text-purple-600 mb-4 uppercase tracking-wider">
+                  STEP 03
+                </div>
+                <h3 className="text-3xl font-bold mb-6">Launch & Engage</h3>
+                <h4 className="text-xl font-semibold text-purple-600 mb-4">Customer Experience</h4>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Your interactive 3D menu goes live! Customers can now rotate, zoom, and explore your dishes in stunning detail before making their selection.
+                </p>
+              </div>
+              <div className="lg:w-1/2">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 lg:p-12">
+                  <div className="w-24 h-24 mx-auto bg-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                    <Monitor className="w-12 h-12 text-white" />
+                  </div>
+                  <h4 className="text-center text-xl font-semibold">Interactive Experience</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Statistics Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="text-5xl font-bold text-blue-600 mb-2">500+</div>
+              <div className="text-gray-600">Restaurants Using TAST3D</div>
+            </div>
+            <div>
+              <div className="text-5xl font-bold text-green-600 mb-2">4.9</div>
+              <div className="text-gray-600">Average Customer Rating</div>
+            </div>
+            <div>
+              <div className="text-5xl font-bold text-purple-600 mb-2">92%</div>
+              <div className="text-gray-600">Customer Satisfaction Rate</div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="text-center py-20">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          <h3 className="text-4xl font-bold mb-16">What Restaurants Say</h3>
+          <div className="text-center mb-16">
+            <div className="text-sm font-medium text-blue-600 mb-4 uppercase tracking-wider">
+              Testimonials
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6">Customer Experiences</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              See how restaurants are transforming their customer experience with our 3D menu solutions.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                quote: "Our customers love the 3D menu — it sets us apart!",
-                author: "Sarah Johnson",
-                title: "Restaurant Manager"
-              },
-              {
-                quote: "TAST3D has been a game changer for our business.",
-                author: "Mike Chen",
-                title: "Head Chef"
-              },
-              {
-                quote: "The future of restaurant menus is here — and it's 3D!",
-                author: "Alex Rodriguez",
-                title: "Restaurant Owner"
-              }
-            ].map((testimonial, i) => (
-              <div key={i} className="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
-                <p className="text-lg italic mb-6 leading-relaxed">"{testimonial.quote}"</p>
-                <div className="flex items-center justify-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-white font-bold">
-                      {testimonial.author.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold">{testimonial.author}</div>
-                    <div className="text-gray-400 text-sm">{testimonial.title}</div>
-                  </div>
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+              <div className="flex mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+                "TAST3D has transformed how our customers interact with our menu. The 3D models help them understand exactly what they're ordering."
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white font-bold">SJ</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Sarah Johnson</div>
+                  <div className="text-gray-600 text-sm">Restaurant Manager</div>
                 </div>
               </div>
-            ))}
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+              <div className="flex mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+                "The interactive 3D menu has increased our average order value by 23%. Customers are more confident in their choices."
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white font-bold">MC</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Mike Chen</div>
+                  <div className="text-gray-600 text-sm">Head Chef</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+              <div className="flex mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+                "Implementation was seamless, and our customers love the modern dining experience. Highly recommend TAST3D!"
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white font-bold">AR</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">Alex Rodriguez</div>
+                  <div className="text-gray-600 text-sm">Restaurant Owner</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="text-center py-20 bg-gray-900">
-        <div className="max-w-4xl mx-auto px-6">
-          <h3 className="text-4xl font-bold mb-6">Ready to Get Started?</h3>
-          <p className="text-xl text-gray-400 mb-12 leading-relaxed">
-            Transform your restaurant's menu with interactive 3D visualization
+      {/* CTA Section */}
+      <section id="contact" className="py-20 bg-blue-600">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+            Ready to Transform Your Menu?
+          </h2>
+          <p className="text-xl text-blue-100 mb-12 leading-relaxed">
+            Join hundreds of restaurants already using TAST3D to create engaging dining experiences.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium text-lg"
+              className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium text-lg flex items-center justify-center"
               onClick={() => window.location.href = "/menu"}
             >
-              View Sample Menu
+              Get Started
+              <ArrowRight className="ml-2 w-5 h-5" />
             </button>
-            <button className="bg-transparent border border-gray-600 text-gray-300 px-8 py-4 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-200 font-medium text-lg">
-              Contact Us
+            <button className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 transition-all duration-200 font-medium text-lg">
+              Contact Sales
             </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="text-center py-12 border-t border-gray-800">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-gray-500">
-            © {new Date().getFullYear()} TAST3D. All rights reserved.
+      <footer className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-2xl font-bold mb-6">TAST3D</h3>
+              <p className="text-gray-400 leading-relaxed">
+                Transforming restaurant experiences with interactive 3D menu visualization.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-6">Product</h4>
+              <ul className="space-y-3 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Demo</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-6">Company</h4>
+              <ul className="space-y-3 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Support</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-6">Contact</h4>
+              <ul className="space-y-3 text-gray-400">
+                <li>hello@tast3d.com</li>
+                <li>+1 (555) 123-4567</li>
+                <li>San Francisco, CA</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+            <p>&copy; {new Date().getFullYear()} TAST3D. All rights reserved.</p>
           </div>
         </div>
       </footer>
