@@ -91,6 +91,8 @@ export interface MenuCardProps {
   isNutFree?: boolean;
   imageUrl?: string;
   splatUrl?: string;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface DietaryBadgesProps {
