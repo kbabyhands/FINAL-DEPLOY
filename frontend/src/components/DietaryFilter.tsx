@@ -39,7 +39,7 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
 
   return (
     <div className="flex items-center space-x-3">
-      <span className="text-sm font-medium text-amber-800 dark:text-amber-200 whitespace-nowrap">
+      <span className="text-sm font-medium text-amber-800 whitespace-nowrap">
         Dietary:
       </span>
       
