@@ -129,7 +129,7 @@ const MenuItemDialog = ({
                     ))}
                   </span>
                 ) : (
-                  <span className="text-green-700 dark:text-green-400 font-semibold">None</span>
+                  <span className="text-green-700 font-semibold">None</span>
                 )}
               </p>
             </div>
