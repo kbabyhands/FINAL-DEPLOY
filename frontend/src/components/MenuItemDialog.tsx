@@ -88,9 +88,9 @@ const MenuItemDialog = ({
         {/* Details Section */}
         <div className="space-y-6">
           {/* Price Display */}
-          <div className="bg-white/60 dark:bg-amber-950/40 rounded-2xl p-6 shadow-lg border border-amber-200/50 dark:border-amber-800/50">
+          <div className="bg-white/60 rounded-2xl p-6 shadow-lg border border-amber-200/50">
             <div className="flex items-center justify-center">
-              <div className="text-4xl font-bold text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-900/30 px-6 py-3 rounded-xl shadow-sm">
+              <div className="text-4xl font-bold text-amber-900 bg-amber-100 px-6 py-3 rounded-xl shadow-sm">
                 {formatPrice(price)}
               </div>
             </div>
