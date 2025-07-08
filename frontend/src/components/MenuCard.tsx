@@ -128,7 +128,7 @@ const MenuCard = ({
       <DialogTrigger asChild>
         <Card 
           ref={cardRef} 
-          className={`cursor-pointer transition-all duration-300 card-elevated border-0 rounded-2xl bg-white overflow-hidden group ${cardHeight} flex flex-col`}
+          className={`cursor-pointer transition-all duration-500 card-elevated border-0 rounded-2xl bg-white/95 backdrop-blur-sm overflow-hidden group ${cardHeight} flex flex-col shadow-lg hover:shadow-xl hover:bg-white`}
           onClick={handleOpenDialog}
           role="button"
           tabIndex={0}
