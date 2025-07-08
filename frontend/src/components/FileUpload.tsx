@@ -18,7 +18,7 @@ interface FileUploadProps {
   description?: string;
 }
 
-const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: FileUploadProps) => {
+const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept, recommendedSize, description }: FileUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
