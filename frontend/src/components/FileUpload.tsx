@@ -14,6 +14,8 @@ interface FileUploadProps {
   onRemove: () => void;
   label: string;
   accept: string;
+  recommendedSize?: string;
+  description?: string;
 }
 
 const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept }: FileUploadProps) => {
