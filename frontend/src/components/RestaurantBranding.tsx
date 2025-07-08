@@ -193,6 +193,8 @@ const RestaurantBranding = ({ restaurant, onUpdate }: RestaurantBrandingProps) =
               onRemove={() => setBrandingData({ ...brandingData, logo_url: '' })}
               label="Restaurant Logo"
               accept="image/*"
+              recommendedSize="300×300px"
+              description="Square format works best. Displays at 80×80px in menu header."
             />
             <FileUpload
               bucket="restaurant-branding"
@@ -201,6 +203,8 @@ const RestaurantBranding = ({ restaurant, onUpdate }: RestaurantBrandingProps) =
               onRemove={() => setBrandingData({ ...brandingData, banner_url: '' })}
               label="Banner Image"
               accept="image/*"
+              recommendedSize="1200×400px"
+              description="Wide format recommended. Used as background header image."
             />
           </div>
 
