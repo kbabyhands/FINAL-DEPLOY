@@ -156,7 +156,7 @@ const MenuCard = ({
                   <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-1">
                     {title}
                   </h3>
-                  <Badge variant="secondary" className="ml-2 font-semibold">
+                  <Badge variant="secondary" className="ml-2 font-semibold shadow-sm px-3 py-1">
                     {formatPrice(price)}
                   </Badge>
                 </div>
