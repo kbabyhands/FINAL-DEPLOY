@@ -102,7 +102,56 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Please test the updated dark mode color scheme to ensure it now resembles Reddit's dark mode instead of the previous blue-tinted dark mode."
+user_problem_statement: "Test the TAST3D homepage API endpoints to ensure they're working correctly."
+
+backend:
+  - task: "GET /api/homepage/content Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/homepage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the GET /api/homepage/content endpoint. The endpoint returns the homepage content with the correct structure including hero, features, testimonials, and demo_items. The response matches the HomepageContent schema defined in models/homepage.py. Default content is properly loaded when no content exists in the database."
+
+  - task: "PUT /api/homepage/content Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/homepage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the PUT /api/homepage/content endpoint. The endpoint successfully updates the homepage content with the provided data. All fields (hero, features, testimonials, demo_items) can be updated individually or together. The updated content is correctly persisted in the database and can be retrieved with subsequent GET requests."
+
+  - task: "POST /api/homepage/content/reset Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/homepage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the POST /api/homepage/content/reset endpoint. The endpoint successfully resets the homepage content to the default values defined in the HomepageContent model. After resetting, the hero, features, testimonials, and demo_items all contain their default values."
+
+  - task: "CORS Configuration"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "Tested CORS configuration for the homepage API endpoints. The server correctly includes the Access-Control-Allow-Origin header set to '*' in the response, allowing cross-origin requests from any domain. This ensures that the frontend can access the API endpoints from different origins."
 
 frontend:
   - task: "Enhanced Menu Card Visual Depth"
@@ -159,12 +208,15 @@ frontend:
 metadata:
   created_by: "testing_agent"
   version: "1.0"
-  test_sequence: 4
+  test_sequence: 5
   run_ui: true
 
 test_plan:
   current_focus:
-    - "Enhanced Menu Card Visual Depth"
+    - "GET /api/homepage/content Endpoint"
+    - "PUT /api/homepage/content Endpoint"
+    - "POST /api/homepage/content/reset Endpoint"
+    - "CORS Configuration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -186,3 +238,5 @@ agent_communication:
     -message: "I've conducted a thorough code review of the dark mode color scheme update. The dark mode CSS variables in index.css have been successfully updated to use gray/black tones instead of blue tones, matching Reddit's dark mode appearance. Specifically, the background color was changed to a very dark gray (--background: 0 0% 7%), card backgrounds to dark gray (--card: 0 0% 10%), text to light gray (--foreground: 0 0% 95%), and borders and inputs to dark gray colors. All blue tints have been removed from the dark mode color scheme. The implementation successfully meets all the requirements to make the dark mode resemble Reddit's dark mode instead of the previous blue-tinted dark mode. The dark mode toggle component in DarkModeToggle.tsx works correctly to switch between light and dark modes. All the requirements specified in the test request have been met."
     -agent: "testing"
     -message: "I've tested the enhanced menu cards to verify they now have more visual depth and appear less flat. The cards successfully implement most of the requested changes: (1) Border radius is now rounded-xl (12px) as specified; (2) Hover effects work correctly with scale animation (hover:scale-[1.02]) - cards scale to 1.02x their size on hover; (3) Transition duration has been increased to 300ms for smoother animations; (4) Image styling includes rounded corners (12px) and subtle shadows; (5) Content padding has been increased to p-5 (20px) for better spacing. However, some enhancements were not fully implemented: (1) The shadow effect doesn't change on hover - the same shadow is applied in both normal and hover states; (2) The 3D model indicator doesn't have a shadow as specified; (3) No price badge with shadow was found in the tested cards. The dark mode implementation works correctly, with the cards maintaining their visual depth in dark mode. Overall, the menu cards do have significantly more visual depth than before, with the layered shadows, rounded corners, and hover animations creating a more three-dimensional appearance."
+    -agent: "testing"
+    -message: "I've thoroughly tested the TAST3D homepage API endpoints and can confirm they're all working correctly. The GET /api/homepage/content endpoint successfully returns homepage content with the correct structure including hero, features, testimonials, and demo_items. The PUT /api/homepage/content endpoint properly updates the homepage content with the provided data, and the changes are correctly persisted in the database. The POST /api/homepage/content/reset endpoint successfully resets the content to the default values. CORS is properly configured, with the Access-Control-Allow-Origin header set to '*' in the responses. All endpoints match the HomepageContent schema defined in models/homepage.py. The MongoDB integration is working correctly for data persistence. All tests are passing with no errors or issues."
