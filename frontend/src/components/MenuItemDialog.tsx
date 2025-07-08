@@ -76,7 +76,7 @@ const MenuItemDialog = ({
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         {/* Media Section - Image/3D Model Viewer */}
-        <div className="bg-white/60 dark:bg-amber-950/40 rounded-2xl p-6 shadow-lg border border-amber-200/50 dark:border-amber-800/50">
+        <div className="bg-white/60 rounded-2xl p-6 shadow-lg border border-amber-200/50">
           <ViewerToggle
             splatUrl={splatUrl}
             imageUrl={imageUrl}
