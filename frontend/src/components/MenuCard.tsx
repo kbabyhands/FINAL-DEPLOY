@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { Eye } from "lucide-react";
+import { Eye, Star } from "lucide-react";
 import { APP_CONFIG } from "@/constants";
 import { detectDeviceCapabilities } from "@/utils/device";
 import { formatPrice } from "@/utils/formatters";
