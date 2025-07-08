@@ -68,7 +68,7 @@ const MenuItemDialog = ({
         <DialogTitle className="text-3xl font-serif font-light text-amber-900 mb-3">
           {title}
         </DialogTitle>
-        <DialogDescription className="text-lg text-amber-800 dark:text-amber-200 leading-relaxed">
+        <DialogDescription className="text-lg text-amber-800 leading-relaxed">
           {description}
         </DialogDescription>
       </DialogHeader>
