@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from models.homepage import HomepageContent, HomepageContentUpdate
+from backend.models.homepage import HomepageContent, HomepageContentUpdate
 from datetime import datetime
 from typing import Optional
 import uuid
