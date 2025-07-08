@@ -10,6 +10,7 @@ import AdminHeader from './admin/AdminHeader';
 import AdminTabNavigation from './admin/AdminTabNavigation';
 import MenuManagementTab from './admin/MenuManagementTab';
 import AnalyticsTab from './admin/AnalyticsTab';
+import HomepageEditor from './admin/HomepageEditor';
 
 interface Restaurant {
   id: string;
@@ -53,7 +54,7 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [activeTab, setActiveTab] = useState<'menu' | 'analytics'>('menu');
+  const [activeTab, setActiveTab] = useState<'menu' | 'analytics' | 'homepage'>('menu');
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -177,6 +178,8 @@ const AdminDashboard = ({ onSignOut }: AdminDashboardProps) => {
                 onDeleteMenuItem={loadRestaurantData}
                 onReorderItems={handleReorderItems}
               />
+            ) : activeTab === 'homepage' ? (
+              <HomepageEditor />
             ) : (
               <AnalyticsTab restaurantId={restaurant.id} />
             )}
