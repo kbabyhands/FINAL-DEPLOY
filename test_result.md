@@ -137,7 +137,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Meta Tags and Sharing Functionality"
+    - "Favicon Update"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
