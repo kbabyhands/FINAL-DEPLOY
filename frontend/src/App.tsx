@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import Homepage from "./pages/Homepage";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import MenuItemViewer from "./pages/MenuItemViewer";
@@ -20,7 +21,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Homepage />} />
+            <Route path="/menu" element={<Index />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/menu-item/:id" element={<MenuItemViewer />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
