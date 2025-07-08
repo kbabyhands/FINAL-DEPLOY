@@ -16,7 +16,7 @@ load_dotenv(ROOT_DIR / '.env')
 # Import homepage routes
 import sys
 sys.path.append(str(ROOT_DIR))
-from routes.homepage import router as homepage_router
+from backend.routes.homepage import router as homepage_router
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
