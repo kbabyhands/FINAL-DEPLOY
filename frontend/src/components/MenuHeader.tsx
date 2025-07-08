@@ -1,9 +1,26 @@
 import { Button } from "@/components/ui/button";
-import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { DarkModeToggle as ThemeToggle } from "@/components/DarkModeToggle";
 import { Settings, Share, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { shareViaText } from "@/utils/shareMenu";
 import { Restaurant } from "@/hooks/useMenuData";
+
+interface ShareButtonProps {
+  restaurantName: string | undefined;
+}
+
+const ShareButton = ({ restaurantName }: ShareButtonProps) => {
+  const handleShare = () => {
+    shareViaText(restaurantName);
+  };
+
+  return (
+    <Button onClick={handleShare} variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10">
+      <Share className="w-4 h-4 mr-2" />
+      Share
+    </Button>
+  );
+};
 
 interface MenuHeaderProps {
   restaurant: Restaurant | null;
