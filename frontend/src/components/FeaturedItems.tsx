@@ -68,6 +68,8 @@ const FeaturedItems = () => {
                   isNutFree={item.is_nut_free}
                   imageUrl={item.image_url}
                   splatUrl={item.model_url}
+                  averageRating={item.averageRating}
+                  reviewCount={item.reviewCount}
                 />
               </div>
               
