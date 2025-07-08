@@ -34,52 +34,35 @@ const FeaturedItems = () => {
   }
 
   return (
-    <section className="py-8 bg-muted/30" aria-labelledby="featured-items-title">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="flex items-center space-x-2 mb-6">
-          <Star className="w-6 h-6 text-primary fill-primary" aria-hidden="true" />
-          <h2 id="featured-items-title" className="text-2xl font-bold text-foreground">
+    <section className="bg-gradient-to-b from-amber-50/50 to-white dark:from-amber-950/20 dark:to-background py-16">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-serif font-light text-foreground mb-2">
             Featured Items
           </h2>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-lg text-muted-foreground">
             Highest rated dishes
           </span>
         </div>
-        
-        {/* Featured Items Grid */}
-        <div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          role="grid"
-          aria-label="Featured menu items"
-        >
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {featuredItems.map((item) => (
             <div key={item.id} className="relative" role="gridcell">
-              <div className="bg-card rounded-lg border border-border hover:shadow-lg transition-shadow duration-200">
-                <MenuCard
-                  menuItemId={item.id}
-                  title={item.title}
-                  description={item.description || ''}
-                  price={item.price}
-                  allergens={item.allergens}
-                  isVegetarian={item.is_vegetarian}
-                  isVegan={item.is_vegan}
-                  isGlutenFree={item.is_gluten_free}
-                  isNutFree={item.is_nut_free}
-                  imageUrl={item.image_url}
-                  splatUrl={item.model_url}
-                  averageRating={item.averageRating}
-                  reviewCount={item.reviewCount}
-                />
-              </div>
-              
-              {/* Review Count and Rating Badge */}
-              <div 
-                className="absolute -top-3 -right-3 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-background"
-                aria-label={`${item.averageRating.toFixed(1)} stars, ${item.reviewCount} ${pluralize(item.reviewCount, 'review')}`}
-              >
-                ⭐ {item.averageRating.toFixed(1)} ({item.reviewCount})
-              </div>
+              <MenuCard
+                menuItemId={item.id}
+                title={item.title}
+                description={item.description || ''}
+                price={item.price}
+                allergens={item.allergens}
+                isVegetarian={item.is_vegetarian}
+                isVegan={item.is_vegan}
+                isGlutenFree={item.is_gluten_free}
+                isNutFree={item.is_nut_free}
+                imageUrl={item.image_url}
+                splatUrl={item.model_url}
+                averageRating={item.averageRating}
+                reviewCount={item.reviewCount}
+              />
             </div>
           ))}
         </div>
