@@ -62,6 +62,7 @@ const FeaturedItems = () => {
                 splatUrl={item.model_url}
                 averageRating={item.averageRating}
                 reviewCount={item.reviewCount}
+                size="featured"
               />
             </div>
           ))}
