@@ -60,7 +60,7 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
         <DropdownMenuTrigger asChild>
           <Button 
             variant="outline" 
-            className="bg-white/80 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-900/30 text-amber-900 dark:text-amber-100 shadow-sm rounded-xl px-4 py-2 font-medium transition-all duration-200"
+            className="bg-white/80 border-amber-200 hover:bg-amber-50 text-amber-900 shadow-sm rounded-xl px-4 py-2 font-medium transition-all duration-200"
             aria-label="Select category filter"
           >
             <span className="text-sm">
