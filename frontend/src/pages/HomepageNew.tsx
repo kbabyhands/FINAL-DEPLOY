@@ -1,46 +1,6 @@
 import React from 'react';
 
 const HomePage = () => {
-  const [currentDemoIndex, setCurrentDemoIndex] = useState(0);
-
-  // Professional demo menu items with realistic placeholders
-  const demoItems = [
-    {
-      id: 1,
-      name: "Gourmet Burger",
-      category: "Main Course",
-      description: "Premium beef patty with artisanal toppings"
-    },
-    {
-      id: 2,
-      name: "Caesar Salad", 
-      category: "Appetizer",
-      description: "Fresh romaine with house-made dressing"
-    },
-    {
-      id: 3,
-      name: "Chocolate Soufflé",
-      category: "Dessert", 
-      description: "Rich dark chocolate with vanilla cream"
-    }
-  ];
-
-  // Auto-rotate demo carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentDemoIndex((prev) => (prev + 1) % demoItems.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const nextDemo = () => {
-    setCurrentDemoIndex((prev) => (prev + 1) % demoItems.length);
-  };
-
-  const prevDemo = () => {
-    setCurrentDemoIndex((prev) => (prev - 1 + demoItems.length) % demoItems.length);
-  };
-
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Navigation */}
