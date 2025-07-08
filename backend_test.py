@@ -5,7 +5,13 @@ import os
 from datetime import datetime
 
 # Get the backend URL from the frontend .env file
-BACKEND_URL = "http://localhost:8001"
+with open('/app/frontend/.env', 'r') as f:
+    for line in f:
+        if line.startswith('VITE_REACT_APP_BACKEND_URL='):
+            BACKEND_URL = line.strip().split('=')[1]
+            break
+    else:
+        BACKEND_URL = "http://localhost:8001"
 
 class TestHomepageAPI(unittest.TestCase):
     """Test the homepage API endpoints"""
@@ -195,7 +201,7 @@ class TestHomepageAPI(unittest.TestCase):
 
     def test_cors_headers(self):
         """Test CORS headers are present"""
-        response = requests.get(f"{self.api_url}/content")
+        response = requests.options(f"{self.api_url}/content")
         
         # Check CORS headers
         headers = response.headers
