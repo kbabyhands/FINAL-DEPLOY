@@ -83,7 +83,7 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
             {categories.map((category) => (
               <div 
                 key={category.id} 
-                className="flex items-center space-x-3 p-3 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg cursor-pointer transition-colors duration-150"
+                className="flex items-center space-x-3 p-3 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors duration-150"
                 onClick={() => handleCategoryToggle(category.id)}
                 role="button"
                 tabIndex={0}
