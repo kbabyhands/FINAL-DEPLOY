@@ -102,7 +102,7 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
                 />
                 <label 
                   htmlFor={category.id} 
-                  className="text-sm cursor-pointer flex-1 flex items-center text-amber-900 dark:text-amber-100 font-medium"
+                  className="text-sm cursor-pointer flex-1 flex items-center text-amber-900 font-medium"
                 >
                   <span className="mr-2 text-amber-600 dark:text-amber-400" aria-hidden="true">{category.icon}</span>
                   {category.name}
