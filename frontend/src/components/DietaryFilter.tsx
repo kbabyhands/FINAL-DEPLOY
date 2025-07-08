@@ -85,7 +85,7 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
                   checked={option.checked}
                   onCheckedChange={(checked) => handleFilterToggle(option.key, !!checked)}
                   aria-label={`Filter by ${option.label}`}
-                  className="border-amber-300 dark:border-amber-700 data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600"
+                  className="border-amber-300 data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600"
                 />
                 <label 
                   htmlFor={option.key} 
