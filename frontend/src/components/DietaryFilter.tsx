@@ -64,7 +64,7 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
           <DropdownMenuLabel className="text-amber-800 font-medium px-4 py-3">
             Dietary Preferences
           </DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-amber-200 dark:bg-amber-800" />
+          <DropdownMenuSeparator className="bg-amber-200" />
           
           <div className="p-2 space-y-1" role="group" aria-label="Dietary filter options">
             {filterOptions.map((option) => (
