@@ -40,44 +40,6 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-
-  .dark {
-    --background: 0 0% 7%;        /* Very dark gray background like Reddit */
-    --foreground: 0 0% 95%;       /* Light gray text */
-
-    --card: 0 0% 10%;             /* Dark gray cards */
-    --card-foreground: 0 0% 95%;  /* Light gray text on cards */
-
-    --popover: 0 0% 10%;          /* Dark gray popovers */
-    --popover-foreground: 0 0% 95%; /* Light gray text in popovers */
-
-    --primary: 0 0% 95%;          /* Light gray for primary elements */
-    --primary-foreground: 0 0% 10%; /* Dark text on primary elements */
-
-    --secondary: 0 0% 15%;        /* Medium dark gray for secondary elements */
-    --secondary-foreground: 0 0% 90%; /* Light gray text on secondary */
-
-    --muted: 0 0% 15%;            /* Medium dark gray for muted elements */
-    --muted-foreground: 0 0% 60%; /* Medium gray for muted text */
-
-    --accent: 0 0% 15%;           /* Medium dark gray for accents */
-    --accent-foreground: 0 0% 95%; /* Light gray text on accents */
-
-    --destructive: 0 62.8% 30.6%; /* Keep red for destructive actions */
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 0 0% 20%;           /* Dark gray borders */
-    --input: 0 0% 15%;            /* Dark gray inputs */
-    --ring: 0 0% 50%;             /* Medium gray focus rings */
-    --sidebar-background: 0 0% 5%; /* Very dark sidebar background */
-    --sidebar-foreground: 0 0% 90%; /* Light gray sidebar text */
-    --sidebar-primary: 0 0% 95%;   /* Light gray sidebar primary */
-    --sidebar-primary-foreground: 0 0% 10%; /* Dark text on sidebar primary */
-    --sidebar-accent: 0 0% 12%;    /* Dark gray sidebar accent */
-    --sidebar-accent-foreground: 0 0% 90%; /* Light gray sidebar accent text */
-    --sidebar-border: 0 0% 20%;    /* Dark gray sidebar borders */
-    --sidebar-ring: 0 0% 50%;      /* Medium gray sidebar focus rings */
-  }
 }
 
 @layer base {
