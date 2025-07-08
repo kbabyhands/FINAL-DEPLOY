@@ -158,7 +158,7 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
       {reviews.length > 0 ? (
         <div className="space-y-4 max-h-64 overflow-y-auto">
           {reviews.map((review) => (
-            <Card key={review.id} className="bg-white/80 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 rounded-xl shadow-sm border-l-4 border-l-amber-500 dark:border-l-amber-400">
+            <Card key={review.id} className="bg-white/80 border-amber-200 rounded-xl shadow-sm border-l-4 border-l-amber-500">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
