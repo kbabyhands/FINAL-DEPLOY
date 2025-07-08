@@ -10,11 +10,13 @@ from typing import List
 import uuid
 from datetime import datetime
 
-# Import homepage routes
-from routes.homepage import router as homepage_router
-
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Import homepage routes
+import sys
+sys.path.append(str(ROOT_DIR))
+from routes.homepage import router as homepage_router
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
