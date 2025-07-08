@@ -44,9 +44,8 @@ export const MenuHeader = ({ restaurant }: MenuHeaderProps) => {
       {/* Content Overlay */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 pt-8 pb-12">
         {/* Top Navigation */}
-        <div className="flex justify-between items-center mb-12">
+        <div className="flex items-center justify-between mb-12">
           <div className="flex items-center space-x-4">
-            <ThemeToggle />
             <Link to="/admin" className="text-white/80 hover:text-white transition-colors">
               <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10">
                 <Settings className="w-4 h-4 mr-2" />
