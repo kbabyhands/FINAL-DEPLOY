@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Please test the updated file upload areas with the new recommended size information. I've enhanced the FileUpload component and updated all upload areas to include helpful size recommendations and descriptions."
+user_problem_statement: "Please test the updated dark mode color scheme to ensure it now resembles Reddit's dark mode instead of the previous blue-tinted dark mode."
 
 frontend:
   - task: "Dark Mode Color Scheme Update"
