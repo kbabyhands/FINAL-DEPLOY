@@ -82,7 +82,7 @@ const Index = () => {
         {/* Filters Section */}
         <div className="sticky top-0 z-40 bg-white/95 dark:bg-background/95 backdrop-blur-sm border-b border-border/20 py-4 mb-8">
           <div className="max-w-6xl mx-auto px-6">
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-8">
               <CategoryFilter 
                 categories={categories}
                 activeCategory={activeCategory}
