@@ -177,9 +177,9 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-          <MessageSquare className="w-8 h-8 mx-auto mb-2 text-amber-600 dark:text-amber-400" />
-          <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">No reviews yet. Be the first to review this item!</p>
+        <div className="text-center py-8 bg-amber-50 rounded-xl border border-amber-200">
+          <MessageSquare className="w-8 h-8 mx-auto mb-2 text-amber-600" />
+          <p className="text-sm text-amber-700 font-medium">No reviews yet. Be the first to review this item!</p>
         </div>
       )}
     </div>
