@@ -43,7 +43,7 @@ const FeaturedItems = () => {
             Featured Items
           </h2>
           <span className="text-sm text-muted-foreground">
-            Most reviewed dishes
+            Highest rated dishes
           </span>
         </div>
         
