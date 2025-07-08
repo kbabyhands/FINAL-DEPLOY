@@ -112,26 +112,33 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Reviews Summary */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1">
-            {renderStars(averageRating, "md")}
-            <span className="font-semibold text-lg ml-1">
-              {averageRating > 0 ? averageRating.toFixed(1) : "No ratings"}
-            </span>
+        <div>
+          <h3 className="text-2xl font-serif font-light text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2">
+            <div className="w-2 h-2 bg-amber-600 dark:bg-amber-400 rounded-full"></div>
+            Customer Reviews
+          </h3>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              {renderStars(averageRating, "md")}
+              <span className="font-semibold text-lg text-amber-900 dark:text-amber-100">
+                {averageRating > 0 ? averageRating.toFixed(1) : "No ratings"}
+              </span>
+            </div>
+            <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+              <MessageSquare className="w-3 h-3" />
+              {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
+            </div>
           </div>
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <MessageSquare className="w-3 h-3" />
-            {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
-          </Badge>
         </div>
         
         <Button
           variant="outline"
           size="sm"
           onClick={() => setShowReviewForm(true)}
+          className="bg-amber-100 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-100 hover:bg-amber-200 dark:hover:bg-amber-800/30 rounded-xl font-medium"
         >
           Write a Review
         </Button>
@@ -149,30 +156,30 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
 
       {/* Reviews List */}
       {reviews.length > 0 ? (
-        <div className="space-y-3 max-h-64 overflow-y-auto">
+        <div className="space-y-4 max-h-64 overflow-y-auto">
           {reviews.map((review) => (
-            <Card key={review.id} className="border-l-4 border-l-blue-200">
+            <Card key={review.id} className="bg-white/80 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 rounded-xl shadow-sm border-l-4 border-l-amber-500 dark:border-l-amber-400">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       {renderStars(review.rating)}
-                      <span className="font-medium text-sm">{review.customer_name}</span>
+                      <span className="font-medium text-sm text-amber-900 dark:text-amber-100">{review.customer_name}</span>
                     </div>
-                    <p className="text-xs text-gray-500">{formatDate(review.created_at)}</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">{formatDate(review.created_at)}</p>
                   </div>
                 </div>
                 {review.review_text && (
-                  <p className="text-sm text-gray-700 mt-2">{review.review_text}</p>
+                  <p className="text-sm text-amber-800 dark:text-amber-200 mt-2 leading-relaxed">{review.review_text}</p>
                 )}
               </CardContent>
             </Card>
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500">
-          <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-          <p className="text-sm">No reviews yet. Be the first to review this item!</p>
+        <div className="text-center py-8 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+          <MessageSquare className="w-8 h-8 mx-auto mb-2 text-amber-600 dark:text-amber-400" />
+          <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">No reviews yet. Be the first to review this item!</p>
         </div>
       )}
     </div>
