@@ -166,7 +166,7 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
                       {renderStars(review.rating)}
                       <span className="font-medium text-sm text-amber-900">{review.customer_name}</span>
                     </div>
-                    <p className="text-xs text-amber-600 dark:text-amber-400">{formatDate(review.created_at)}</p>
+                    <p className="text-xs text-amber-600">{formatDate(review.created_at)}</p>
                   </div>
                 </div>
                 {review.review_text && (
