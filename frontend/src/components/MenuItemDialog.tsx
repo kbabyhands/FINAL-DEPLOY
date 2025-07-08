@@ -138,7 +138,7 @@ const MenuItemDialog = ({
       </div>
       
       {/* Reviews Section */}
-      <section className="mt-8 bg-white/60 dark:bg-amber-950/40 rounded-2xl p-6 shadow-lg border border-amber-200/50 dark:border-amber-800/50" aria-labelledby="reviews-title">
+      <section className="mt-8 bg-white/60 rounded-2xl p-6 shadow-lg border border-amber-200/50" aria-labelledby="reviews-title">
         <ReviewsSection menuItemId={menuItemId} menuItemTitle={title} />
       </section>
     </DialogContent>
