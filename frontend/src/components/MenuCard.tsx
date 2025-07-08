@@ -123,7 +123,7 @@ const MenuCard = ({
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.05)'
           }}
         >
-          <CardContent className="p-4">
+          <CardContent className="p-5">
             <div className="flex space-x-4">
               {/* Menu Item Image */}
               <div className="w-20 h-20 flex-shrink-0 relative">
@@ -131,11 +131,11 @@ const MenuCard = ({
                   <img 
                     src={imageUrl} 
                     alt={title}
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-cover rounded-xl shadow-sm"
                     loading="lazy"
                   />
                 ) : (
-                  <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
+                  <div className="w-full h-full bg-muted rounded-xl flex items-center justify-center shadow-inner">
                     <span className="text-muted-foreground text-xs">No Image</span>
                   </div>
                 )}
@@ -143,7 +143,7 @@ const MenuCard = ({
                 {/* 3D Model Indicator */}
                 {has3DModel && (
                   <div className="absolute -top-1 -right-1" title="3D model available">
-                    <div className="bg-primary text-primary-foreground rounded-full p-1">
+                    <div className="bg-primary text-primary-foreground rounded-full p-1 shadow-md">
                       <Eye className="w-3 h-3" />
                     </div>
                   </div>
