@@ -145,7 +145,7 @@ const MenuCard = ({
                   loading="lazy"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900 dark:to-orange-900 flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
                   <span className="text-muted-foreground text-sm">No Image</span>
                 </div>
               )}
