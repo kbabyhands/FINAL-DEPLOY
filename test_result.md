@@ -164,7 +164,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Dark Mode Color Scheme Update"
+    - "Enhanced Menu Card Visual Depth"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
