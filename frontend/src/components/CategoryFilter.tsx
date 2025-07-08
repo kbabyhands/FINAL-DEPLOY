@@ -77,7 +77,7 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
           <DropdownMenuLabel className="text-amber-800 font-medium px-4 py-3">
             Choose Category
           </DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-amber-200 dark:bg-amber-800" />
+          <DropdownMenuSeparator className="bg-amber-200" />
           
           <div className="p-2 space-y-1" role="group" aria-label="Category options">
             {categories.map((category) => (
