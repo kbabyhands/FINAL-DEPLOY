@@ -122,71 +122,67 @@ const MenuCard = ({
           tabIndex={0}
           aria-label={`View details for ${title}`}
         >
-          <CardContent className="p-5">
-            <div className="flex space-x-4">
-              {/* Menu Item Image */}
-              <div className="w-20 h-20 flex-shrink-0 relative">
-                {imageUrl ? (
-                  <img 
-                    src={imageUrl} 
-                    alt={title}
-                    className="w-full h-full object-cover rounded-xl shadow-sm"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-muted rounded-xl flex items-center justify-center shadow-inner">
-                    <span className="text-muted-foreground text-xs">No Image</span>
+          <CardContent className="p-0">
+            {/* Menu Item Image */}
+            <div className="relative w-full h-48 overflow-hidden">
+              {imageUrl ? (
+                <img 
+                  src={imageUrl} 
+                  alt={title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900 dark:to-orange-900 flex items-center justify-center">
+                  <span className="text-muted-foreground text-sm">No Image</span>
+                </div>
+              )}
+              
+              {/* 3D Model Indicator Badge */}
+              {has3DModel && (
+                <div className="absolute top-3 left-3">
+                  <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    3D
                   </div>
-                )}
-                
-                {/* 3D Model Indicator */}
-                {has3DModel && (
-                  <div className="absolute -top-1 -right-1" title="3D model available">
-                    <div className="bg-primary text-primary-foreground rounded-full p-1 shadow-md">
-                      <Eye className="w-3 h-3" />
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
 
-              {/* Menu Item Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-1">
-                    {title}
-                  </h3>
-                  <Badge variant="secondary" className="ml-2 font-semibold shadow-sm px-3 py-1">
-                    {formatPrice(price)}
-                  </Badge>
+            {/* Menu Item Content */}
+            <div className="p-6">
+              <h3 className="font-semibold text-lg text-foreground mb-2 line-clamp-2">
+                {title}
+              </h3>
+              
+              <p className="text-muted-foreground text-sm line-clamp-2 mb-4 leading-relaxed">
+                {description}
+              </p>
+
+              {/* Review Rating Display */}
+              {reviewCount !== undefined && reviewCount > 0 && (
+                <div className="flex items-center gap-1 mb-4">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-medium text-foreground">
+                    {averageRating?.toFixed(1) || '0.0'}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+                  </span>
+                </div>
+              )}
+
+              {/* Price and Dietary Badges Row */}
+              <div className="flex items-center justify-between">
+                <div className="text-xl font-bold text-foreground">
+                  {formatPrice(price)}
                 </div>
                 
-                <p className="text-muted-foreground text-sm line-clamp-2 mb-2">
-                  {description}
-                </p>
-
-                {/* Review Rating Display */}
-                {reviewCount !== undefined && reviewCount > 0 && (
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium text-foreground">
-                      {averageRating?.toFixed(1) || '0.0'}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
-                    </span>
-                  </div>
-                )}
-
-                {/* Dietary Information Badges */}
                 <DietaryBadges
                   isVegetarian={isVegetarian}
                   isVegan={isVegan}
                   isGlutenFree={isGlutenFree}
                   isNutFree={isNutFree}
-                  variant="compact"
                 />
-              </div>
-            </div>
           </CardContent>
         </Card>
       </DialogTrigger>
