@@ -17,6 +17,37 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
+interface HomepageContent {
+  hero: {
+    headline: string;
+    subheadline: string;
+    hero_image_url?: string;
+    primary_cta_text: string;
+    primary_cta_url: string;
+    secondary_cta_text: string;
+    secondary_cta_url: string;
+  };
+  features: Array<{
+    icon: string;
+    title: string;
+    description: string;
+    color: string;
+  }>;
+  testimonials: Array<{
+    name: string;
+    title: string;
+    avatar_url?: string;
+    rating: number;
+    quote: string;
+  }>;
+  demo_items: Array<{
+    name: string;
+    description: string;
+    image_url?: string;
+    emoji: string;
+  }>;
+}
+
 /**
  * TAST3D Homepage Component
  * 
@@ -30,58 +61,98 @@ import { useState, useEffect } from "react";
  */
 const Homepage = () => {
   const [currentDemoIndex, setCurrentDemoIndex] = useState(0);
+  const [content, setContent] = useState<HomepageContent | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Demo menu items carousel
-  const demoItems = [
-    {
-      id: 1,
-      name: "Cheeseburger",
-      image: "/api/placeholder/300/200",
-      description: "Classic beef burger with cheese"
-    },
-    {
-      id: 2,
-      name: "Caesar Salad",
-      image: "/api/placeholder/300/200",
-      description: "Fresh romaine with parmesan"
-    },
-    {
-      id: 3,
-      name: "Chocolate Donut",
-      image: "/api/placeholder/300/200",
-      description: "Glazed chocolate donut"
+  useEffect(() => {
+    loadHomepageContent();
+  }, []);
+
+  const loadHomepageContent = async () => {
+    try {
+      const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      const response = await fetch(`${backendUrl}/api/homepage/content`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setContent(data);
+      }
+    } catch (error) {
+      console.error('Error loading homepage content:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   // Auto-rotate demo carousel
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentDemoIndex((prev) => (prev + 1) % demoItems.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [demoItems.length]);
+    if (content?.demo_items) {
+      const interval = setInterval(() => {
+        setCurrentDemoIndex((prev) => (prev + 1) % content.demo_items.length);
+      }, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [content]);
 
   const nextDemo = () => {
-    setCurrentDemoIndex((prev) => (prev + 1) % demoItems.length);
+    if (content?.demo_items) {
+      setCurrentDemoIndex((prev) => (prev + 1) % content.demo_items.length);
+    }
   };
 
   const prevDemo = () => {
-    setCurrentDemoIndex((prev) => (prev - 1 + demoItems.length) % demoItems.length);
+    if (content?.demo_items) {
+      setCurrentDemoIndex((prev) => (prev - 1 + content.demo_items.length) % content.demo_items.length);
+    }
   };
 
   const handleViewSampleMenu = () => {
-    // Navigate to sample menu or open modal
-    window.location.href = "/menu";
+    if (content?.hero.primary_cta_url) {
+      window.location.href = content.hero.primary_cta_url;
+    } else {
+      window.location.href = "/menu";
+    }
   };
 
   const handleContactUs = () => {
-    // Scroll to contact section
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+    if (content?.hero.secondary_cta_url) {
+      if (content.hero.secondary_cta_url.startsWith('#')) {
+        document.getElementById(content.hero.secondary_cta_url.substring(1))?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.href = content.hero.secondary_cta_url;
+      }
+    } else {
+      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const handleRestaurantLogin = () => {
-    // Navigate to restaurant login
     window.location.href = "/admin";
+  };
+
+  const getIconComponent = (iconName: string) => {
+    const iconMap: { [key: string]: React.ComponentType<any> } = {
+      'camera': Camera,
+      'smartphone': Smartphone,
+      'zap': Zap,
+      'refresh-cw': RefreshCw,
+      'scan': Scan,
+      'check-circle': CheckCircle,
+      'monitor': Monitor,
+    };
+    return iconMap[iconName] || Camera;
+  };
+
+  const getColorClass = (color: string) => {
+    const colorMap: { [key: string]: string } = {
+      'blue': 'bg-blue-600',
+      'green': 'bg-green-600',
+      'purple': 'bg-purple-600',
+      'orange': 'bg-orange-600',
+      'red': 'bg-red-600',
+      'yellow': 'bg-yellow-600',
+    };
+    return colorMap[color] || 'bg-blue-600';
   };
 
   return (
