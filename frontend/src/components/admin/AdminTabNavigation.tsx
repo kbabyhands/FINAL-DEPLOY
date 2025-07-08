@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Globe } from 'lucide-react';
 
 interface AdminTabNavigationProps {
-  activeTab: 'menu' | 'analytics';
-  onTabChange: (tab: 'menu' | 'analytics') => void;
+  activeTab: 'menu' | 'analytics' | 'homepage';
+  onTabChange: (tab: 'menu' | 'analytics' | 'homepage') => void;
 }
 
 const AdminTabNavigation = ({ activeTab, onTabChange }: AdminTabNavigationProps) => {
@@ -19,6 +19,17 @@ const AdminTabNavigation = ({ activeTab, onTabChange }: AdminTabNavigationProps)
         }`}
       >
         Menu Management
+      </button>
+      <button
+        onClick={() => onTabChange('homepage')}
+        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+          activeTab === 'homepage'
+            ? 'bg-white text-gray-900 shadow-sm'
+            : 'text-gray-600 hover:text-gray-900'
+        }`}
+      >
+        <Globe className="w-4 h-4" />
+        Homepage Editor
       </button>
       <button
         onClick={() => onTabChange('analytics')}
