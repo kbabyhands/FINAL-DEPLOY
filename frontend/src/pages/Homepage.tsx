@@ -60,171 +60,21 @@ interface HomepageContent {
  * - Contact information
  */
 const Homepage = () => {
-  const [currentDemoIndex, setCurrentDemoIndex] = useState(0);
-  const [content, setContent] = useState<HomepageContent | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadHomepageContent();
-  }, []);
-
-  const loadHomepageContent = async () => {
-    try {
-      const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
-      const response = await fetch(`${backendUrl}/api/homepage/content`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setContent(data);
-      }
-    } catch (error) {
-      console.error('Error loading homepage content:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Auto-rotate demo carousel
-  useEffect(() => {
-    if (content?.demo_items) {
-      const interval = setInterval(() => {
-        setCurrentDemoIndex((prev) => (prev + 1) % content.demo_items.length);
-      }, 4000);
-      return () => clearInterval(interval);
-    }
-  }, [content]);
-
-  const nextDemo = () => {
-    if (content?.demo_items) {
-      setCurrentDemoIndex((prev) => (prev + 1) % content.demo_items.length);
-    }
-  };
-
-  const prevDemo = () => {
-    if (content?.demo_items) {
-      setCurrentDemoIndex((prev) => (prev - 1 + content.demo_items.length) % content.demo_items.length);
-    }
-  };
-
-  const handleViewSampleMenu = () => {
-    if (content?.hero.primary_cta_url) {
-      window.location.href = content.hero.primary_cta_url;
-    } else {
-      window.location.href = "/menu";
-    }
-  };
-
-  const handleContactUs = () => {
-    if (content?.hero.secondary_cta_url) {
-      if (content.hero.secondary_cta_url.startsWith('#')) {
-        document.getElementById(content.hero.secondary_cta_url.substring(1))?.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        window.location.href = content.hero.secondary_cta_url;
-      }
-    } else {
-      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const handleRestaurantLogin = () => {
-    window.location.href = "/admin";
-  };
-
-  const getIconComponent = (iconName: string) => {
-    const iconMap: { [key: string]: React.ComponentType<any> } = {
-      'camera': Camera,
-      'smartphone': Smartphone,
-      'zap': Zap,
-      'refresh-cw': RefreshCw,
-      'scan': Scan,
-      'check-circle': CheckCircle,
-      'monitor': Monitor,
-    };
-    return iconMap[iconName] || Camera;
-  };
-
-  const getColorClass = (color: string) => {
-    const colorMap: { [key: string]: string } = {
-      'blue': 'bg-blue-600',
-      'green': 'bg-green-600',
-      'purple': 'bg-purple-600',
-      'orange': 'bg-orange-600',
-      'red': 'bg-red-600',
-      'yellow': 'bg-yellow-600',
-    };
-    return colorMap[color] || 'bg-blue-600';
-  };
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-300">Loading TAST3D...</p>
-        </div>
+  return (
+    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-white mb-4">TAST3D Homepage</h1>
+        <p className="text-gray-300 mb-8">Testing if basic homepage loads</p>
+        <button 
+          className="bg-blue-600 px-6 py-3 text-white rounded-lg"
+          onClick={() => window.location.href = "/menu"}
+        >
+          Go to Menu
+        </button>
       </div>
-    );
-  }
-
-  // Error state - show basic homepage if content loading fails
-  if (!content) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                TAST3D
-              </div>
-              <div className="flex items-center space-x-4">
-                <Button 
-                  variant="ghost" 
-                  className="text-gray-300 hover:text-white"
-                  onClick={handleRestaurantLogin}
-                >
-                  Restaurant Login
-                </Button>
-                <Button 
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => window.location.href = "/menu"}
-                >
-                  Request a Demo
-                </Button>
-              </div>
-            </div>
-          </div>
-        </nav>
-        
-        <section className="pt-24 pb-16 px-6">
-          <div className="max-w-7xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              Bring Your Menu to Life in 3D
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              Interactive 3D visualizations help customers see what they're ordering
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button 
-                size="lg" 
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
-                onClick={() => window.location.href = "/menu"}
-              >
-                View Sample Menu
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 text-lg"
-              >
-                Contact Us
-              </Button>
-            </div>
-          </div>
-        </section>
-      </div>
-    );
-  }
+    </div>
+  );
+};
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
