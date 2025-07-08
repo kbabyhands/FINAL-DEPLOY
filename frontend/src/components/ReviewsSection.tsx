@@ -116,8 +116,8 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
       {/* Reviews Summary */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-serif font-light text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2">
-            <div className="w-2 h-2 bg-amber-600 dark:bg-amber-400 rounded-full"></div>
+          <h3 className="text-2xl font-serif font-light text-amber-900 mb-2 flex items-center gap-2">
+            <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
             Customer Reviews
           </h3>
           <div className="flex items-center gap-4">
