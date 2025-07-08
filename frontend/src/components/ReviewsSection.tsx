@@ -138,7 +138,7 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
           variant="outline"
           size="sm"
           onClick={() => setShowReviewForm(true)}
-          className="bg-amber-100 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-100 hover:bg-amber-200 dark:hover:bg-amber-800/30 rounded-xl font-medium"
+          className="bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200 rounded-xl font-medium"
         >
           Write a Review
         </Button>
