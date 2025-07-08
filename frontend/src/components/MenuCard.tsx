@@ -35,7 +35,8 @@ const MenuCard = ({
   imageUrl,
   splatUrl,
   averageRating,
-  reviewCount
+  reviewCount,
+  size = 'regular'
 }: MenuCardProps) => {
   // Hooks for analytics and 3D preloading
   const { trackView } = useMenuItemViews();
