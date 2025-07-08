@@ -38,8 +38,8 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
   };
 
   return (
-    <div className="flex items-center space-x-4">
-      <span className="text-sm font-medium text-foreground whitespace-nowrap">
+    <div className="flex items-center space-x-3">
+      <span className="text-sm font-medium text-amber-800 dark:text-amber-200 whitespace-nowrap">
         Dietary:
       </span>
       
@@ -47,28 +47,30 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
         <DropdownMenuTrigger asChild>
           <Button 
             variant="outline" 
-            className="w-48 justify-between"
+            className="bg-white/80 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-900/30 text-amber-900 dark:text-amber-100 shadow-sm rounded-xl px-4 py-2 font-medium transition-all duration-200"
             aria-label="Select dietary filters"
           >
-            <span>
+            <span className="text-sm">
               {activeFilterCount > 0 
-                ? `${activeFilterCount} ${pluralize(activeFilterCount, 'filter')} selected`
-                : 'Select dietary options'
+                ? `${activeFilterCount} ${pluralize(activeFilterCount, 'filter')} applied`
+                : 'All Dietary Options'
               }
             </span>
-            <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
+            <ChevronDown className="h-4 w-4 ml-2 text-amber-600 dark:text-amber-400" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent className="w-56" align="start">
-          <DropdownMenuLabel>Dietary Options</DropdownMenuLabel>
-          <DropdownMenuSeparator />
+        <DropdownMenuContent className="w-64 bg-white/95 dark:bg-amber-950/95 backdrop-blur-sm border-amber-200 dark:border-amber-800 rounded-xl shadow-xl" align="start">
+          <DropdownMenuLabel className="text-amber-800 dark:text-amber-200 font-medium px-4 py-3">
+            Dietary Preferences
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className="bg-amber-200 dark:bg-amber-800" />
           
-          <div className="p-2 space-y-2" role="group" aria-label="Dietary filter options">
+          <div className="p-2 space-y-1" role="group" aria-label="Dietary filter options">
             {filterOptions.map((option) => (
               <div 
                 key={option.key} 
-                className="flex items-center space-x-3 p-2 hover:bg-muted rounded-sm cursor-pointer"
+                className="flex items-center space-x-3 p-3 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg cursor-pointer transition-colors duration-150"
                 onClick={() => handleFilterToggle(option.key, !option.checked)}
                 role="button"
                 tabIndex={0}
@@ -83,10 +85,11 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
                   checked={option.checked}
                   onCheckedChange={(checked) => handleFilterToggle(option.key, !!checked)}
                   aria-label={`Filter by ${option.label}`}
+                  className="border-amber-300 dark:border-amber-700 data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600"
                 />
                 <label 
                   htmlFor={option.key} 
-                  className="text-sm cursor-pointer flex-1"
+                  className="text-sm cursor-pointer flex-1 text-amber-900 dark:text-amber-100 font-medium"
                 >
                   {option.label}
                 </label>
