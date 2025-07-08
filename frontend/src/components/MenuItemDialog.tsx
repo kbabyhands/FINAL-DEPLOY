@@ -58,7 +58,7 @@ const MenuItemDialog = ({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="flex items-center gap-2 text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-xl transition-all duration-200"
+            className="flex items-center gap-2 text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded-xl transition-all duration-200"
             aria-label="Close dialog and return to menu"
           >
             <ArrowLeft className="w-4 h-4" aria-hidden="true" />
