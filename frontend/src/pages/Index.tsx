@@ -71,35 +71,37 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-white via-amber-50/30 to-white dark:from-background dark:via-amber-950/10 dark:to-background">
       <MenuHeader restaurant={restaurant} />
 
       {/* Featured Items Section */}
       <FeaturedItems />
 
-      {/* Sticky Filters Section */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-40">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between py-3 px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center space-x-6">
-              <CategoryFilter
+      {/* Main Menu Section */}
+      <section className="py-12 bg-white dark:bg-background">
+        {/* Filters Section */}
+        <div className="sticky top-0 z-40 bg-white/95 dark:bg-background/95 backdrop-blur-sm border-b border-border/20 py-4 mb-8">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="flex flex-col space-y-4">
+              <CategoryFilter 
                 categories={categories}
                 activeCategory={activeCategory}
                 onCategoryChange={handleCategoryChange}
               />
-              <DietaryFilter
+              <DietaryFilter 
                 filters={dietaryFilters}
                 onFilterChange={handleFilterChange}
               />
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Menu Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <MenuGrid filteredItems={filteredItems} totalItemsCount={menuItems.length} />
-      </div>
+        {/* Menu Grid */}
+        <MenuGrid 
+          filteredItems={filteredItems}
+          totalItemsCount={menuItems.length}
+        />
+      </section>
     </div>
   );
 };
