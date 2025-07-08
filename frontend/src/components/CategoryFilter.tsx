@@ -98,7 +98,7 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
                   checked={activeCategory === category.id}
                   onCheckedChange={() => handleCategoryToggle(category.id)}
                   aria-label={`Filter by ${category.name}`}
-                  className="border-amber-300 dark:border-amber-700 data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600"
+                  className="border-amber-300 data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600"
                 />
                 <label 
                   htmlFor={category.id} 
