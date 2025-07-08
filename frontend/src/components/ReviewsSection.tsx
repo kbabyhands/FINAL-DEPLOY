@@ -123,7 +123,7 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               {renderStars(averageRating, "md")}
-              <span className="font-semibold text-lg text-amber-900 dark:text-amber-100">
+              <span className="font-semibold text-lg text-amber-900">
                 {averageRating > 0 ? averageRating.toFixed(1) : "No ratings"}
               </span>
             </div>
