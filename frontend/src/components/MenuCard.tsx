@@ -38,6 +38,17 @@ const MenuCard = ({
   reviewCount,
   size = 'regular'
 }: MenuCardProps) => {
+  // Size-specific styling
+  const isFeatured = size === 'featured';
+  const cardHeight = isFeatured ? 'h-[320px]' : 'h-[420px]';
+  const imageHeight = isFeatured ? 'h-36' : 'h-48';
+  const contentPadding = isFeatured ? 'p-4' : 'p-6';
+  const titleSize = isFeatured ? 'text-base' : 'text-lg';
+  const titleHeight = isFeatured ? 'h-12' : 'h-14';
+  const descriptionHeight = isFeatured ? 'h-8' : 'h-10';
+  const priceSize = isFeatured ? 'text-lg' : 'text-xl';
+  const reviewHeight = isFeatured ? 'h-5' : 'h-6';
+
   // Hooks for analytics and 3D preloading
   const { trackView } = useMenuItemViews();
   const { preloadModel } = usePlayCanvasPreloader();
