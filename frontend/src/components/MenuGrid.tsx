@@ -36,7 +36,11 @@ export const MenuGrid = ({ filteredItems, totalItemsCount }: MenuGridProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4" role="grid" aria-label="Menu items">
+    <div 
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 max-w-6xl mx-auto"
+      role="grid"
+      aria-label={`Menu items grid showing ${filteredItems.length} ${filteredItems.length === 1 ? 'item' : 'items'} out of ${totalItemsCount} total`}
+    >
       {filteredItems.map((item) => {
         const itemReviews = reviewData[item.id];
         return (
