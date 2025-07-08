@@ -15,54 +15,49 @@ export const MenuHeader = ({ restaurant }: MenuHeaderProps) => {
   };
 
   return (
-    <div className="bg-background border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top bar with controls */}
-        <div className="flex justify-between items-center py-3">
-          <div className="flex items-center space-x-2">
-            <DarkModeToggle />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button onClick={handleShare} variant="outline" size="sm">
-              <Share className="w-4 h-4 mr-1" />
-              Share
-            </Button>
-            <Link to="/admin">
-              <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4 mr-1" />
+    <header className="relative min-h-[400px] bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-amber-950 dark:via-orange-950 dark:to-red-950 overflow-hidden">
+      {/* Background Image Overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=600&fit=crop&crop=center')`,
+          filter: 'blur(2px) brightness(0.3)'
+        }}
+      />
+      
+      {/* Content Overlay */}
+      <div className="relative z-10 max-w-4xl mx-auto px-4 pt-8 pb-12">
+        {/* Top Navigation */}
+        <div className="flex justify-between items-center mb-12">
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <Link to="/admin" className="text-white/80 hover:text-white transition-colors">
+              <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10">
+                <Settings className="w-4 h-4 mr-2" />
                 Admin
               </Button>
             </Link>
           </div>
+          <ShareButton restaurantName={restaurant?.name} />
         </div>
 
-        {/* Restaurant info */}
-        <div className="pb-6">
-          <div className="flex items-start space-x-4">
-            {restaurant?.logo_url && (
-              <img 
-                src={restaurant.logo_url} 
-                alt="Restaurant Logo" 
-                className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-              />
-            )}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                {restaurant?.name || 'Our Menu'}
-              </h1>
-              <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                  <span>4.6 (500+ ratings)</span>
-                </div>
-              </div>
-              <p className="text-muted-foreground">
-                {restaurant?.description || 'Explore our delicious offerings'}
-              </p>
-            </div>
+        {/* Hero Content */}
+        <div className="text-center text-white">
+          <h1 className="text-5xl md:text-6xl font-serif font-light mb-4 tracking-wide text-shadow-lg">
+            {restaurant?.name || 'Acadiana Superettte'}
+          </h1>
+          
+          <div className="flex items-center justify-center space-x-2 mb-6">
+            <Star className="w-5 h-5 text-yellow-400 fill-current" />
+            <span className="text-xl font-medium">4.6</span>
+            <span className="text-white/80">(500+ ratings)</span>
           </div>
+          
+          <p className="text-xl text-white/90 font-light leading-relaxed max-w-2xl mx-auto">
+            Locally loved. Crafted with care. Tap a dish to explore it in 3D.
+          </p>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
