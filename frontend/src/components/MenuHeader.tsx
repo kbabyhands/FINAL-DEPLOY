@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { DarkModeToggle as ThemeToggle } from "@/components/DarkModeToggle";
 import { Settings, Share, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { shareViaText } from "@/utils/shareMenu";
