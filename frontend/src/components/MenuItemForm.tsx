@@ -230,6 +230,8 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
               onRemove={() => setFormData({ ...formData, image_url: '' })}
               label="Menu Item Image"
               accept="image/*"
+              recommendedSize="400×400px"
+              description="Square format recommended. Displays at 80×80px in menu cards."
             />
             <div className="space-y-4">
               <FileUpload
@@ -239,6 +241,8 @@ const MenuItemForm = ({ restaurantId, menuItem, onSave, onCancel }: MenuItemForm
                 onRemove={() => setFormData({ ...formData, model_url: '' })}
                 label="3D Model File"
                 accept=".glb,.gltf,.obj,.fbx"
+                recommendedSize="< 50MB"
+                description="GLB/GLTF preferred. Used for 3D viewing experience."
               />
               <div>
                 <Label htmlFor="playcanvas-url">Or PlayCanvas Link</Label>
