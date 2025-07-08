@@ -89,7 +89,7 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
                 />
                 <label 
                   htmlFor={option.key} 
-                  className="text-sm cursor-pointer flex-1 text-amber-900 dark:text-amber-100 font-medium"
+                  className="text-sm cursor-pointer flex-1 text-amber-900 font-medium"
                 >
                   {option.label}
                 </label>
