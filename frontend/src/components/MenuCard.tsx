@@ -33,7 +33,9 @@ const MenuCard = ({
   isGlutenFree, 
   isNutFree,
   imageUrl,
-  splatUrl
+  splatUrl,
+  averageRating,
+  reviewCount
 }: MenuCardProps) => {
   // Hooks for analytics and 3D preloading
   const { trackView } = useMenuItemViews();
