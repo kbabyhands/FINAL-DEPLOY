@@ -71,12 +71,12 @@ const FeaturedItems = () => {
                 />
               </div>
               
-              {/* Review Count Badge */}
+              {/* Review Count and Rating Badge */}
               <div 
                 className="absolute -top-3 -right-3 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-background"
-                aria-label={`${item.reviewCount} ${pluralize(item.reviewCount, 'review')}`}
+                aria-label={`${item.averageRating.toFixed(1)} stars, ${item.reviewCount} ${pluralize(item.reviewCount, 'review')}`}
               >
-                ⭐ {item.reviewCount} {pluralize(item.reviewCount, 'review')}
+                ⭐ {item.averageRating.toFixed(1)} ({item.reviewCount})
               </div>
             </div>
           ))}
