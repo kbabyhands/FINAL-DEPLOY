@@ -183,6 +183,8 @@ const MenuCard = ({
                   isGlutenFree={isGlutenFree}
                   isNutFree={isNutFree}
                 />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </DialogTrigger>
