@@ -121,12 +121,24 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept, rec
 
   return (
     <div>
-      <Label>{label}</Label>
-      <div className="mt-2">
+      <div className="flex items-center justify-between mb-2">
+        <Label className="text-sm font-medium">{label}</Label>
+        {recommendedSize && (
+          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md">
+            {recommendedSize}
+          </span>
+        )}
+      </div>
+      {description && (
+        <p className="text-xs text-muted-foreground mb-3">
+          {description}
+        </p>
+      )}
+      <div>
         {currentUrl ? (
-          <div className="flex items-center gap-2 p-3 border rounded-md bg-gray-50">
+          <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/30">
             {getFileIcon()}
-            <span className="text-sm text-gray-600 flex-1">
+            <span className="text-sm text-muted-foreground flex-1">
               {getFileDescription()}
             </span>
             <Button
@@ -134,7 +146,7 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept, rec
               variant="outline"
               size="sm"
               onClick={removeFile}
-              className="text-red-600 hover:text-red-800"
+              className="text-destructive hover:text-destructive/80"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -151,10 +163,10 @@ const FileUpload = ({ bucket, currentUrl, onUpload, onRemove, label, accept, rec
             />
             <Label
               htmlFor={`file-upload-${bucket}`}
-              className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:border-gray-400 transition-colors"
+              className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-border rounded-md cursor-pointer hover:border-border/80 transition-colors group"
             >
-              <Upload className="w-5 h-5" />
-              <span>
+              <Upload className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                 {uploading ? 'Uploading...' : `Click to upload ${label.toLowerCase()}`}
               </span>
             </Label>
