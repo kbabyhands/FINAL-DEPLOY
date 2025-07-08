@@ -70,7 +70,7 @@ const DietaryFilter = ({ filters, onFilterChange }: DietaryFilterProps) => {
             {filterOptions.map((option) => (
               <div 
                 key={option.key} 
-                className="flex items-center space-x-3 p-3 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg cursor-pointer transition-colors duration-150"
+                className="flex items-center space-x-3 p-3 hover:bg-amber-50 rounded-lg cursor-pointer transition-colors duration-150"
                 onClick={() => handleFilterToggle(option.key, !option.checked)}
                 role="button"
                 tabIndex={0}
