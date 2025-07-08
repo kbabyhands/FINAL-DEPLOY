@@ -128,15 +128,15 @@ const MenuCard = ({
       <DialogTrigger asChild>
         <Card 
           ref={cardRef} 
-          className="cursor-pointer transition-all duration-300 card-elevated border-0 rounded-2xl bg-white dark:bg-card overflow-hidden group h-[420px] flex flex-col" 
+          className={`cursor-pointer transition-all duration-300 card-elevated border-0 rounded-2xl bg-white dark:bg-card overflow-hidden group ${cardHeight} flex flex-col`}
           onClick={handleOpenDialog}
           role="button"
           tabIndex={0}
           aria-label={`View details for ${title}`}
         >
           <CardContent className="p-0 flex flex-col h-full">
-            {/* Menu Item Image - Fixed Height */}
-            <div className="relative w-full h-48 overflow-hidden flex-shrink-0">
+            {/* Menu Item Image - Dynamic Height */}
+            <div className={`relative w-full ${imageHeight} overflow-hidden flex-shrink-0`}>
               {imageUrl ? (
                 <img 
                   src={imageUrl} 
@@ -161,22 +161,22 @@ const MenuCard = ({
             </div>
 
             {/* Menu Item Content - Flexible Height */}
-            <div className="p-6 flex flex-col justify-between flex-grow">
+            <div className={`${contentPadding} flex flex-col justify-between flex-grow`}>
               <div className="flex-grow">
-                {/* Title - Fixed Height */}
-                <h3 className="font-semibold text-lg text-foreground mb-2 line-clamp-2 h-14 flex items-start">
+                {/* Title - Dynamic Height */}
+                <h3 className={`font-semibold ${titleSize} text-foreground mb-2 line-clamp-2 ${titleHeight} flex items-start`}>
                   {title}
                 </h3>
                 
-                {/* Description - Fixed Height */}
-                <div className="h-10 mb-4">
+                {/* Description - Dynamic Height */}
+                <div className={`${descriptionHeight} mb-3`}>
                   <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed">
                     {description || '\u00A0'}
                   </p>
                 </div>
 
-                {/* Review Rating Display - Fixed Height */}
-                <div className="h-6 mb-4">
+                {/* Review Rating Display - Dynamic Height */}
+                <div className={`${reviewHeight} mb-3`}>
                   {reviewCount !== undefined && reviewCount > 0 ? (
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -195,7 +195,7 @@ const MenuCard = ({
 
               {/* Price and Dietary Badges Row - Fixed at Bottom */}
               <div className="flex items-center justify-between mt-auto">
-                <div className="text-xl font-bold text-foreground">
+                <div className={`${priceSize} font-bold text-foreground`}>
                   {formatPrice(price)}
                 </div>
                 
