@@ -116,14 +116,11 @@ const MenuCard = ({
       <DialogTrigger asChild>
         <Card 
           ref={cardRef} 
-          className="cursor-pointer transition-all duration-300 hover:shadow-2xl border border-border/20 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] bg-card hover:bg-card/95 backdrop-blur-sm" 
+          className="cursor-pointer transition-all duration-300 card-elevated border-0 rounded-2xl bg-white dark:bg-card overflow-hidden group" 
           onClick={handleOpenDialog}
           role="button"
           tabIndex={0}
           aria-label={`View details for ${title}`}
-          style={{
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-          }}
         >
           <CardContent className="p-5">
             <div className="flex space-x-4">
