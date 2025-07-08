@@ -15,6 +15,7 @@ interface MenuGridProps {
  * Features:
  * - Responsive grid (1 column on mobile, 2 on desktop)
  * - 3D model preloading for performance
+ * - Review data integration
  * - Empty state handling
  * - Optimized rendering
  */
@@ -23,6 +24,11 @@ export const MenuGrid = ({ filteredItems, totalItemsCount }: MenuGridProps) => {
   useMenuPreloader(filteredItems.map(item => ({
     model_url: item.model_url
   })));
+
+  // Fetch review data for all menu items
+  const { reviewData, loading: reviewsLoading } = useMenuItemReviews(
+    filteredItems.map(item => item.id)
+  );
 
   // Show empty state if no items match filters
   if (filteredItems.length === 0) {
