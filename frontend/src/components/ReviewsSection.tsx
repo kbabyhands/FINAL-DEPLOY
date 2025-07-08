@@ -170,7 +170,7 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
                   </div>
                 </div>
                 {review.review_text && (
-                  <p className="text-sm text-amber-800 dark:text-amber-200 mt-2 leading-relaxed">{review.review_text}</p>
+                  <p className="text-sm text-amber-800 mt-2 leading-relaxed">{review.review_text}</p>
                 )}
               </CardContent>
             </Card>
