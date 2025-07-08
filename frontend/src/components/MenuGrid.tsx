@@ -1,6 +1,7 @@
 import MenuCard from "@/components/MenuCard";
 import { EmptyMenuState } from "@/components/EmptyMenuState";
 import { useMenuPreloader } from "@/hooks/useMenuPreloader";
+import { useMenuItemReviews } from "@/hooks/useMenuItemReviews";
 import { MenuItem } from "@/data/placeholderMenuItems";
 
 interface MenuGridProps {
