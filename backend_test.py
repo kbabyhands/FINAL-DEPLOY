@@ -201,7 +201,7 @@ class TestHomepageAPI(unittest.TestCase):
 
     def test_cors_headers(self):
         """Test CORS headers are present"""
-        response = requests.options(f"{self.api_url}/content")
+        response = requests.get(f"{self.api_url}/content", headers={"Origin": "http://example.com"})
         
         # Check CORS headers
         headers = response.headers
