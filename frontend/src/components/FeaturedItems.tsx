@@ -34,7 +34,7 @@ const FeaturedItems = () => {
   }
 
   return (
-    <section className="bg-gradient-to-b from-amber-50/50 to-white dark:from-amber-950/20 dark:to-background py-16">
+    <section className="bg-gradient-to-b from-amber-50/50 to-white py-16">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-serif font-light text-foreground mb-2">
