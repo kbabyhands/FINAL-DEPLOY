@@ -123,7 +123,7 @@ const MenuItemDialog = ({
                 {allergens?.length > 0 ? (
                   <span className="inline-flex flex-wrap gap-2">
                     {allergens.map((allergen, index) => (
-                      <span key={index} className="bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 px-2 py-1 rounded-lg text-sm font-medium">
+                      <span key={index} className="bg-amber-200 text-amber-900 px-2 py-1 rounded-lg text-sm font-medium">
                         {allergen}
                       </span>
                     ))}
