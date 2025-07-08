@@ -117,9 +117,9 @@ const MenuItemDialog = ({
               <Shield className="w-5 h-5 text-amber-600" aria-hidden="true" />
               Allergen Information
             </h4>
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
-              <p className="text-amber-800 dark:text-amber-200 font-medium">
-                <span className="text-amber-900 dark:text-amber-100 font-semibold">Contains:</span>{' '}
+            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+              <p className="text-amber-800 font-medium">
+                <span className="text-amber-900 font-semibold">Contains:</span>{' '}
                 {allergens?.length > 0 ? (
                   <span className="inline-flex flex-wrap gap-2">
                     {allergens.map((allergen, index) => (
