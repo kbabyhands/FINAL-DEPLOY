@@ -155,6 +155,77 @@ const Homepage = () => {
     return colorMap[color] || 'bg-blue-600';
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-300">Loading TAST3D...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state - show basic homepage if content loading fails
+  if (!content) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                TAST3D
+              </div>
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  className="text-gray-300 hover:text-white"
+                  onClick={handleRestaurantLogin}
+                >
+                  Restaurant Login
+                </Button>
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => window.location.href = "/menu"}
+                >
+                  Request a Demo
+                </Button>
+              </div>
+            </div>
+          </div>
+        </nav>
+        
+        <section className="pt-24 pb-16 px-6">
+          <div className="max-w-7xl mx-auto text-center">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              Bring Your Menu to Life in 3D
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+              Interactive 3D visualizations help customers see what they're ordering
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Button 
+                size="lg" 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
+                onClick={() => window.location.href = "/menu"}
+              >
+                View Sample Menu
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 text-lg"
+              >
+                Contact Us
+              </Button>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Navigation */}
