@@ -69,7 +69,7 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
                 : 'All Categories'
               }
             </span>
-            <ChevronDown className="h-4 w-4 ml-2 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+            <ChevronDown className="h-4 w-4 ml-2 text-amber-600" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         
