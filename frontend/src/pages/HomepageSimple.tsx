@@ -532,7 +532,7 @@ const HomePage = () => {
       </section>
 
       {/* Live 3D Menu Demo - Carousel Dark Theme */}
-      <section className="py-16 bg-gray-800 relative z-10">
+      <section className="py-16 bg-gray-800/85 backdrop-blur-sm relative z-10">
         <div className="max-w-6xl mx-auto px-8 text-center">
           <h2 className="text-4xl font-bold mb-4 text-white">Live 3D Menu Demo</h2>
           <p className="text-gray-300 mb-16 max-w-2xl mx-auto">
