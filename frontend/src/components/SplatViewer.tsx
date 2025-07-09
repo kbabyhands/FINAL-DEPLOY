@@ -156,46 +156,35 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           createDefaultScene(scene);
         }
 
-        // Optimized animation loop for Chrome
-        let lastTime = 0;
-        const targetFPS = 60;
-        const frameInterval = 1000 / targetFPS;
-        
-        const animate = (currentTime: number) => {
+        // Ultra-fast animation loop
+        const animate = () => {
           if (!mounted) return;
           
-          // Throttle animation to target FPS
-          if (currentTime - lastTime >= frameInterval) {
-            
-            // Always update controls for smooth interaction
-            if (controlsRef.current) {
-              controlsRef.current.update();
-            }
-            
-            // Always slowly rotate the splat model
-            if (autoRotate && splatMeshRef.current) {
-              // Slow, steady Y-axis rotation
-              splatMeshRef.current.rotation.y += 0.003;
-            }
-            
-            // Animate default scene particles if it's a group
-            if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children) {
-              splatMeshRef.current.children.forEach((child: any, index: number) => {
-                if (index > 1) { // Skip sphere and wireframe
-                  child.rotation.x += 0.005;
-                  child.rotation.y += 0.003;
-                }
-              });
-            }
-            
-            renderer.render(scene, camera);
-            lastTime = currentTime;
+          // Always update controls for smooth interaction
+          if (controlsRef.current) {
+            controlsRef.current.update();
           }
           
+          // Always slowly rotate the splat model
+          if (autoRotate && splatMeshRef.current) {
+            splatMeshRef.current.rotation.y += 0.003;
+          }
+          
+          // Animate default scene particles if it's a group
+          if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children) {
+            splatMeshRef.current.children.forEach((child: any, index: number) => {
+              if (index > 1) {
+                child.rotation.x += 0.005;
+                child.rotation.y += 0.003;
+              }
+            });
+          }
+          
+          renderer.render(scene, camera);
           animationIdRef.current = requestAnimationFrame(animate);
         };
         
-        animate(0);
+        animate();
         setIsLoading(false);
 
       } catch (err) {
