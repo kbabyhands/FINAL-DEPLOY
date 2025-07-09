@@ -27,95 +27,26 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
   useEffect(() => {
     let mounted = true;
 
-    const loadThreeJS = async () => {
-      try {
-        // Check if THREE.js is already loaded
-        if ((window as any).THREE) {
-          console.log('THREE.js already loaded');
-          return (window as any).THREE;
-        }
-
-        setLoadingStep('Loading THREE.js...');
-        
-        // Load THREE.js from CDN
-        return new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/three.min.js';
-          script.onload = () => {
-            // Wait for THREE to be fully available
-            setTimeout(() => {
-              const THREE = (window as any).THREE;
-              if (THREE && THREE.Scene && THREE.WebGLRenderer && THREE.PerspectiveCamera) {
-                console.log('THREE.js loaded successfully');
-                resolve(THREE);
-              } else {
-                console.error('THREE.js objects not available:', THREE);
-                reject(new Error('THREE.js loaded but objects not available'));
-              }
-            }, 200);
-          };
-          script.onerror = (error) => {
-            console.error('Failed to load THREE.js:', error);
-            reject(new Error('Failed to load THREE.js'));
-          };
-          document.head.appendChild(script);
-        });
-      } catch (error) {
-        console.error('Error loading THREE.js:', error);
-        throw error;
-      }
-    };
-
-    const loadPLYLoader = async () => {
-      try {
-        setLoadingStep('Loading PLY Loader...');
-        
-        return new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/examples/js/loaders/PLYLoader.js';
-          script.onload = () => {
-            setTimeout(() => {
-              const THREE = (window as any).THREE;
-              if (THREE && THREE.PLYLoader) {
-                console.log('PLYLoader loaded successfully');
-                resolve(THREE.PLYLoader);
-              } else {
-                console.error('PLYLoader not available:', THREE);
-                reject(new Error('PLYLoader not available after loading'));
-              }
-            }, 200);
-          };
-          script.onerror = (error) => {
-            console.error('Failed to load PLYLoader:', error);
-            reject(new Error('Failed to load PLYLoader'));
-          };
-          document.head.appendChild(script);
-        });
-      } catch (error) {
-        console.error('Error loading PLYLoader:', error);
-        throw error;
-      }
-    };
-
     const initializeViewer = async () => {
       if (!mountRef.current) return;
 
       try {
         setIsLoading(true);
         setError(null);
+        setLoadingStep('Initializing 3D scene...');
 
-        // Load THREE.js
-        const THREE = await loadThreeJS();
-        if (!mounted || !THREE) {
-          throw new Error('THREE.js failed to load');
+        // Check if THREE.js is loaded
+        const THREE = (window as any).THREE;
+        if (!THREE) {
+          throw new Error('THREE.js is not loaded');
         }
 
         // Verify THREE.js objects are available
         if (!THREE.Scene || !THREE.WebGLRenderer || !THREE.PerspectiveCamera) {
-          throw new Error('THREE.js objects not properly initialized');
+          throw new Error('THREE.js objects not available');
         }
 
-        setLoadingStep('Initializing 3D scene...');
+        console.log('THREE.js is available:', THREE);
 
         // Create scene
         const scene = new THREE.Scene();
@@ -151,14 +82,12 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           try {
             setLoadingStep('Loading PLY file...');
             
-            // Load PLYLoader
-            const PLYLoader = await loadPLYLoader();
-            
-            if (!PLYLoader) {
+            // Check if PLYLoader is available
+            if (!THREE.PLYLoader) {
               throw new Error('PLYLoader not available');
             }
             
-            const loader = new PLYLoader();
+            const loader = new THREE.PLYLoader();
             
             // Construct the full URL for file serving
             let fileUrl = splatUrl;
@@ -348,7 +277,10 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
       splatMeshRef.current = group;
     };
 
-    initializeViewer();
+    // Wait a moment for scripts to load, then initialize
+    setTimeout(() => {
+      initializeViewer();
+    }, 100);
 
     return () => {
       mounted = false;
