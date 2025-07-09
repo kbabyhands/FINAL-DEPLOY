@@ -287,13 +287,16 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/components/SplatViewer.tsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
         -working: false
         -agent: "main"
         -comment: "Integrated SparkJS 3D Gaussian Splatting viewer into the hero section. Features include: 1) Added SparkJS import map to HTML head for CDN loading, 2) Created SplatViewer React component with Three.js integration, 3) Support for .splat file loading and rendering, 4) Fallback placeholder geometry when no splat file is provided, 5) Auto-rotation animation and dark theme styling, 6) Error handling and loading states, 7) Updated hero section to use 3D viewer instead of static images, 8) Enhanced backend to properly handle .splat file uploads with special MIME type detection."
+        -working: false
+        -agent: "main"
+        -comment: "Debugging THREE.js initialization issues. Fixed backend file serving to support HEAD requests (405 Method Not Allowed error). Improved THREE.js and PLYLoader loading with better error handling, increased timeouts, and more robust object verification. Changed from HEAD to GET request for file accessibility testing. Added detailed loading steps and error messages to help debug the exact failure point."
 
   - task: "Upload Progress Bar Integration"
     implemented: true
