@@ -283,17 +283,17 @@ frontend:
         -agent: "main"
         -comment: "Enhanced the homepage editor to support file uploads and menu link editing. Features include: 1) Hero image upload with preview and remove functionality, 2) Menu item image upload for each demo item, 3) Menu link editing with external link preview, 4) Updated interfaces to match new base64 storage format, 5) Upload progress indicators and error handling, 6) Visual image previews with delete buttons, 7) Improved UI for managing menu items with proper labels and descriptions."
 
-  - task: "SparkJS 3D Splat Viewer Integration"
+  - task: "Upload Progress Bar Integration"
     implemented: true
     working: false
-    file: "/app/frontend/src/components/SplatViewer.tsx"
+    file: "/app/frontend/src/pages/HomepageSimple.tsx"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
         -working: false
         -agent: "main"
-        -comment: "Integrated SparkJS 3D Gaussian Splatting viewer into the hero section. Features include: 1) Added SparkJS import map to HTML head for CDN loading, 2) Created SplatViewer React component with Three.js integration, 3) Support for .splat file loading and rendering, 4) Fallback placeholder geometry when no splat file is provided, 5) Auto-rotation animation and dark theme styling, 6) Error handling and loading states, 7) Updated hero section to use 3D viewer instead of static images, 8) Enhanced backend to properly handle .splat file uploads with special MIME type detection."
+        -comment: "Added comprehensive upload progress tracking for hero and demo image uploads. Features include: 1) XMLHttpRequest-based upload with progress tracking, 2) Visual progress bars with percentage display, 3) Smooth animations and transitions, 4) Progress state management for multiple concurrent uploads, 5) Auto-reset after completion, 6) Enhanced UI feedback during upload process, 7) Integration in both main homepage and admin editor components."
 
   - task: "Enhanced Menu Card Visual Depth"
     implemented: true
