@@ -373,8 +373,8 @@ const HomePage = () => {
             </button>
           </div>
 
-          {/* Hero 3D Splat Viewer Area */}
-          <div className="max-w-2xl mx-auto mb-16">
+          {/* Hero 3D Splat Viewer Area - Mobile Responsive */}
+          <div className="max-w-2xl mx-auto mb-8 sm:mb-16 px-4 sm:px-0">
             {homepageContent.hero.hero_image_base64 ? (
               <div className="relative">
                   {/* Check if it's a 3D file (file URL or base64) */}
