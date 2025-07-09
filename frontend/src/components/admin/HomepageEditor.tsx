@@ -66,6 +66,7 @@ const HomepageEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const { toast } = useToast();
 
   useEffect(() => {
