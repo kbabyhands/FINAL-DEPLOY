@@ -270,9 +270,10 @@ const HomepageEditor = () => {
     if (!content) return;
     
     const newDemoItem: HomepageDemoItem = {
-      name: 'New Dish',
-      description: 'Delicious food item',
-      emoji: '🍽️'
+      name: 'New Menu',
+      description: 'Menu description',
+      emoji: '🍽️',
+      menu_link: '/menu'
     };
     
     setContent({
@@ -285,6 +286,122 @@ const HomepageEditor = () => {
     if (!content) return;
     
     const newDemoItems = content.demo_items.filter((_, i) => i !== index);
+    setContent({
+      ...content,
+      demo_items: newDemoItems
+    });
+  };
+
+  const uploadHeroImage = async (file: File) => {
+    try {
+      setUploading('hero');
+      const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${backendUrl}/api/homepage/upload/hero`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload hero image');
+      }
+
+      const result = await response.json();
+      
+      if (content) {
+        setContent({
+          ...content,
+          hero: {
+            ...content.hero,
+            hero_image_base64: result.image_url
+          }
+        });
+      }
+
+      toast({
+        title: "Hero image uploaded",
+        description: "The hero image has been uploaded successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error uploading hero image",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  const uploadDemoImage = async (file: File, index: number) => {
+    try {
+      setUploading(`demo-${index}`);
+      const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${backendUrl}/api/homepage/upload/demo/${index}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload demo image');
+      }
+
+      const result = await response.json();
+      
+      if (content) {
+        const newDemoItems = [...content.demo_items];
+        newDemoItems[index] = {
+          ...newDemoItems[index],
+          image_base64: result.image_url
+        };
+        
+        setContent({
+          ...content,
+          demo_items: newDemoItems
+        });
+      }
+
+      toast({
+        title: "Menu image uploaded",
+        description: `The menu image for ${content?.demo_items[index]?.name} has been uploaded successfully!`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error uploading menu image",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  const removeHeroImage = () => {
+    if (!content) return;
+    
+    setContent({
+      ...content,
+      hero: {
+        ...content.hero,
+        hero_image_base64: undefined
+      }
+    });
+  };
+
+  const removeDemoImage = (index: number) => {
+    if (!content) return;
+    
+    const newDemoItems = [...content.demo_items];
+    newDemoItems[index] = {
+      ...newDemoItems[index],
+      image_base64: undefined
+    };
+    
     setContent({
       ...content,
       demo_items: newDemoItems
