@@ -2,7 +2,9 @@ import requests
 import json
 import unittest
 import os
+import base64
 from datetime import datetime
+from io import BytesIO
 
 # Get the backend URL from the frontend .env file
 with open('/app/frontend/.env', 'r') as f:
