@@ -106,7 +106,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         // Check if we have a splat/PLY file to load
         if (splatUrl && (splatUrl.includes('.ply') || splatUrl.includes('.splat') || splatUrl.includes('.spz') || splatUrl.includes('.ksplat'))) {
           try {
-            setLoadingStep('Loading 3D model...');
+            setLoadingStep('Loading model...');
             
             // Construct the full URL for file serving
             let fileUrl = splatUrl;
@@ -116,50 +116,21 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
               console.log('Loading model from URL:', fileUrl);
             }
             
-            setLoadingStep('Testing file accessibility...');
+            // Skip file accessibility test for speed - just load directly
+            setLoadingStep('Creating mesh...');
             
-            // Test if the file URL is accessible with timeout
-            try {
-              const controller = new AbortController();
-              const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-              
-              const testResponse = await fetch(fileUrl, { 
-                method: 'HEAD',
-                signal: controller.signal
-              });
-              clearTimeout(timeoutId);
-              
-              if (!testResponse.ok) {
-                throw new Error(`File not accessible: ${testResponse.status} ${testResponse.statusText}`);
-              }
-              
-              const contentLength = testResponse.headers.get('content-length');
-              const fileSizeMB = contentLength ? (parseInt(contentLength) / (1024 * 1024)).toFixed(1) : 'unknown';
-              console.log(`File is accessible, size: ${fileSizeMB}MB`);
-              
-              // Warn if file is very large
-              if (contentLength && parseInt(contentLength) > 50 * 1024 * 1024) {
-                console.warn('Large file detected - may take longer to load');
-                setLoadingStep('Loading large file...');
-              }
-              
-            } catch (fetchError) {
-              console.error('File access test failed:', fetchError);
-              if (fetchError.name === 'AbortError') {
-                throw new Error('File request timed out - file may be too large or server is slow');
-              }
-              throw new Error(`File access failed: ${fetchError.message}`);
-            }
-            
-            setLoadingStep('Creating splat mesh...');
-            
-            // Create SplatMesh with SparkJS with optimization settings
+            // Create SplatMesh with maximum performance settings
             const splatMesh = new SplatMesh({ 
               url: fileUrl,
-              // Optimization settings for faster loading
-              alphaTest: 0.1,
-              alphaHash: true,
+              // Aggressive optimization settings for fastest loading
+              alphaTest: 0.2, // Higher for better performance
+              alphaHash: false, // Disable for speed
               halfFloat: true,
+              // Additional performance optimizations
+              sphericalHarmonics: false, // Disable for speed
+              renderMode: 'basic', // Use basic render mode
+              progressiveLoad: true, // Enable progressive loading
+              maxSplats: 1000000, // Limit splats for performance
             });
             
             // Fix orientation: Rotate 180 degrees around X-axis to make it upright
@@ -167,7 +138,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             splatMesh.rotation.x = Math.PI; // 180 degrees around X-axis only
             splatMesh.scale.set(1, 1, 1);
             
-            // Add to scene
+            // Add to scene immediately
             scene.add(splatMesh);
             splatMeshRef.current = splatMesh;
             
@@ -176,12 +147,12 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             
           } catch (splatError) {
             console.error('Splat loading failed:', splatError);
-            setError(`3D model loading failed: ${splatError.message || 'Unknown error'}`);
+            setError(`Model loading failed: ${splatError.message || 'Unknown error'}`);
             createDefaultScene(scene);
           }
         } else {
           // Create default scene for non-splat files or no file
-          setLoadingStep('Creating default scene...');
+          setLoadingStep('Creating scene...');
           createDefaultScene(scene);
         }
 
