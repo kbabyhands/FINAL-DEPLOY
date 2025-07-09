@@ -262,61 +262,66 @@ const HomePage = () => {
     <div className="bg-gray-900 text-white min-h-screen font-sans relative overflow-hidden">
       {/* Tech Background Elements */}
       <div className="fixed inset-0 pointer-events-none z-[1]">
-        {/* Subtle Grid Pattern */}
-        <div className="absolute inset-0 opacity-30">
+        {/* Prominent Grid Pattern */}
+        <div className="absolute inset-0 opacity-40">
           <div className="h-full w-full" style={{
             backgroundImage: `
-              linear-gradient(rgba(59,130,246,0.4) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(59,130,246,0.4) 1px, transparent 1px)
+              linear-gradient(rgba(59,130,246,0.6) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(59,130,246,0.6) 1px, transparent 1px)
             `,
-            backgroundSize: '100px 100px'
+            backgroundSize: '120px 120px'
           }}></div>
         </div>
         
-        {/* Floating Tech Particles */}
+        {/* More Prominent Floating Tech Particles */}
         <div className="absolute inset-0">
-          {[...Array(12)].map((_, i) => (
+          {[...Array(15)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-3 h-3 bg-blue-400 rounded-full opacity-60 animate-pulse"
+              className="absolute w-4 h-4 bg-blue-400 rounded-full opacity-70 animate-pulse shadow-lg shadow-blue-400/50"
               style={{
-                left: `${10 + i * 7}%`,
-                top: `${10 + i * 6}%`,
-                animationDelay: `${i * 0.5}s`,
-                animationDuration: `${2 + i * 0.2}s`
+                left: `${8 + i * 6}%`,
+                top: `${8 + i * 5}%`,
+                animationDelay: `${i * 0.4}s`,
+                animationDuration: `${1.5 + i * 0.2}s`
               }}
             ></div>
           ))}
         </div>
         
-        {/* Large Geometric Shapes */}
-        <div className="absolute top-32 right-32 w-40 h-40 border-2 border-blue-500 opacity-40 rotate-45 animate-spin" style={{ animationDuration: '25s' }}></div>
-        <div className="absolute bottom-32 left-32 w-28 h-28 border-2 border-purple-500 opacity-35 rotate-12 animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-cyan-500 opacity-30 rotate-45 animate-pulse"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-16 h-16 border-2 border-cyan-400 opacity-40 rounded-full animate-ping" style={{ animationDuration: '4s' }}></div>
-        <div className="absolute top-1/3 right-1/3 w-8 h-8 bg-purple-400 opacity-35 animate-bounce"></div>
+        {/* Large Prominent Geometric Shapes */}
+        <div className="absolute top-24 right-24 w-48 h-48 border-3 border-blue-500 opacity-50 rotate-45 animate-spin shadow-lg shadow-blue-500/30" style={{ animationDuration: '30s' }}></div>
+        <div className="absolute bottom-24 left-24 w-36 h-36 border-3 border-purple-500 opacity-45 rotate-12 animate-pulse shadow-lg shadow-purple-500/30"></div>
+        <div className="absolute top-1/2 left-1/5 w-16 h-16 bg-cyan-500 opacity-40 rotate-45 animate-pulse shadow-lg shadow-cyan-500/40"></div>
+        <div className="absolute bottom-1/4 right-1/5 w-20 h-20 border-3 border-cyan-400 opacity-50 rounded-full animate-ping shadow-lg shadow-cyan-400/40" style={{ animationDuration: '3s' }}></div>
+        <div className="absolute top-1/4 right-1/3 w-12 h-12 bg-purple-400 opacity-45 animate-bounce shadow-lg shadow-purple-400/40"></div>
         
-        {/* Tech Connection Lines */}
-        <div className="absolute top-1/4 left-1/2 w-48 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-50"></div>
-        <div className="absolute bottom-1/3 right-1/2 w-px h-32 bg-gradient-to-b from-transparent via-purple-400 to-transparent opacity-50"></div>
-        <div className="absolute top-2/3 left-1/3 w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-45 rotate-45"></div>
+        {/* Prominent Tech Connection Lines */}
+        <div className="absolute top-1/3 left-1/2 w-64 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-60 shadow-sm"></div>
+        <div className="absolute bottom-1/4 right-1/2 w-0.5 h-40 bg-gradient-to-b from-transparent via-purple-400 to-transparent opacity-60 shadow-sm"></div>
+        <div className="absolute top-2/3 left-1/4 w-32 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-55 rotate-45 shadow-sm"></div>
+        <div className="absolute bottom-1/2 right-1/4 w-0.5 h-24 bg-gradient-to-b from-transparent via-blue-400 to-transparent opacity-50 rotate-12 shadow-sm"></div>
         
-        {/* Hexagon Patterns */}
-        <div className="absolute top-24 left-1/4 opacity-35">
-          <svg width="80" height="80" viewBox="0 0 80 80" className="text-blue-400 animate-pulse">
-            <polygon points="40,5 65,22.5 65,57.5 40,75 15,57.5 15,22.5" fill="none" stroke="currentColor" strokeWidth="2"/>
+        {/* Large Hexagon Patterns */}
+        <div className="absolute top-16 left-1/5 opacity-45">
+          <svg width="100" height="100" viewBox="0 0 100 100" className="text-blue-400 animate-pulse drop-shadow-lg">
+            <polygon points="50,8 80,28 80,72 50,92 20,72 20,28" fill="none" stroke="currentColor" strokeWidth="3"/>
           </svg>
         </div>
-        <div className="absolute bottom-24 right-1/3 opacity-30">
-          <svg width="60" height="60" viewBox="0 0 60 60" className="text-purple-400 animate-pulse" style={{ animationDuration: '3s' }}>
-            <polygon points="30,5 50,17.5 50,42.5 30,55 10,42.5 10,17.5" fill="none" stroke="currentColor" strokeWidth="2"/>
+        <div className="absolute bottom-16 right-1/4 opacity-40">
+          <svg width="80" height="80" viewBox="0 0 80 80" className="text-purple-400 animate-pulse drop-shadow-lg" style={{ animationDuration: '2.5s' }}>
+            <polygon points="40,6 65,22 65,58 40,74 15,58 15,22" fill="none" stroke="currentColor" strokeWidth="3"/>
           </svg>
         </div>
         
-        {/* Circuit Dots */}
-        <div className="absolute top-1/3 left-1/2 w-2 h-2 bg-blue-400 rounded-full opacity-50 animate-ping"></div>
-        <div className="absolute bottom-1/2 left-1/3 w-2 h-2 bg-purple-400 rounded-full opacity-45 animate-ping" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-3/4 right-1/2 w-2 h-2 bg-cyan-400 rounded-full opacity-40 animate-ping" style={{ animationDelay: '2s' }}></div>
+        {/* Prominent Circuit Dots */}
+        <div className="absolute top-1/4 left-1/2 w-3 h-3 bg-blue-400 rounded-full opacity-60 animate-ping shadow-lg shadow-blue-400/50"></div>
+        <div className="absolute bottom-1/3 left-1/4 w-3 h-3 bg-purple-400 rounded-full opacity-55 animate-ping shadow-lg shadow-purple-400/50" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-3/4 right-1/3 w-3 h-3 bg-cyan-400 rounded-full opacity-50 animate-ping shadow-lg shadow-cyan-400/50" style={{ animationDelay: '2s' }}></div>
+        
+        {/* Additional Tech Elements */}
+        <div className="absolute top-1/2 right-1/6 w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-400 opacity-50 animate-pulse"></div>
+        <div className="absolute bottom-1/3 left-1/3 w-1 h-20 bg-gradient-to-b from-cyan-400 to-blue-400 opacity-45 animate-pulse" style={{ animationDelay: '1.5s' }}></div>
       </div>
       
       {/* Main Content */}
