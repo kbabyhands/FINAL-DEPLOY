@@ -287,7 +287,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/components/SplatViewer.tsx"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: true
     status_history:
@@ -300,6 +300,9 @@ frontend:
         -working: false
         -agent: "main"
         -comment: "Completely rewrote SplatViewer to use proper SparkJS integration. Issues were caused by using THREE.js PLYLoader instead of SparkJS SplatMesh. Fixed by: 1) Using import maps for ES modules, 2) Proper SparkJS SplatMesh import from '@sparkjsdev/spark', 3) Support for .ply, .splat, .spz, and .ksplat formats, 4) Correct SparkJS initialization pattern with dynamic imports, 5) Following SparkJS documentation for proper module loading."
+        -working: false
+        -agent: "main"
+        -comment: "Fixed Vite import resolution issues by installing SparkJS via npm instead of import maps. The issue was that Vite couldn't resolve the import map CDN imports properly. Fixed by: 1) Installing @sparkjsdev/spark@0.1.5 via yarn, 2) Installing three@0.178.0 and @types/three, 3) Using direct imports instead of dynamic imports, 4) Removing import map from HTML, 5) Proper TypeScript typing for THREE.js objects."
 
   - task: "Upload Progress Bar Integration"
     implemented: true
