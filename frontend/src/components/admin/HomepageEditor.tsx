@@ -20,7 +20,7 @@ import {
 interface HomepageHeroContent {
   headline: string;
   subheadline: string;
-  hero_image_url?: string;
+  hero_image_base64?: string;
   primary_cta_text: string;
   primary_cta_url: string;
   secondary_cta_text: string;
@@ -45,7 +45,8 @@ interface HomepageTestimonial {
 interface HomepageDemoItem {
   name: string;
   description: string;
-  image_url?: string;
+  image_base64?: string;
+  menu_link: string;
   emoji: string;
 }
 
