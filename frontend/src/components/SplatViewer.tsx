@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { SplatMesh } from '@sparkjsdev/spark';
+import { OrbitControls } from 'three-stdlib';
 
 interface SplatViewerProps {
   splatUrl?: string;
@@ -8,6 +9,7 @@ interface SplatViewerProps {
   height?: number;
   className?: string;
   autoRotate?: boolean;
+  enableControls?: boolean; // New prop to enable manual controls
 }
 
 const SplatViewer: React.FC<SplatViewerProps> = ({ 
