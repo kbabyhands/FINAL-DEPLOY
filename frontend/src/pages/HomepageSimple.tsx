@@ -478,7 +478,7 @@ const HomePage = () => {
       </section>
 
       {/* Features Section - Dark Theme */}
-      <section className="py-12 bg-gray-800 relative z-10">
+      <section className="py-12 bg-gray-800/85 backdrop-blur-sm relative z-10">
         <div className="max-w-6xl mx-auto px-8">
           <div className="grid grid-cols-3 gap-8 text-center">
             {homepageContent.features.map((feature, index) => (
