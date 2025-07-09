@@ -951,6 +951,21 @@ const HomepageEditor = () => {
                         <Upload className="w-4 h-4 mr-2" />
                         {uploading === `demo-${index}` ? 'Uploading...' : 'Upload Menu Image'}
                       </Button>
+                      
+                      {/* Progress Bar */}
+                      {uploading === `demo-${index}` && uploadProgress[`demo-${index}`] !== undefined && (
+                        <div className="space-y-1 mt-2">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-blue-500 h-2 rounded-full transition-all duration-300 ease-out"
+                              style={{ width: `${uploadProgress[`demo-${index}`]}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-gray-600">
+                            {Math.round(uploadProgress[`demo-${index}`])}% uploaded
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
