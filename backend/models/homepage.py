@@ -4,8 +4,8 @@ from datetime import datetime
 
 class HomepageHeroContent(BaseModel):
     headline: str = Field(default="Bring Your Menu to Life in 3D")
-    subheadline: str = Field(default="Interactive 3D visualizations help customers see what they're ordering")
-    hero_image_url: Optional[str] = Field(default=None)
+    subheadline: str = Field(default="Let customers explore your dishes with immersive, real food scans.")
+    hero_image_base64: Optional[str] = Field(default=None)
     primary_cta_text: str = Field(default="View Sample Menu")
     primary_cta_url: str = Field(default="/menu")
     secondary_cta_text: str = Field(default="Contact Us")
