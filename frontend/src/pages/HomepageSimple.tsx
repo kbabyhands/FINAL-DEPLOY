@@ -358,15 +358,15 @@ const HomePage = () => {
             {homepageContent.hero.subheadline}
           </p>
           
-          <div className="flex justify-center gap-6 mb-16">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mb-8 sm:mb-16 px-4 sm:px-0">
             <button 
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="bg-blue-600 text-white px-6 sm:px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-base sm:text-lg"
               onClick={() => window.location.href = homepageContent.hero.primary_cta_url}
             >
               {homepageContent.hero.primary_cta_text}
             </button>
             <button 
-              className="border border-gray-600 text-gray-300 px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+              className="border border-gray-600 text-gray-300 px-6 sm:px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base sm:text-lg"
               onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
             >
               {homepageContent.hero.secondary_cta_text}
