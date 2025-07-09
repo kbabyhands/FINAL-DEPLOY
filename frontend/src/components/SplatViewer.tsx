@@ -205,30 +205,33 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           // Throttle animation to target FPS
           if (currentTime - lastTime >= frameInterval) {
             
-            // Update controls for smooth interaction
+            // Always update controls for smooth interaction
             if (controlsRef.current) {
               controlsRef.current.update();
             }
             
-            // Only auto-rotate the object if controls are disabled or not being used
-            if (autoRotate && splatMeshRef.current && (!controlsRef.current || !controlsRef.current.autoRotate)) {
-              // Very slow Y-axis rotation (main rotation)
+            // Only auto-rotate if controls are not being actively used
+            const isUserInteracting = controlsRef.current && 
+              (controlsRef.current as any).getUserData?.().isInteracting;
+            
+            if (autoRotate && splatMeshRef.current && !isUserInteracting && enableControls === false) {
+              // Very slow Y-axis rotation only when controls are disabled
               splatMeshRef.current.rotation.y += 0.003;
               
-              // Subtle circular movement on X-axis using sine wave (keeping it upright)
-              const time = currentTime * 0.001; // Convert to seconds
-              const baseRotationX = Math.PI; // Keep the 180-degree flip
+              // Keep the base X rotation for proper orientation
+              const time = currentTime * 0.001;
+              const baseRotationX = Math.PI; // Maintain 180-degree flip
               splatMeshRef.current.rotation.x = baseRotationX + Math.sin(time * 0.5) * 0.05;
-              
-              // If it's a group with particles, animate them more subtly too
-              if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children) {
-                splatMeshRef.current.children.forEach((child: any, index: number) => {
-                  if (index > 1) { // Skip sphere and wireframe
-                    child.rotation.x += 0.005; // Much slower particle rotation
-                    child.rotation.y += 0.003;
-                  }
-                });
-              }
+            }
+            
+            // Animate default scene particles if it's a group
+            if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children && !isUserInteracting) {
+              splatMeshRef.current.children.forEach((child: any, index: number) => {
+                if (index > 1) { // Skip sphere and wireframe
+                  child.rotation.x += 0.005;
+                  child.rotation.y += 0.003;
+                }
+              });
             }
             
             renderer.render(scene, camera);
