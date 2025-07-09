@@ -344,7 +344,7 @@ const HomePage = () => {
       </header>
 
       {/* Hero Section - Dark Theme */}
-      <section className="text-center px-8 py-16 bg-gray-900 min-h-[80vh] flex flex-col justify-center relative z-10">
+      <section className="text-center px-8 py-16 bg-gray-900/80 backdrop-blur-sm min-h-[80vh] flex flex-col justify-center relative z-10">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white leading-tight">
             {homepageContent.hero.headline}
