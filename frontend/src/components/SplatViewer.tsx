@@ -195,7 +195,14 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           
           // Throttle animation to target FPS
           if (currentTime - lastTime >= frameInterval) {
-            if (autoRotate && splatMeshRef.current) {
+            
+            // Update controls for smooth interaction
+            if (controlsRef.current) {
+              controlsRef.current.update();
+            }
+            
+            // Only auto-rotate the object if controls are disabled or not being used
+            if (autoRotate && splatMeshRef.current && (!controlsRef.current || !controlsRef.current.autoRotate)) {
               // Very slow Y-axis rotation (main rotation)
               splatMeshRef.current.rotation.y += 0.003;
               
