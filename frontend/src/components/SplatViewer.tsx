@@ -242,7 +242,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
       splatMeshRef.current = group;
     };
 
-    // Initialize the viewer
+    // Initialize the viewer immediately
     initializeViewer();
 
     return () => {
