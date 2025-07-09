@@ -349,7 +349,10 @@ const HomePage = () => {
       {/* Live 3D Menu Demo - Carousel Dark Theme */}
       <section className="py-16 bg-gray-800">
         <div className="max-w-6xl mx-auto px-8 text-center">
-          <h2 className="text-4xl font-bold mb-16 text-white">Live 3D Menu Demo</h2>
+          <h2 className="text-4xl font-bold mb-4 text-white">Live 3D Menu Demo</h2>
+          <p className="text-gray-300 mb-16 max-w-2xl mx-auto">
+            Click on any menu to explore our interactive 3D dining experience
+          </p>
           
           <div className="relative">
             {/* Carousel Container */}
@@ -362,16 +365,29 @@ const HomePage = () => {
                   <div key={index} className="min-w-full flex justify-center">
                     <div className="max-w-md mx-auto text-center">
                       {item.image_base64 ? (
-                        <div className="relative">
-                          <img 
-                            src={item.image_base64} 
-                            alt={item.name}
-                            className="w-full h-64 object-cover rounded-lg border-2 border-gray-600 mb-4"
-                          />
+                        <div className="relative group">
+                          <a 
+                            href={item.menu_link}
+                            className="block relative overflow-hidden rounded-lg border-2 border-gray-600 hover:border-blue-500 transition-all duration-300 cursor-pointer"
+                          >
+                            <img 
+                              src={item.image_base64} 
+                              alt={item.name}
+                              className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                            {/* Overlay on hover */}
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                              <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
+                                <div className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium">
+                                  View Menu
+                                </div>
+                              </div>
+                            </div>
+                          </a>
                           {isAdmin && (
                             <button
                               onClick={() => removeDemoImage(index)}
-                              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors z-10"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -388,21 +404,40 @@ const HomePage = () => {
                                 className="hidden"
                                 disabled={uploading}
                               />
-                              <div className="text-4xl text-gray-500 mb-2">✕</div>
-                              <p className="text-gray-400 text-sm">
-                                {uploading ? 'Uploading...' : 'Upload image'}
+                              <div className="text-4xl text-gray-500 mb-2">📋</div>
+                              <p className="text-gray-400 text-sm text-center">
+                                {uploading ? 'Uploading...' : 'Upload menu image'}
+                              </p>
+                              <p className="text-gray-500 text-xs mt-1">
+                                {item.name}
                               </p>
                             </label>
                           ) : (
                             <div className="text-center">
-                              <div className="text-4xl text-gray-500 mb-2">✕</div>
-                              <p className="text-gray-400 text-sm">Menu Item Preview</p>
+                              <div className="text-4xl text-gray-500 mb-2">📋</div>
+                              <p className="text-gray-400 text-sm">{item.name}</p>
+                              <p className="text-gray-500 text-xs mt-1">Menu Preview</p>
                             </div>
                           )}
                         </div>
                       )}
-                      <h3 className="text-xl font-semibold text-white mb-2">{item.name}</h3>
-                      <p className="text-gray-300">{item.description}</p>
+                      
+                      <div className="mt-4">
+                        <h3 className="text-xl font-semibold text-white mb-2">{item.name}</h3>
+                        <p className="text-gray-300 mb-4">{item.description}</p>
+                        
+                        {item.image_base64 && (
+                          <a 
+                            href={item.menu_link}
+                            className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                          >
+                            <span>View Full Menu</span>
+                            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
