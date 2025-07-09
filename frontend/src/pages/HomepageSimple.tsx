@@ -664,41 +664,55 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Testimonials - Dark Theme */}
-      <section className="py-16 bg-gray-900/85 backdrop-blur-sm relative z-10">
-        <div className="max-w-6xl mx-auto px-8 text-center">
-          <h2 className="text-4xl font-bold mb-16 text-white">What Our Customers Say</h2>
+      {/* Testimonials - Mobile Responsive */}
+      <section className="py-12 sm:py-16 bg-gray-900/85 backdrop-blur-sm relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-8 sm:mb-16 text-white">What Restaurants Say</h2>
           
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {homepageContent.testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-gray-800 p-8 rounded-lg border border-gray-700">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gray-600 rounded-full mr-4 flex items-center justify-center">
-                    <span className="text-white font-semibold">{testimonial.name.charAt(0)}</span>
+              <div key={index} className="bg-gray-800 border border-gray-700 p-4 sm:p-6 rounded-lg">
+                <div className="flex items-center mb-3 sm:mb-4">
+                  <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gray-700 rounded-full flex items-center justify-center mr-3 sm:mr-4 border border-gray-600">
+                    <User className="w-5 sm:w-6 h-5 sm:h-6 text-gray-400" />
                   </div>
                   <div className="text-left">
-                    <div className="font-semibold text-white">{testimonial.name}</div>
-                    <div className="text-sm text-gray-400">{testimonial.title}</div>
+                    <h4 className="font-semibold text-white text-sm sm:text-base">{testimonial.name}</h4>
+                    <p className="text-gray-400 text-xs sm:text-sm">{testimonial.title}</p>
                   </div>
                 </div>
-                <p className="text-gray-300 text-left">"{testimonial.quote}"</p>
+                <p className="text-gray-300 text-left text-sm sm:text-base italic leading-relaxed">
+                  "{testimonial.quote}"
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Admin Editor Notice - Dark Theme */}
-      {isAdmin && (
-        <div className="fixed bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-20">
-          <p className="text-sm font-medium">Admin Only: Homepage Editor Active</p>
+      {/* Contact Section */}
+      <section id="contact" className="py-12 sm:py-16 bg-gray-800/85 backdrop-blur-sm relative z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-white">Ready to Transform Your Menu?</h2>
+          <p className="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-12 max-w-2xl mx-auto px-4 sm:px-0">
+            Join hundreds of restaurants already using TAST3D to enhance their customer experience
+          </p>
+          
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 px-4 sm:px-0">
+            <button className="bg-blue-600 text-white px-6 sm:px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-base sm:text-lg">
+              Request Demo
+            </button>
+            <button className="border border-gray-600 text-gray-300 px-6 sm:px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-base sm:text-lg">
+              Contact Sales
+            </button>
+          </div>
         </div>
-      )}
+      </section>
 
-      {/* Footer - Dark Theme */}
-      <footer className="bg-black/90 backdrop-blur-sm text-white py-12 relative z-10">
-        <div className="max-w-6xl mx-auto px-8 text-center">
-          <p className="text-gray-400">© {new Date().getFullYear()} TAST3D. All rights reserved.</p>
+      {/* Footer - Mobile Responsive */}
+      <footer className="bg-black/90 backdrop-blur-sm text-white py-8 sm:py-12 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 text-center">
+          <p className="text-gray-400 text-sm sm:text-base">© {new Date().getFullYear()} TAST3D. All rights reserved.</p>
         </div>
       </footer>
       </div>
