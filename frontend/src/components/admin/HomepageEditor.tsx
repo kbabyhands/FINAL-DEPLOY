@@ -584,7 +584,7 @@ const HomepageEditor = () => {
               <div className="mt-2 space-y-2">
                 <input
                   type="file"
-                  accept=".splat,image/*"
+                  accept=".ply,.splat,image/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) uploadHeroImage(file);
@@ -601,11 +601,11 @@ const HomepageEditor = () => {
                     disabled={uploading === 'hero'}
                   >
                     <Upload className="w-4 h-4 mr-2" />
-                    {uploading === 'hero' ? 'Uploading...' : 'Upload .splat File'}
+                    {uploading === 'hero' ? 'Uploading...' : 'Upload 3D Model'}
                   </Button>
                 </div>
                 <p className="text-xs text-gray-500">
-                  Upload .splat files for 3D Gaussian Splatting models. Regular images will show a placeholder 3D scene.
+                  Upload .ply or .splat files for 3D models. Regular images will show a placeholder 3D scene.
                 </p>
               </div>
             </div>
