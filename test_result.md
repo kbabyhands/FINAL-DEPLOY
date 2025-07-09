@@ -155,15 +155,18 @@ backend:
 
   - task: "POST /api/homepage/upload/hero Endpoint"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/routes/homepage.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: false
         -agent: "main"
         -comment: "Newly implemented hero image upload endpoint. Accepts multipart/form-data file uploads, converts to base64, and stores in homepage content. Requires admin authentication. Needs testing to verify upload functionality."
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the POST /api/homepage/upload/hero endpoint. The endpoint successfully accepts image file uploads, converts them to base64, and stores them in the database. The hero_image_base64 field is correctly updated in the HomepageContent model. The endpoint returns a 200 status code with a message and the base64 image URL. Note that the endpoint doesn't validate file types, so any file type can be uploaded and will be stored with its content type."
 
   - task: "POST /api/homepage/upload/demo/{index} Endpoint"
     implemented: true
