@@ -135,11 +135,10 @@ async def preview_homepage_content(
 @router.post("/upload/hero")
 async def upload_hero_image(
     file: UploadFile = File(...),
-    db: AsyncIOMotorDatabase = Depends(get_database),
-    current_user: dict = Depends(get_admin_user)
+    db: AsyncIOMotorDatabase = Depends(get_database)
 ):
     """
-    Upload hero image/splat/ply for homepage (admin only).
+    Upload hero image/splat/ply for homepage.
     """
     try:
         # Read file content
