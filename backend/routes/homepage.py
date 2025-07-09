@@ -273,9 +273,11 @@ async def upload_demo_image(
         )
 
 @router.get("/uploads/{filename}")
+@router.head("/uploads/{filename}")
 async def serve_uploaded_file(filename: str):
     """
     Serve uploaded files from the uploads directory.
+    Supports both GET and HEAD requests.
     """
     file_path = UPLOAD_DIR / filename
     
