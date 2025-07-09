@@ -259,7 +259,63 @@ const HomePage = () => {
   }
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen font-sans">
+    <div className="bg-gray-900 text-white min-h-screen font-sans relative overflow-hidden">
+      {/* Tech Background Elements */}
+      <div className="fixed inset-0 pointer-events-none">
+        {/* Subtle Grid Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="h-full w-full" style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px'
+          }}></div>
+        </div>
+        
+        {/* Floating Tech Particles */}
+        <div className="absolute inset-0">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-20 animate-pulse"
+              style={{
+                left: `${20 + i * 15}%`,
+                top: `${10 + i * 12}%`,
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: `${3 + i * 0.5}s`
+              }}
+            ></div>
+          ))}
+        </div>
+        
+        {/* Geometric Shapes */}
+        <div className="absolute top-20 right-20 w-32 h-32 border border-gray-700 opacity-10 rotate-45 animate-spin" style={{ animationDuration: '20s' }}></div>
+        <div className="absolute bottom-40 left-10 w-16 h-16 border border-blue-500 opacity-20 rotate-12"></div>
+        <div className="absolute top-1/3 left-1/4 w-6 h-6 bg-purple-500 opacity-10 rotate-45 animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/3 w-8 h-8 border border-cyan-500 opacity-15 rounded-full"></div>
+        
+        {/* Subtle Gradient Overlays */}
+        <div className="absolute top-0 left-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-900/5 to-transparent"></div>
+        <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-gradient-to-tl from-purple-900/5 to-transparent"></div>
+        
+        {/* Tech Circuit Lines */}
+        <svg className="absolute inset-0 w-full h-full opacity-5" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="circuit" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+              <path d="M50 50h100v100H50z" fill="none" stroke="currentColor" strokeWidth="1"/>
+              <circle cx="50" cy="50" r="3" fill="currentColor"/>
+              <circle cx="150" cy="50" r="3" fill="currentColor"/>
+              <circle cx="150" cy="150" r="3" fill="currentColor"/>
+              <circle cx="50" cy="150" r="3" fill="currentColor"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#circuit)" className="text-blue-400"/>
+        </svg>
+      </div>
+      
+      {/* Main Content */}
+      <div className="relative z-10">
       {/* Header - Dark Theme */}
       <header className="flex justify-between items-center px-8 py-6 bg-gray-900 border-b border-gray-800">
         <h1 className="text-3xl font-bold text-white">TAST3D</h1>
