@@ -194,11 +194,10 @@ async def upload_hero_image(
 async def upload_demo_image(
     index: int,
     file: UploadFile = File(...),
-    db: AsyncIOMotorDatabase = Depends(get_database),
-    current_user: dict = Depends(get_admin_user)
+    db: AsyncIOMotorDatabase = Depends(get_database)
 ):
     """
-    Upload demo image for homepage (admin only).
+    Upload demo image for homepage.
     """
     try:
         # Validate index
