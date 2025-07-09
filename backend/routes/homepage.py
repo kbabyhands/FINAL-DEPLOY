@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from backend.models.homepage import HomepageContent, HomepageContentUpdate
 from datetime import datetime
 from typing import Optional
 import uuid
+import base64
 
 router = APIRouter(prefix="/api/homepage", tags=["homepage"])
 
