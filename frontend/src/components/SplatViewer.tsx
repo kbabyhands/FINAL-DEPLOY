@@ -48,10 +48,25 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
         camera.position.set(0, 0, 3);
         
-        // Create renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        // Create renderer with Chrome optimizations
+        const renderer = new THREE.WebGLRenderer({ 
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance",
+          stencil: false,
+          depth: true,
+          logarithmicDepthBuffer: false,
+          preserveDrawingBuffer: false
+        });
         renderer.setSize(width, height);
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for better performance
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        
+        // Enable optimizations for Chrome
+        renderer.shadowMap.enabled = false; // Disable shadows for better performance
+        renderer.physicallyCorrectLights = false;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
         
         // Clear any existing content
         mountRef.current.innerHTML = '';
