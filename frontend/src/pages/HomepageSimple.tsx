@@ -8,35 +8,42 @@ import {
   Menu,
   Scan,
   CheckCircle,
-  Monitor
+  Monitor,
+  RefreshCw
 } from 'lucide-react';
+
+const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
 
 const HomePage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
-  const [heroImage, setHeroImage] = useState(null);
-  const [demoImages, setDemoImages] = useState([null, null, null]);
+  const [homepageContent, setHomepageContent] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is admin (you can implement proper auth check here)
+    // Check if user is admin
     const checkAdminStatus = () => {
-      // For now, checking if they came from admin route or have admin session
       const isAdminUser = localStorage.getItem('isAdmin') === 'true' || 
                          window.location.search.includes('admin=true');
       setIsAdmin(isAdminUser);
     };
     
     checkAdminStatus();
-    loadSavedImages();
+    loadHomepageContent();
   }, []);
 
-  const loadSavedImages = () => {
-    // Load saved images from localStorage (in production, this would be from your API)
-    const savedHeroImage = localStorage.getItem('heroImage');
-    const savedDemoImages = JSON.parse(localStorage.getItem('demoImages') || '[null, null, null]');
-    
-    if (savedHeroImage) setHeroImage(savedHeroImage);
-    setDemoImages(savedDemoImages);
+  const loadHomepageContent = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/homepage/content`);
+      if (response.ok) {
+        const data = await response.json();
+        setHomepageContent(data);
+      }
+    } catch (error) {
+      console.error('Error loading homepage content:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleHeroImageUpload = async (event) => {
@@ -45,17 +52,22 @@ const HomePage = () => {
 
     setUploading(true);
     try {
-      // Convert to base64 for storage (in production, upload to your server)
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64 = e.target.result;
-        setHeroImage(base64);
-        localStorage.setItem('heroImage', base64);
-        setUploading(false);
-      };
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${BACKEND_URL}/api/homepage/upload/hero`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        await loadHomepageContent(); // Reload content
+      } else {
+        console.error('Upload failed:', await response.text());
+      }
     } catch (error) {
       console.error('Upload failed:', error);
+    } finally {
       setUploading(false);
     }
   };
@@ -66,37 +78,109 @@ const HomePage = () => {
 
     setUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64 = e.target.result;
-        const newDemoImages = [...demoImages];
-        newDemoImages[index] = base64;
-        setDemoImages(newDemoImages);
-        localStorage.setItem('demoImages', JSON.stringify(newDemoImages));
-        setUploading(false);
-      };
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${BACKEND_URL}/api/homepage/upload/demo/${index}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        await loadHomepageContent(); // Reload content
+      } else {
+        console.error('Upload failed:', await response.text());
+      }
     } catch (error) {
       console.error('Upload failed:', error);
+    } finally {
       setUploading(false);
     }
   };
 
-  const removeHeroImage = () => {
-    setHeroImage(null);
-    localStorage.removeItem('heroImage');
+  const removeHeroImage = async () => {
+    try {
+      const updateData = {
+        hero: {
+          ...homepageContent.hero,
+          hero_image_base64: null
+        }
+      };
+
+      const response = await fetch(`${BACKEND_URL}/api/homepage/content`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      if (response.ok) {
+        await loadHomepageContent();
+      }
+    } catch (error) {
+      console.error('Error removing hero image:', error);
+    }
   };
 
-  const removeDemoImage = (index) => {
-    const newDemoImages = [...demoImages];
-    newDemoImages[index] = null;
-    setDemoImages(newDemoImages);
-    localStorage.setItem('demoImages', JSON.stringify(newDemoImages));
+  const removeDemoImage = async (index) => {
+    try {
+      const updatedDemoItems = [...homepageContent.demo_items];
+      updatedDemoItems[index].image_base64 = null;
+
+      const updateData = {
+        demo_items: updatedDemoItems
+      };
+
+      const response = await fetch(`${BACKEND_URL}/api/homepage/content`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      if (response.ok) {
+        await loadHomepageContent();
+      }
+    } catch (error) {
+      console.error('Error removing demo image:', error);
+    }
   };
+
+  const getFeatureIcon = (iconName) => {
+    switch(iconName) {
+      case 'camera': return <Camera className="w-8 h-8 text-gray-600" />;
+      case 'smartphone': return <Smartphone className="w-8 h-8 text-gray-600" />;
+      case 'refresh-cw': return <RefreshCw className="w-8 h-8 text-gray-600" />;
+      default: return <Camera className="w-8 h-8 text-gray-600" />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white text-gray-900 min-h-screen font-sans flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!homepageContent) {
+    return (
+      <div className="bg-white text-gray-900 min-h-screen font-sans flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Error loading homepage content</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white text-gray-900 min-h-screen font-sans">
-      {/* Header - Exact Figma Layout */}
+      {/* Header - Exact Threekit Layout */}
       <header className="flex justify-between items-center px-8 py-6 bg-white">
         <h1 className="text-3xl font-bold text-gray-900">TAST3D</h1>
         <div className="flex items-center space-x-4">
@@ -118,37 +202,37 @@ const HomePage = () => {
         </div>
       </header>
 
-      {/* Hero Section - Exact Figma Layout */}
+      {/* Hero Section - Exact Threekit Layout */}
       <section className="text-center px-8 py-16 bg-gray-100 min-h-[80vh] flex flex-col justify-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 leading-tight">
-            Bring Your Menu to Life in 3D
+            {homepageContent.hero.headline}
           </h1>
           <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
-            Let customers explore your dishes with immersive, real food scans.
+            {homepageContent.hero.subheadline}
           </p>
           
           <div className="flex justify-center gap-6 mb-16">
             <button 
               className="border border-gray-400 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              onClick={() => window.location.href = "/menu"}
+              onClick={() => window.location.href = homepageContent.hero.primary_cta_url}
             >
-              View Sample Menu
+              {homepageContent.hero.primary_cta_text}
             </button>
             <button 
               className="border border-gray-400 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              Contact Us
+              {homepageContent.hero.secondary_cta_text}
             </button>
           </div>
 
-          {/* Hero Image Upload Area - Exact Figma Layout */}
+          {/* Hero Image Upload Area - Exact Threekit Layout */}
           <div className="max-w-2xl mx-auto mb-16">
-            {heroImage ? (
+            {homepageContent.hero.hero_image_base64 ? (
               <div className="relative">
                 <img 
-                  src={heroImage} 
+                  src={homepageContent.hero.hero_image_base64} 
                   alt="Hero Food" 
                   className="w-full h-80 object-cover rounded-2xl border-2 border-gray-300"
                 />
@@ -189,39 +273,24 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Features Section - Exact Figma Layout */}
+      {/* Features Section - Exact Threekit Layout */}
       <section className="py-12 bg-white">
         <div className="max-w-6xl mx-auto px-8">
-          <div className="grid grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center border border-gray-300">
-                <Camera className="w-8 h-8 text-gray-600" />
+          <div className="grid grid-cols-3 gap-8 text-center">
+            {homepageContent.features.map((feature, index) => (
+              <div key={index}>
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center border border-gray-300">
+                  {getFeatureIcon(feature.icon)}
+                </div>
+                <h3 className="font-semibold text-gray-900">{feature.title}</h3>
+                <p className="text-sm text-gray-600 mt-2">{feature.description}</p>
               </div>
-              <h3 className="font-semibold text-gray-900">Real Food Scans</h3>
-            </div>
-            <div>
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center border border-gray-300">
-                <Smartphone className="w-8 h-8 text-gray-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900">No App Needed</h3>
-            </div>
-            <div>
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center border border-gray-300">
-                <Zap className="w-8 h-8 text-gray-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900">Fast & Lightweight</h3>
-            </div>
-            <div>
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center border border-gray-300">
-                <Menu className="w-8 h-8 text-gray-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900">Live Menu Updates</h3>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works - Exact Figma Layout */}
+      {/* How It Works - Exact Threekit Layout */}
       <section className="py-16 bg-gray-100">
         <div className="max-w-6xl mx-auto px-8 text-center">
           <h2 className="text-4xl font-bold mb-16 text-gray-900">How It Works</h2>
@@ -255,19 +324,19 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Live 3D Menu Demo - Exact Figma Layout with Upload */}
+      {/* Live 3D Menu Demo - Exact Threekit Layout with Upload */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-8 text-center">
           <h2 className="text-4xl font-bold mb-16 text-gray-900">Live 3D Menu Demo</h2>
           
           <div className="grid grid-cols-3 gap-8">
-            {['Cheeseburger', 'Salad', 'Doughnut'].map((item, index) => (
+            {homepageContent.demo_items.map((item, index) => (
               <div key={index} className="text-center">
-                {demoImages[index] ? (
+                {item.image_base64 ? (
                   <div className="relative">
                     <img 
-                      src={demoImages[index]} 
-                      alt={item}
+                      src={item.image_base64} 
+                      alt={item.name}
                       className="w-full h-48 object-cover rounded-lg border-2 border-gray-300 mb-4"
                     />
                     {isAdmin && (
@@ -303,33 +372,32 @@ const HomePage = () => {
                     )}
                   </div>
                 )}
-                <h3 className="font-semibold text-gray-900">{item}</h3>
+                <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                <p className="text-sm text-gray-600 mt-1">{item.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials - Exact Figma Layout */}
+      {/* Testimonials - Exact Threekit Layout */}
       <section className="py-16 bg-gray-100">
         <div className="max-w-6xl mx-auto px-8 text-center">
-          <h2 className="text-4xl font-bold mb-16 text-gray-900">Testimonials</h2>
+          <h2 className="text-4xl font-bold mb-16 text-gray-900">What Our Customers Say</h2>
           
-          <div className="grid grid-cols-3 gap-8">
-            {[1, 2, 3].map((index) => (
+          <div className="grid grid-cols-2 gap-8">
+            {homepageContent.testimonials.map((testimonial, index) => (
               <div key={index} className="bg-white p-8 rounded-lg border border-gray-200">
                 <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gray-300 rounded-full mr-4"></div>
+                  <div className="w-12 h-12 bg-gray-300 rounded-full mr-4 flex items-center justify-center">
+                    <span className="text-gray-600 font-semibold">{testimonial.name.charAt(0)}</span>
+                  </div>
                   <div className="text-left">
-                    <div className="h-4 bg-gray-300 rounded mb-2 w-24"></div>
-                    <div className="h-3 bg-gray-200 rounded w-16"></div>
+                    <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                    <div className="text-sm text-gray-600">{testimonial.title}</div>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded"></div>
-                  <div className="h-3 bg-gray-200 rounded"></div>
-                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                </div>
+                <p className="text-gray-700 text-left">"{testimonial.quote}"</p>
               </div>
             ))}
           </div>
