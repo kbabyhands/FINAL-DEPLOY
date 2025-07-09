@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the TAST3D homepage API endpoints to ensure they're working correctly."
+user_problem_statement: "Recreate the homepage from Threekit.com design adapted for restaurant business with 3 features: Real Food Scans, No App Needed, Live Menu Updates. Implement file upload functionality for hero image and 3 demo images, restricted to admin users only."
 
 backend:
   - task: "GET /api/homepage/content Endpoint"
@@ -152,6 +152,42 @@ backend:
         -working: true
         -agent: "testing"
         -comment: "Tested CORS configuration for the homepage API endpoints. The server correctly includes the Access-Control-Allow-Origin header set to '*' in the response, allowing cross-origin requests from any domain. This ensures that the frontend can access the API endpoints from different origins."
+
+  - task: "POST /api/homepage/upload/hero Endpoint"
+    implemented: true
+    working: false
+    file: "/app/backend/routes/homepage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "main"
+        -comment: "Newly implemented hero image upload endpoint. Accepts multipart/form-data file uploads, converts to base64, and stores in homepage content. Requires admin authentication. Needs testing to verify upload functionality."
+
+  - task: "POST /api/homepage/upload/demo/{index} Endpoint"
+    implemented: true
+    working: false
+    file: "/app/backend/routes/homepage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "main"
+        -comment: "Newly implemented demo image upload endpoint. Accepts multipart/form-data file uploads for demo items (index 0-2), converts to base64, and stores in homepage content. Requires admin authentication. Needs testing to verify upload functionality."
+
+  - task: "Updated Homepage Models for Base64 Storage"
+    implemented: true
+    working: false
+    file: "/app/backend/models/homepage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "main"
+        -comment: "Updated HomepageHeroContent and HomepageDemoItem models to use base64 image storage instead of URLs. Changed hero_image_url to hero_image_base64 and image_url to image_base64. Updated default features to match user requirements: Real Food Scans, No App Needed, Live Menu Updates (3 features instead of 4)."
 
 frontend:
   - task: "Enhanced Menu Card Visual Depth"
