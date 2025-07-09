@@ -101,8 +101,9 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             // Create SplatMesh with SparkJS
             const splatMesh = new SplatMesh({ url: fileUrl });
             
-            // Position the mesh
+            // Position the mesh and flip it 180 degrees on Y axis
             splatMesh.position.set(0, 0, 0);
+            splatMesh.rotation.y = Math.PI; // 180 degree flip
             splatMesh.scale.set(1, 1, 1);
             
             // Add to scene
