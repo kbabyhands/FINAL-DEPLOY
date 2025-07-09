@@ -204,7 +204,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           animationIdRef.current = requestAnimationFrame(animate);
         };
         
-        animate();
+        animate(0);
         setIsLoading(false);
 
       } catch (err) {
