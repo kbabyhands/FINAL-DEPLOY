@@ -98,7 +98,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         rendererRef.current = renderer;
 
         // Check if we have a PLY file to load
-        if (splatUrl && (splatUrl.includes('.ply') || splatUrl.includes('application/ply'))) {
+        if (splatUrl && (splatUrl.includes('.ply') || splatUrl.includes('application/ply') || splatUrl.endsWith('.ply'))) {
           try {
             // Load PLYLoader
             await loadPLYLoader();
@@ -107,9 +107,13 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             if (PLYLoader) {
               const loader = new PLYLoader();
               
-              // For base64 data, we need to convert it to a blob URL
+              // For file URLs, construct the full URL
               let fileUrl = splatUrl;
-              if (splatUrl.startsWith('data:')) {
+              if (splatUrl.startsWith('/uploads/')) {
+                const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+                fileUrl = `${BACKEND_URL}/api/homepage${splatUrl}`;
+              } else if (splatUrl.startsWith('data:')) {
+                // For base64 data, convert to blob URL
                 const response = await fetch(splatUrl);
                 const blob = await response.blob();
                 fileUrl = URL.createObjectURL(blob);
@@ -146,7 +150,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
                   splatMeshRef.current = mesh;
                   
                   // Clean up blob URL if created
-                  if (fileUrl !== splatUrl) {
+                  if (fileUrl !== splatUrl && fileUrl.startsWith('blob:')) {
                     URL.revokeObjectURL(fileUrl);
                   }
                 },
