@@ -160,6 +160,22 @@ const HomePage = () => {
     }
   };
 
+  const nextSlide = () => {
+    if (homepageContent?.demo_items) {
+      setCurrentSlide((prev) => (prev + 1) % homepageContent.demo_items.length);
+    }
+  };
+
+  const prevSlide = () => {
+    if (homepageContent?.demo_items) {
+      setCurrentSlide((prev) => (prev - 1 + homepageContent.demo_items.length) % homepageContent.demo_items.length);
+    }
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
   if (loading) {
     return (
       <div className="bg-white text-gray-900 min-h-screen font-sans flex items-center justify-center">
