@@ -247,45 +247,73 @@ const HomePage = () => {
             </button>
           </div>
 
-          {/* Hero Image Upload Area - Dark Theme */}
+          {/* Hero 3D Splat Viewer Area */}
           <div className="max-w-2xl mx-auto mb-16">
             {homepageContent.hero.hero_image_base64 ? (
               <div className="relative">
-                <img 
-                  src={homepageContent.hero.hero_image_base64} 
-                  alt="Hero Food" 
-                  className="w-full h-80 object-cover rounded-2xl border-2 border-gray-700"
-                />
+                {/* Check if it's a splat file (base64) or regular image */}
+                {homepageContent.hero.hero_image_base64.includes('data:') && 
+                 homepageContent.hero.hero_image_base64.includes('splat') ? (
+                  <SplatViewer 
+                    splatUrl={homepageContent.hero.hero_image_base64}
+                    width={640}
+                    height={320}
+                    autoRotate={true}
+                    className="mx-auto"
+                  />
+                ) : (
+                  <SplatViewer 
+                    width={640}
+                    height={320}
+                    autoRotate={true}
+                    className="mx-auto"
+                  />
+                )}
                 {isAdmin && (
                   <button
                     onClick={removeHeroImage}
-                    className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                    className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors z-10"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
             ) : (
-              <div className="w-full h-80 border-2 border-gray-700 border-dashed rounded-2xl flex items-center justify-center bg-gray-800">
+              <div className="relative">
                 {isAdmin ? (
-                  <label className="cursor-pointer flex flex-col items-center">
-                    <input
-                      type="file"
-                      accept=".splat,image/*"
-                      onChange={handleHeroImageUpload}
-                      className="hidden"
-                      disabled={uploading}
+                  <div className="relative">
+                    <SplatViewer 
+                      width={640}
+                      height={320}
+                      autoRotate={true}
+                      className="mx-auto"
                     />
-                    <div className="text-6xl text-gray-500 mb-4">✕</div>
-                    <p className="text-gray-400">
-                      {uploading ? 'Uploading...' : 'Click to upload splat file or image'}
-                    </p>
-                  </label>
-                ) : (
-                  <div className="text-center">
-                    <div className="text-6xl text-gray-500 mb-4">✕</div>
-                    <p className="text-gray-400">3D Food Model Preview</p>
+                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
+                      <label className="cursor-pointer flex flex-col items-center">
+                        <input
+                          type="file"
+                          accept=".splat,image/*"
+                          onChange={handleHeroImageUpload}
+                          className="hidden"
+                          disabled={uploading}
+                        />
+                        <div className="text-6xl text-white mb-4">🎯</div>
+                        <p className="text-white text-center">
+                          {uploading ? 'Uploading...' : 'Click to upload .splat file'}
+                        </p>
+                        <p className="text-gray-300 text-sm mt-2">
+                          Upload 3D Gaussian Splatting files for interactive preview
+                        </p>
+                      </label>
+                    </div>
                   </div>
+                ) : (
+                  <SplatViewer 
+                    width={640}
+                    height={320}
+                    autoRotate={true}
+                    className="mx-auto"
+                  />
                 )}
               </div>
             )}
