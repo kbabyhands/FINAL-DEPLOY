@@ -315,29 +315,32 @@ const HomePage = () => {
           <h2 className="text-4xl font-bold mb-16 text-white">How It Works</h2>
           
           <div className="flex justify-center items-center space-x-12">
-            <div className="text-center">
+            <div className="text-center max-w-xs">
               <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
                 <Scan className="w-10 h-10 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-white">Scan</h3>
+              <h3 className="font-semibold text-white mb-2">Scan</h3>
+              <p className="text-sm text-gray-300">Capture your dishes with our advanced 3D scanning technology</p>
             </div>
             
             <div className="text-gray-500 text-2xl">→</div>
             
-            <div className="text-center">
+            <div className="text-center max-w-xs">
               <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
                 <CheckCircle className="w-10 h-10 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-white">Approve</h3>
+              <h3 className="font-semibold text-white mb-2">Approve</h3>
+              <p className="text-sm text-gray-300">Review and approve your 3D models before they go live</p>
             </div>
             
             <div className="text-gray-500 text-2xl">→</div>
             
-            <div className="text-center">
+            <div className="text-center max-w-xs">
               <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
                 <Monitor className="w-10 h-10 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-white">Display</h3>
+              <h3 className="font-semibold text-white mb-2">Display</h3>
+              <p className="text-sm text-gray-300">Your 3D menu items are now live for customers to explore</p>
             </div>
           </div>
         </div>
