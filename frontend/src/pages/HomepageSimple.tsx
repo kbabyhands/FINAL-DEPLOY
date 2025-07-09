@@ -384,21 +384,21 @@ const HomePage = () => {
                   homepageContent.hero.hero_image_base64.includes('.splat') ||
                   homepageContent.hero.hero_image_base64.includes('splat') || 
                   homepageContent.hero.hero_image_base64.includes('ply')) ? (
-                  <SplatViewer 
+                  <LazySparkJS
                     splatUrl={homepageContent.hero.hero_image_base64}
                     width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
                     height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
                     autoRotate={true}
                     enableControls={true}
-                    className="mx-auto w-full max-w-full"
+                    className="mx-auto w-full max-w-full sparkjs-container"
                   />
                 ) : (
-                  <SplatViewer 
+                  <LazySparkJS
                     width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
                     height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
                     autoRotate={true}
                     enableControls={true}
-                    className="mx-auto w-full max-w-full"
+                    className="mx-auto w-full max-w-full sparkjs-container"
                   />
                 )}
                 {isAdmin && (
@@ -414,12 +414,12 @@ const HomePage = () => {
               <div className="relative">
                 {isAdmin ? (
                   <div className="relative">
-                    <SplatViewer 
+                    <LazySparkJS
                       width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
                       height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
                       autoRotate={true}
                       enableControls={true}
-                      className="mx-auto w-full max-w-full"
+                      className="mx-auto w-full max-w-full sparkjs-container"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
                       <div className="text-center w-full max-w-md mx-auto px-4 sm:px-6">
@@ -465,11 +465,11 @@ const HomePage = () => {
                     </div>
                   </div>
                 ) : (
-                  <SplatViewer 
+                  <LazySparkJS
                     width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
                     height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
                     autoRotate={true}
-                    className="mx-auto w-full max-w-full"
+                    className="mx-auto w-full max-w-full sparkjs-container"
                   />
                 )}
               </div>
