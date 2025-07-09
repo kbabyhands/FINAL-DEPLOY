@@ -33,20 +33,18 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
       try {
         setIsLoading(true);
         setError(null);
-        setLoadingStep('Initializing 3D scene...');
+        setLoadingStep('Initializing SparkJS...');
 
-        // Check if THREE.js is loaded
-        const THREE = (window as any).THREE;
-        if (!THREE) {
-          throw new Error('THREE.js is not loaded');
-        }
+        // Dynamic import of THREE.js and SparkJS using the import map
+        const [THREE, { SplatMesh }] = await Promise.all([
+          import('three'),
+          import('@sparkjsdev/spark')
+        ]);
 
-        // Verify THREE.js objects are available
-        if (!THREE.Scene || !THREE.WebGLRenderer || !THREE.PerspectiveCamera) {
-          throw new Error('THREE.js objects not available');
-        }
+        if (!mounted) return;
 
-        console.log('THREE.js is available:', THREE);
+        console.log('SparkJS modules loaded successfully');
+        setLoadingStep('Creating 3D scene...');
 
         // Create scene
         const scene = new THREE.Scene();
@@ -77,37 +75,24 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         sceneRef.current = scene;
         rendererRef.current = renderer;
 
-        // Check if we have a PLY file to load
-        if (splatUrl && (splatUrl.includes('.ply') || splatUrl.endsWith('.ply'))) {
+        // Check if we have a splat/PLY file to load
+        if (splatUrl && (splatUrl.includes('.ply') || splatUrl.includes('.splat') || splatUrl.includes('.spz') || splatUrl.includes('.ksplat'))) {
           try {
-            setLoadingStep('Loading PLY file...');
-            
-            // Check if PLYLoader is available
-            if (!THREE.PLYLoader) {
-              throw new Error('PLYLoader not available');
-            }
-            
-            const loader = new THREE.PLYLoader();
+            setLoadingStep('Loading 3D model...');
             
             // Construct the full URL for file serving
             let fileUrl = splatUrl;
             if (splatUrl.startsWith('/uploads/')) {
               const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
               fileUrl = `${BACKEND_URL}/api/homepage${splatUrl}`;
-              console.log('Loading PLY from URL:', fileUrl);
-            } else if (splatUrl.startsWith('data:')) {
-              // For base64 data, convert to blob URL
-              const response = await fetch(splatUrl);
-              const blob = await response.blob();
-              fileUrl = URL.createObjectURL(blob);
-              console.log('Loading PLY from blob URL');
+              console.log('Loading model from URL:', fileUrl);
             }
             
             setLoadingStep('Testing file accessibility...');
             
             // Test if the file URL is accessible
             try {
-              const testResponse = await fetch(fileUrl, { method: 'GET' });
+              const testResponse = await fetch(fileUrl, { method: 'HEAD' });
               if (!testResponse.ok) {
                 throw new Error(`File not accessible: ${testResponse.status} ${testResponse.statusText}`);
               }
@@ -117,80 +102,29 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
               throw new Error(`File access failed: ${fetchError.message}`);
             }
             
-            setLoadingStep('Parsing PLY geometry...');
+            setLoadingStep('Creating splat mesh...');
             
-            // Load PLY file
-            const loadPLY = new Promise((resolve, reject) => {
-              loader.load(
-                fileUrl,
-                (geometry: any) => {
-                  console.log('PLY loaded successfully', geometry);
-                  resolve(geometry);
-                },
-                (progress: any) => {
-                  console.log('PLY loading progress:', progress);
-                  setLoadingStep('Loading PLY file...');
-                },
-                (error: any) => {
-                  console.error('PLY loading error:', error);
-                  reject(new Error(`PLY loading failed: ${error.message || 'Unknown PLY error'}`));
-                }
-              );
-            });
+            // Create SplatMesh with SparkJS
+            const splatMesh = new SplatMesh({ url: fileUrl });
             
-            const geometry = await loadPLY;
+            // Position the mesh
+            splatMesh.position.set(0, 0, 0);
+            splatMesh.scale.set(1, 1, 1);
             
-            if (!geometry || !geometry.attributes) {
-              throw new Error('Invalid geometry data received');
-            }
-            
-            setLoadingStep('Creating 3D mesh...');
-            
-            // Create material for the PLY mesh
-            const material = new THREE.MeshPhongMaterial({ 
-              color: 0x4f46e5,
-              transparent: true,
-              opacity: 0.9,
-              shininess: 100,
-              side: THREE.DoubleSide
-            });
-            
-            // Create mesh from geometry
-            const mesh = new THREE.Mesh(geometry, material);
-            
-            // Center and scale the model
-            geometry.computeBoundingBox();
-            const box = geometry.boundingBox;
-            
-            if (box) {
-              const center = box.getCenter(new THREE.Vector3());
-              geometry.translate(-center.x, -center.y, -center.z);
-              
-              // Scale to fit in view
-              const size = box.getSize(new THREE.Vector3());
-              const maxDim = Math.max(size.x, size.y, size.z);
-              const scale = 1.5 / maxDim;
-              mesh.scale.multiplyScalar(scale);
-            }
-            
-            scene.add(mesh);
-            splatMeshRef.current = mesh;
+            // Add to scene
+            scene.add(splatMesh);
+            splatMeshRef.current = splatMesh;
             
             setLoadingStep('Complete!');
-            console.log('PLY mesh added to scene successfully');
+            console.log('Splat mesh added to scene successfully');
             
-            // Clean up blob URL if created
-            if (fileUrl !== splatUrl && fileUrl.startsWith('blob:')) {
-              URL.revokeObjectURL(fileUrl);
-            }
-            
-          } catch (plyError) {
-            console.error('PLY setup failed:', plyError);
-            setError(`PLY setup failed: ${plyError.message || 'Unknown error'}`);
+          } catch (splatError) {
+            console.error('Splat loading failed:', splatError);
+            setError(`3D model loading failed: ${splatError.message || 'Unknown error'}`);
             createDefaultScene(THREE, scene);
           }
         } else {
-          // Create default scene for non-PLY files or no file
+          // Create default scene for non-splat files or no file
           setLoadingStep('Creating default scene...');
           createDefaultScene(THREE, scene);
         }
@@ -224,13 +158,13 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
 
       } catch (err) {
         console.error('Error initializing SplatViewer:', err);
-        setError(`3D viewer initialization failed: ${err.message || 'Unknown error'}`);
+        setError(`SparkJS initialization failed: ${err.message || 'Unknown error'}`);
         setIsLoading(false);
       }
     };
 
     // Helper function to create default scene
-    const createDefaultScene = (THREE: any, scene: any) => {
+    const createDefaultScene = async (THREE: any, scene: any) => {
       const group = new THREE.Group();
 
       // Main sphere (represents 3D food model)
@@ -277,7 +211,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
       splatMeshRef.current = group;
     };
 
-    // Wait a moment for scripts to load, then initialize
+    // Initialize after a small delay to ensure import map is loaded
     setTimeout(() => {
       initializeViewer();
     }, 100);
