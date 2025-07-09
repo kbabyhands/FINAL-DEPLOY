@@ -39,10 +39,9 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
       try {
         setIsLoading(true);
         setError(null);
-        setLoadingStep('Initializing SparkJS...');
+        setLoadingStep('Initializing...');
 
         console.log('SparkJS modules loaded successfully');
-        setLoadingStep('Creating 3D scene...');
 
         // Create scene
         const scene = new THREE.Scene();
