@@ -130,15 +130,19 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           animationIdRef.current = requestAnimationFrame(animate);
           
           if (autoRotate && splatMeshRef.current) {
-            splatMeshRef.current.rotation.y += 0.01;
-            splatMeshRef.current.rotation.x += 0.005;
+            // Very slow Y-axis rotation (main rotation)
+            splatMeshRef.current.rotation.y += 0.003;
             
-            // If it's a group with particles, animate them too
+            // Subtle circular movement on X-axis using sine wave
+            const time = Date.now() * 0.001; // Convert to seconds
+            splatMeshRef.current.rotation.x = Math.sin(time * 0.5) * 0.1; // Gentle oscillation
+            
+            // If it's a group with particles, animate them more subtly too
             if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children) {
               splatMeshRef.current.children.forEach((child: any, index: number) => {
                 if (index > 1) { // Skip sphere and wireframe
-                  child.rotation.x += 0.02;
-                  child.rotation.y += 0.01;
+                  child.rotation.x += 0.005; // Much slower particle rotation
+                  child.rotation.y += 0.003;
                 }
               });
             }
