@@ -190,6 +190,42 @@ backend:
         -comment: "Updated HomepageHeroContent and HomepageDemoItem models to use base64 image storage instead of URLs. Changed hero_image_url to hero_image_base64 and image_url to image_base64. Updated default features to match user requirements: Real Food Scans, No App Needed, Live Menu Updates (3 features instead of 4)."
 
 frontend:
+  - task: "Threekit-Inspired Homepage Layout"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/HomepageSimple.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "main"
+        -comment: "Completely redesigned homepage to match Threekit.com aesthetic with clean, professional design. Features 3 key features as requested: Real Food Scans, No App Needed, Live Menu Updates. Layout includes hero section, features grid, how it works section, demo section, and testimonials."
+
+  - task: "Backend API Integration"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/HomepageSimple.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "main"
+        -comment: "Updated homepage to use backend API calls instead of localStorage. Integrated GET /api/homepage/content for loading content and PUT /api/homepage/content for updates. Added proper error handling and loading states."
+
+  - task: "Admin-Only File Upload Functionality"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/HomepageSimple.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "main"
+        -comment: "Implemented file upload functionality for hero image (.splat and image files) and 3 demo images (images only). Upload areas are visible only to admin users. Uses FormData for proper file upload to backend endpoints."
+
   - task: "Enhanced Menu Card Visual Depth"
     implemented: true
     working: true
