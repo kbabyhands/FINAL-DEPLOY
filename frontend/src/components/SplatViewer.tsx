@@ -88,6 +88,20 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         sceneRef.current = scene;
         rendererRef.current = renderer;
 
+        // Add orbit controls for manual spinning
+        if (enableControls) {
+          const controls = new OrbitControls(camera, renderer.domElement);
+          controls.enableDamping = true; // Smooth controls
+          controls.dampingFactor = 0.05;
+          controls.screenSpacePanning = false;
+          controls.minDistance = 1;
+          controls.maxDistance = 10;
+          controls.maxPolarAngle = Math.PI; // Allow full rotation
+          controls.autoRotate = autoRotate;
+          controls.autoRotateSpeed = 0.5; // Slow auto rotation
+          controlsRef.current = controls;
+        }
+
         // Check if we have a splat/PLY file to load
         if (splatUrl && (splatUrl.includes('.ply') || splatUrl.includes('.splat') || splatUrl.includes('.spz') || splatUrl.includes('.ksplat'))) {
           try {
