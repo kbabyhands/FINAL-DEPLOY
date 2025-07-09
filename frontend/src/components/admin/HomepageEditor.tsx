@@ -634,6 +634,22 @@ const HomepageEditor = () => {
                     {uploading === 'hero' ? 'Uploading...' : 'Upload 3D Model'}
                   </Button>
                 </div>
+                
+                {/* Progress Bar */}
+                {uploading === 'hero' && uploadProgress.hero !== undefined && (
+                  <div className="space-y-1">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${uploadProgress.hero}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      {Math.round(uploadProgress.hero)}% uploaded
+                    </p>
+                  </div>
+                )}
+                
                 <p className="text-xs text-gray-500">
                   Upload .ply or .splat files for 3D models. Regular images will show a placeholder 3D scene.
                 </p>
