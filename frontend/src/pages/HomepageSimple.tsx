@@ -55,6 +55,15 @@ const HomePage = () => {
     const file = event.target.files[0];
     if (!file) return;
 
+    // Check file size on frontend (200MB limit)
+    const MAX_SIZE = 200 * 1024 * 1024; // 200MB
+    const fileSizeMB = file.size / (1024 * 1024);
+    
+    if (file.size > MAX_SIZE) {
+      alert(`File size (${fileSizeMB.toFixed(1)}MB) exceeds maximum allowed size of 200MB. Please use a smaller file.`);
+      return;
+    }
+
     setUploading(true);
     setUploadProgress(0);
     
@@ -105,6 +114,11 @@ const HomePage = () => {
       if (result) {
         await loadHomepageContent(); // Reload content
         setUploadProgress(100);
+        
+        // Show success message with file info
+        if (result.file_size) {
+          alert(`Upload successful! ${result.file_type} (${result.file_size}) uploaded.`);
+        }
         
         // Reset progress after a short delay
         setTimeout(() => {
