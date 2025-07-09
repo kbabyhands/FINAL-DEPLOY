@@ -343,58 +343,98 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Live 3D Menu Demo - Exact Threekit Layout with Upload */}
+      {/* Live 3D Menu Demo - Carousel */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-8 text-center">
           <h2 className="text-4xl font-bold mb-16 text-gray-900">Live 3D Menu Demo</h2>
           
-          <div className="grid grid-cols-3 gap-8">
-            {homepageContent.demo_items.map((item, index) => (
-              <div key={index} className="text-center">
-                {item.image_base64 ? (
-                  <div className="relative">
-                    <img 
-                      src={item.image_base64} 
-                      alt={item.name}
-                      className="w-full h-48 object-cover rounded-lg border-2 border-gray-300 mb-4"
-                    />
-                    {isAdmin && (
-                      <button
-                        onClick={() => removeDemoImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
+          <div className="relative">
+            {/* Carousel Container */}
+            <div className="overflow-hidden rounded-lg">
+              <div 
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+              >
+                {homepageContent.demo_items.map((item, index) => (
+                  <div key={index} className="min-w-full flex justify-center">
+                    <div className="max-w-md mx-auto text-center">
+                      {item.image_base64 ? (
+                        <div className="relative">
+                          <img 
+                            src={item.image_base64} 
+                            alt={item.name}
+                            className="w-full h-64 object-cover rounded-lg border-2 border-gray-300 mb-4"
+                          />
+                          {isAdmin && (
+                            <button
+                              onClick={() => removeDemoImage(index)}
+                              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-full h-64 border-2 border-gray-300 border-dashed rounded-lg flex items-center justify-center bg-gray-50 mb-4">
+                          {isAdmin ? (
+                            <label className="cursor-pointer flex flex-col items-center">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleDemoImageUpload(e, index)}
+                                className="hidden"
+                                disabled={uploading}
+                              />
+                              <div className="text-4xl text-gray-400 mb-2">✕</div>
+                              <p className="text-gray-500 text-sm">
+                                {uploading ? 'Uploading...' : 'Upload image'}
+                              </p>
+                            </label>
+                          ) : (
+                            <div className="text-center">
+                              <div className="text-4xl text-gray-400 mb-2">✕</div>
+                              <p className="text-gray-500 text-sm">Menu Item Preview</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.name}</h3>
+                      <p className="text-gray-600">{item.description}</p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="w-full h-48 border-2 border-gray-300 border-dashed rounded-lg flex items-center justify-center bg-gray-50 mb-4">
-                    {isAdmin ? (
-                      <label className="cursor-pointer flex flex-col items-center">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleDemoImageUpload(e, index)}
-                          className="hidden"
-                          disabled={uploading}
-                        />
-                        <div className="text-4xl text-gray-400 mb-2">✕</div>
-                        <p className="text-gray-500 text-sm">
-                          {uploading ? 'Uploading...' : 'Upload image'}
-                        </p>
-                      </label>
-                    ) : (
-                      <div className="text-center">
-                        <div className="text-4xl text-gray-400 mb-2">✕</div>
-                        <p className="text-gray-500 text-sm">Menu Item Preview</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Navigation Buttons */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+              disabled={homepageContent?.demo_items?.length <= 1}
+            >
+              <ChevronLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            
+            <button
+              onClick={nextSlide}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+              disabled={homepageContent?.demo_items?.length <= 1}
+            >
+              <ChevronRight className="w-6 h-6 text-gray-600" />
+            </button>
+
+            {/* Dots Indicator */}
+            <div className="flex justify-center mt-8 space-x-2">
+              {homepageContent?.demo_items?.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === currentSlide ? 'bg-gray-800' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
