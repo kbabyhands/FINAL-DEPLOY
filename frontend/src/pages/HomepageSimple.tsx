@@ -21,6 +21,7 @@ const HomePage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [homepageContent, setHomepageContent] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
 
