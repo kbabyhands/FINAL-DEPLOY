@@ -14,7 +14,7 @@ import {
   ChevronRight,
   User
 } from 'lucide-react';
-import SplatViewer from '../components/SplatViewer';
+import LazySparkJS from '../components/LazySparkJS';
 
 const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
 
