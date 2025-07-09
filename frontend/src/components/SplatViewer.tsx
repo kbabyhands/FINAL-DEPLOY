@@ -297,6 +297,10 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         cancelAnimationFrame(animationIdRef.current);
       }
       
+      if (controlsRef.current) {
+        controlsRef.current.dispose();
+      }
+      
       if (rendererRef.current) {
         rendererRef.current.dispose();
       }
@@ -305,7 +309,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         mountRef.current.innerHTML = '';
       }
     };
-  }, [splatUrl, width, height, autoRotate]);
+  }, [splatUrl, width, height, autoRotate, enableControls]);
 
   if (error) {
     return (
