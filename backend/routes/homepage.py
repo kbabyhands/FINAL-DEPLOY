@@ -161,23 +161,25 @@ async def upload_hero_image(
                 detail=f"File size ({file_size / (1024*1024):.1f}MB) exceeds maximum allowed size of 200MB"
             )
         
-        # Determine file type and set appropriate MIME type
+        # Generate unique filename
+        file_extension = Path(file.filename).suffix if file.filename else ""
+        unique_filename = f"hero_{uuid.uuid4()}{file_extension}"
+        file_path = UPLOAD_DIR / unique_filename
+        
+        # Save file to disk
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(file_content)
+        
+        # Determine file type
         if file.filename and file.filename.endswith('.splat'):
-            # For .splat files
-            base64_content = base64.b64encode(file_content).decode('utf-8')
-            data_url = f"data:application/splat;base64,{base64_content}"
             file_type = "3D Splat Model"
         elif file.filename and file.filename.endswith('.ply'):
-            # For .ply files (3D mesh/point cloud)
-            base64_content = base64.b64encode(file_content).decode('utf-8')
-            data_url = f"data:application/ply;base64,{base64_content}"
             file_type = "3D PLY Model"
         else:
-            # For regular images
-            content_type = file.content_type or 'image/jpeg'
-            base64_content = base64.b64encode(file_content).decode('utf-8')
-            data_url = f"data:{content_type};base64,{base64_content}"
             file_type = "Image"
+        
+        # Store file path in database (not the file content)
+        file_url = f"/uploads/{unique_filename}"
         
         # Get existing content
         existing_content = await db.homepage_content.find_one({"id": "main"})
@@ -187,11 +189,11 @@ async def upload_hero_image(
         else:
             current_content = HomepageContent(id="main")
         
-        # Update hero image
-        current_content.hero.hero_image_base64 = data_url
+        # Update hero image with file URL
+        current_content.hero.hero_image_base64 = file_url
         current_content.updated_at = datetime.now()
         
-        # Save to database
+        # Save to database (only the file path, not the file content)
         content_dict = current_content.dict()
         await db.homepage_content.update_one(
             {"id": "main"},
@@ -201,7 +203,7 @@ async def upload_hero_image(
         
         return {
             "message": f"Hero {file_type.lower()} uploaded successfully", 
-            "image_url": data_url, 
+            "image_url": file_url, 
             "file_type": file_type,
             "file_size": f"{file_size / (1024*1024):.1f}MB"
         }
