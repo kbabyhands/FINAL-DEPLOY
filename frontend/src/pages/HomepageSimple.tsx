@@ -56,22 +56,54 @@ const HomePage = () => {
     if (!file) return;
 
     setUploading(true);
+    setUploadProgress(0);
+    
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${BACKEND_URL}/api/homepage/upload/hero`, {
-        method: 'POST',
-        body: formData
+      // Create XMLHttpRequest to track upload progress
+      const xhr = new XMLHttpRequest();
+      
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          setUploadProgress(percentComplete);
+        }
       });
 
-      if (response.ok) {
+      // Handle completion
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error(`Upload failed: ${xhr.statusText}`));
+          }
+        };
+        
+        xhr.onerror = () => reject(new Error('Upload failed'));
+      });
+
+      // Send request
+      xhr.open('POST', `${BACKEND_URL}/api/homepage/upload/hero`);
+      xhr.send(formData);
+
+      const result = await uploadPromise;
+      
+      if (result) {
         await loadHomepageContent(); // Reload content
-      } else {
-        console.error('Upload failed:', await response.text());
+        setUploadProgress(100);
+        
+        // Reset progress after a short delay
+        setTimeout(() => {
+          setUploadProgress(0);
+        }, 2000);
       }
     } catch (error) {
       console.error('Upload failed:', error);
+      setUploadProgress(0);
     } finally {
       setUploading(false);
     }
