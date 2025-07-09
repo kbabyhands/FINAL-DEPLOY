@@ -11,6 +11,10 @@ from pathlib import Path
 
 router = APIRouter(prefix="/api/homepage", tags=["homepage"])
 
+# Create uploads directory
+UPLOAD_DIR = Path("/app/uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
 # This would normally be imported from auth, but for now we'll use a simple dependency
 async def get_admin_user():
     # In a real implementation, this would check authentication
