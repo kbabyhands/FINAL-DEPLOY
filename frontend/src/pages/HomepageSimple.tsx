@@ -678,7 +678,7 @@ const HomePage = () => {
 
       {/* Admin Editor Notice - Dark Theme */}
       {isAdmin && (
-        <div className="fixed bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
+        <div className="fixed bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-20">
           <p className="text-sm font-medium">Admin Only: Homepage Editor Active</p>
         </div>
       )}
