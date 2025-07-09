@@ -533,11 +533,11 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Live 3D Menu Demo - Carousel Dark Theme */}
-      <section className="py-16 bg-gray-800/85 backdrop-blur-sm relative z-10">
-        <div className="max-w-6xl mx-auto px-8 text-center">
-          <h2 className="text-4xl font-bold mb-4 text-white">Live 3D Menu Demo</h2>
-          <p className="text-gray-300 mb-16 max-w-2xl mx-auto">
+      {/* Live 3D Menu Demo - Mobile Responsive Carousel */}
+      <section className="py-12 sm:py-16 bg-gray-800/85 backdrop-blur-sm relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4 text-white">Live 3D Menu Demo</h2>
+          <p className="text-gray-300 mb-8 sm:mb-16 max-w-2xl mx-auto text-sm sm:text-base px-4 sm:px-0">
             Click on any menu to explore our interactive 3D dining experience
           </p>
           
@@ -550,7 +550,7 @@ const HomePage = () => {
               >
                 {homepageContent.demo_items.map((item, index) => (
                   <div key={index} className="min-w-full flex justify-center">
-                    <div className="max-w-md mx-auto text-center">
+                    <div className="max-w-sm sm:max-w-md mx-auto text-center px-4 sm:px-0">
                       {item.image_base64 ? (
                         <div className="relative group">
                           <a 
@@ -560,12 +560,12 @@ const HomePage = () => {
                             <img 
                               src={item.image_base64} 
                               alt={item.name}
-                              className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                              className="w-full h-48 sm:h-64 object-cover transition-transform duration-300 group-hover:scale-105"
                             />
                             {/* Overlay on hover */}
                             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
                               <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
-                                <div className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium">
+                                <div className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base">
                                   View Menu
                                 </div>
                               </div>
@@ -581,7 +581,7 @@ const HomePage = () => {
                           )}
                         </div>
                       ) : (
-                        <div className="w-full h-64 border-2 border-gray-600 border-dashed rounded-lg flex items-center justify-center bg-gray-700 mb-4">
+                        <div className="w-full h-48 sm:h-64 border-2 border-gray-600 border-dashed rounded-lg flex items-center justify-center bg-gray-700 mb-4">
                           {isAdmin ? (
                             <label className="cursor-pointer flex flex-col items-center">
                               <input
@@ -591,8 +591,8 @@ const HomePage = () => {
                                 className="hidden"
                                 disabled={uploading}
                               />
-                              <div className="text-4xl text-gray-500 mb-2">📋</div>
-                              <p className="text-gray-400 text-sm text-center">
+                              <div className="text-3xl sm:text-4xl text-gray-500 mb-2">📋</div>
+                              <p className="text-gray-400 text-xs sm:text-sm text-center">
                                 {uploading ? 'Uploading...' : 'Upload menu image'}
                               </p>
                               <p className="text-gray-500 text-xs mt-1">
@@ -601,8 +601,8 @@ const HomePage = () => {
                             </label>
                           ) : (
                             <div className="text-center">
-                              <div className="text-4xl text-gray-500 mb-2">📋</div>
-                              <p className="text-gray-400 text-sm">{item.name}</p>
+                              <div className="text-3xl sm:text-4xl text-gray-500 mb-2">📋</div>
+                              <p className="text-gray-400 text-xs sm:text-sm">{item.name}</p>
                               <p className="text-gray-500 text-xs mt-1">Menu Preview</p>
                             </div>
                           )}
@@ -610,13 +610,13 @@ const HomePage = () => {
                       )}
                       
                       <div className="mt-4">
-                        <h3 className="text-xl font-semibold text-white mb-2">{item.name}</h3>
-                        <p className="text-gray-300 mb-4">{item.description}</p>
+                        <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">{item.name}</h3>
+                        <p className="text-gray-300 mb-4 text-sm sm:text-base px-2 sm:px-0">{item.description}</p>
                         
                         {item.image_base64 && (
                           <a 
                             href={item.menu_link}
-                            className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                            className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base"
                           >
                             <span>View Full Menu</span>
                             <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -631,30 +631,30 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Navigation Buttons - Dark Theme */}
+            {/* Navigation Buttons - Mobile Responsive */}
             <button
               onClick={prevSlide}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-700 shadow-lg rounded-full p-3 hover:bg-gray-600 transition-colors border border-gray-600"
+              className="absolute left-2 sm:left-0 top-1/2 transform -translate-y-1/2 bg-gray-700 shadow-lg rounded-full p-2 sm:p-3 hover:bg-gray-600 transition-colors border border-gray-600"
               disabled={homepageContent?.demo_items?.length <= 1}
             >
-              <ChevronLeft className="w-6 h-6 text-white" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </button>
             
             <button
               onClick={nextSlide}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-700 shadow-lg rounded-full p-3 hover:bg-gray-600 transition-colors border border-gray-600"
+              className="absolute right-2 sm:right-0 top-1/2 transform -translate-y-1/2 bg-gray-700 shadow-lg rounded-full p-2 sm:p-3 hover:bg-gray-600 transition-colors border border-gray-600"
               disabled={homepageContent?.demo_items?.length <= 1}
             >
-              <ChevronRight className="w-6 h-6 text-white" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </button>
 
-            {/* Dots Indicator - Dark Theme */}
-            <div className="flex justify-center mt-8 space-x-2">
+            {/* Dots Indicator - Mobile Responsive */}
+            <div className="flex justify-center mt-6 sm:mt-8 space-x-2">
               {homepageContent?.demo_items?.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-colors ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors ${
                     index === currentSlide ? 'bg-blue-500' : 'bg-gray-600'
                   }`}
                 />
