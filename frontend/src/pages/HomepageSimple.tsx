@@ -317,7 +317,7 @@ const HomePage = () => {
       {/* Main Content */}
       <div className="relative z-10">
       {/* Header - Dark Theme */}
-      <header className="flex justify-between items-center px-8 py-6 bg-gray-900 border-b border-gray-800">
+      <header className="flex justify-between items-center px-8 py-6 bg-gray-900 border-b border-gray-800 relative z-10">
         <h1 className="text-3xl font-bold text-white">TAST3D</h1>
         <div className="flex items-center space-x-4">
           <button 
@@ -339,7 +339,7 @@ const HomePage = () => {
       </header>
 
       {/* Hero Section - Dark Theme */}
-      <section className="text-center px-8 py-16 bg-gray-900 min-h-[80vh] flex flex-col justify-center">
+      <section className="text-center px-8 py-16 bg-gray-900 min-h-[80vh] flex flex-col justify-center relative z-10">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white leading-tight">
             {homepageContent.hero.headline}
