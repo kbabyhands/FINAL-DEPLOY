@@ -637,8 +637,12 @@ const HomepageEditor = () => {
             <div className="mt-2">
               {content.hero.hero_image_base64 ? (
                 <div className="relative">
-                  {/* Check if it's a splat file or regular image */}
-                  {content.hero.hero_image_base64.includes('splat') ? (
+                  {/* Check if it's a 3D file or regular image */}
+                  {content.hero.hero_image_base64 && 
+                   (content.hero.hero_image_base64.includes('.ply') || 
+                    content.hero.hero_image_base64.includes('.splat') ||
+                    content.hero.hero_image_base64.includes('splat') || 
+                    content.hero.hero_image_base64.includes('ply')) ? (
                     <SplatViewer 
                       splatUrl={content.hero.hero_image_base64}
                       width={400}
