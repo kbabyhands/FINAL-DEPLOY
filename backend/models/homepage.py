@@ -28,6 +28,7 @@ class HomepageDemoItem(BaseModel):
     name: str
     description: str
     image_base64: Optional[str] = Field(default=None)
+    menu_link: str = Field(default="/menu")
     emoji: str = Field(default="🍔")
 
 class HomepageContent(BaseModel):
