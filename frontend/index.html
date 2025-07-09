@@ -36,9 +36,15 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     
-    <!-- Load THREE.js and PLYLoader from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/examples/js/loaders/PLYLoader.js"></script>
+    <!-- SparkJS Import Map for ES Modules -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/three.module.js",
+          "@sparkjsdev/spark": "https://sparkjs.dev/releases/spark/0.2.0/spark.module.js"
+        }
+      }
+    </script>
   </head>
 
   <body>
