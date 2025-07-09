@@ -11,7 +11,8 @@ import {
   Monitor,
   RefreshCw,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  User
 } from 'lucide-react';
 import SplatViewer from '../components/SplatViewer';
 
