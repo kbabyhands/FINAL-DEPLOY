@@ -709,6 +709,13 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Admin Editor Notice - Mobile Responsive */}
+      {isAdmin && (
+        <div className="fixed bottom-4 left-4 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg shadow-lg z-20">
+          <p className="text-xs sm:text-sm font-medium">Admin Only: Homepage Editor Active</p>
+        </div>
+      )}
+
       {/* Footer - Mobile Responsive */}
       <footer className="bg-black/90 backdrop-blur-sm text-white py-8 sm:py-12 relative z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 text-center">
