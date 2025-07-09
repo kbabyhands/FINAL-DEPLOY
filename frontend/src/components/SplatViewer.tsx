@@ -39,9 +39,18 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/three.min.js';
         script.onload = () => {
-          resolve((window as any).THREE);
+          // Wait a bit for THREE to be fully available
+          setTimeout(() => {
+            const THREE = (window as any).THREE;
+            if (THREE && THREE.Scene && THREE.WebGLRenderer) {
+              console.log('THREE.js loaded successfully');
+              resolve(THREE);
+            } else {
+              reject(new Error('THREE.js loaded but objects not available'));
+            }
+          }, 100);
         };
-        script.onerror = reject;
+        script.onerror = () => reject(new Error('Failed to load THREE.js'));
         document.head.appendChild(script);
       });
     };
@@ -53,9 +62,17 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/examples/js/loaders/PLYLoader.js';
         script.onload = () => {
-          resolve((window as any).THREE.PLYLoader);
+          setTimeout(() => {
+            const PLYLoader = (window as any).THREE?.PLYLoader;
+            if (PLYLoader) {
+              console.log('PLYLoader loaded successfully');
+              resolve(PLYLoader);
+            } else {
+              reject(new Error('PLYLoader not available after loading'));
+            }
+          }, 100);
         };
-        script.onerror = reject;
+        script.onerror = () => reject(new Error('Failed to load PLYLoader'));
         document.head.appendChild(script);
       });
     };
