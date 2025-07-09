@@ -185,15 +185,18 @@ backend:
 
   - task: "Updated Homepage Models for Base64 Storage"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/models/homepage.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: false
         -agent: "main"
         -comment: "Updated HomepageHeroContent and HomepageDemoItem models to use base64 image storage instead of URLs. Changed hero_image_url to hero_image_base64 and image_url to image_base64. Updated default features to match user requirements: Real Food Scans, No App Needed, Live Menu Updates (3 features instead of 4)."
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the updated homepage models with base64 storage. The HomepageHeroContent model now correctly uses hero_image_base64 instead of hero_image_url, and the HomepageDemoItem model uses image_base64 instead of image_url. The default features have been updated to include exactly 3 items: 'Real Food Scans', 'No App Needed', and 'Live Menu Updates', as required. The GET /api/homepage/content endpoint returns the correct model structure with these base64 fields. One issue to note: when updating content with PUT /api/homepage/content, if you update only part of the hero object (e.g., just the headline and subheadline), the hero_image_base64 field will be lost. To preserve the hero_image_base64, it must be included in the update payload."
 
 frontend:
   - task: "Threekit-Inspired Homepage Layout"
