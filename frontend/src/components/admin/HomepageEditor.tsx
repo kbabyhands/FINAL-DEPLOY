@@ -318,13 +318,23 @@ const HomepageEditor = () => {
       const uploadPromise = new Promise((resolve, reject) => {
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(JSON.parse(xhr.responseText));
+            try {
+              resolve(JSON.parse(xhr.responseText));
+            } catch (parseError) {
+              reject(new Error('Invalid server response'));
+            }
           } else {
-            reject(new Error(`Upload failed: ${xhr.statusText}`));
+            // Try to parse error response
+            try {
+              const errorResponse = JSON.parse(xhr.responseText);
+              reject(new Error(errorResponse.detail || `Upload failed: ${xhr.statusText}`));
+            } catch (parseError) {
+              reject(new Error(`Upload failed: ${xhr.statusText} (${xhr.status})`));
+            }
           }
         };
         
-        xhr.onerror = () => reject(new Error('Upload failed'));
+        xhr.onerror = () => reject(new Error('Network error during upload'));
       });
 
       // Send request
