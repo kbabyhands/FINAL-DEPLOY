@@ -22,6 +22,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
   const animationIdRef = useRef<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadingStep, setLoadingStep] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -32,6 +33,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         return (window as any).THREE;
       }
 
+      setLoadingStep('Loading THREE.js...');
       // Load THREE.js from CDN
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -45,6 +47,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
     };
 
     const loadPLYLoader = async () => {
+      setLoadingStep('Loading PLY Loader...');
       // Load PLYLoader from Three.js examples
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -67,6 +70,8 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         // Load THREE.js
         const THREE = await loadThreeJS();
         if (!mounted || !THREE) return;
+
+        setLoadingStep('Initializing 3D scene...');
 
         // Create scene
         const scene = new THREE.Scene();
@@ -98,8 +103,10 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         rendererRef.current = renderer;
 
         // Check if we have a PLY file to load
-        if (splatUrl && (splatUrl.includes('.ply') || splatUrl.includes('application/ply') || splatUrl.endsWith('.ply'))) {
+        if (splatUrl && (splatUrl.includes('.ply') || splatUrl.endsWith('.ply'))) {
           try {
+            setLoadingStep('Loading PLY file...');
+            
             // Load PLYLoader
             await loadPLYLoader();
             const PLYLoader = (window as any).THREE.PLYLoader;
@@ -107,21 +114,28 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             if (PLYLoader) {
               const loader = new PLYLoader();
               
-              // For file URLs, construct the full URL
+              // Construct the full URL for file serving
               let fileUrl = splatUrl;
               if (splatUrl.startsWith('/uploads/')) {
                 const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
                 fileUrl = `${BACKEND_URL}/api/homepage${splatUrl}`;
+                console.log('Loading PLY from URL:', fileUrl);
               } else if (splatUrl.startsWith('data:')) {
                 // For base64 data, convert to blob URL
                 const response = await fetch(splatUrl);
                 const blob = await response.blob();
                 fileUrl = URL.createObjectURL(blob);
+                console.log('Loading PLY from blob URL');
               }
+              
+              setLoadingStep('Parsing PLY geometry...');
               
               loader.load(
                 fileUrl,
                 (geometry: any) => {
+                  console.log('PLY loaded successfully', geometry);
+                  setLoadingStep('Creating 3D mesh...');
+                  
                   // Create material for the PLY mesh
                   const material = new THREE.MeshPhongMaterial({ 
                     color: 0x4f46e5,
@@ -149,6 +163,8 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
                   scene.add(mesh);
                   splatMeshRef.current = mesh;
                   
+                  setLoadingStep('Complete!');
+                  
                   // Clean up blob URL if created
                   if (fileUrl !== splatUrl && fileUrl.startsWith('blob:')) {
                     URL.revokeObjectURL(fileUrl);
@@ -156,22 +172,26 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
                 },
                 (progress: any) => {
                   console.log('PLY loading progress:', progress);
+                  setLoadingStep('Loading PLY file...');
                 },
                 (error: any) => {
                   console.error('PLY loading error:', error);
+                  setError(`PLY loading failed: ${error.message || 'Unknown error'}`);
                   // Fall back to default 3D object
                   createDefaultScene(THREE, scene);
                 }
               );
             } else {
-              createDefaultScene(THREE, scene);
+              throw new Error('PLYLoader not available');
             }
           } catch (plyError) {
-            console.error('PLY loader failed:', plyError);
+            console.error('PLY setup failed:', plyError);
+            setError(`PLY setup failed: ${plyError.message || 'Unknown error'}`);
             createDefaultScene(THREE, scene);
           }
         } else {
           // Create default scene for non-PLY files or no file
+          setLoadingStep('Creating default scene...');
           createDefaultScene(THREE, scene);
         }
 
@@ -204,7 +224,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
 
       } catch (err) {
         console.error('Error initializing SplatViewer:', err);
-        setError('Failed to initialize 3D viewer');
+        setError(`3D viewer initialization failed: ${err.message || 'Unknown error'}`);
         setIsLoading(false);
       }
     };
@@ -282,9 +302,10 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         className={`flex items-center justify-center bg-gray-800 rounded-2xl border-2 border-gray-700 ${className}`}
         style={{ width, height }}
       >
-        <div className="text-center">
+        <div className="text-center p-4">
           <div className="text-red-400 text-lg mb-2">⚠️</div>
-          <p className="text-gray-400 text-sm">3D Viewer Error</p>
+          <p className="text-gray-400 text-sm mb-2">3D Viewer Error</p>
+          <p className="text-gray-500 text-xs">{error}</p>
         </div>
       </div>
     );
@@ -299,6 +320,9 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-2"></div>
           <p className="text-gray-400 text-sm">Loading 3D Model...</p>
+          {loadingStep && (
+            <p className="text-gray-500 text-xs mt-1">{loadingStep}</p>
+          )}
         </div>
       </div>
     );
