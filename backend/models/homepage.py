@@ -47,14 +47,8 @@ class HomepageContent(BaseModel):
             color="green"
         ),
         HomepageFeature(
-            icon="zap",
-            title="Fast & Light",
-            description="Optimized for quick loading",
-            color="purple"
-        ),
-        HomepageFeature(
             icon="refresh-cw",
-            title="Live Updates",
+            title="Live Menu Updates",
             description="Real-time menu modifications",
             color="orange"
         )
