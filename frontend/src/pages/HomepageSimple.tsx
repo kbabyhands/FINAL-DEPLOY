@@ -323,22 +323,43 @@ const HomePage = () => {
                       className="mx-auto"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
-                      <label className="cursor-pointer flex flex-col items-center">
-                        <input
-                          type="file"
-                          accept=".ply,.splat,image/*"
-                          onChange={handleHeroImageUpload}
-                          className="hidden"
-                          disabled={uploading}
-                        />
-                        <div className="text-6xl text-white mb-4">🎯</div>
-                        <p className="text-white text-center">
-                          {uploading ? 'Uploading...' : 'Click to upload .ply or .splat file'}
-                        </p>
-                        <p className="text-gray-300 text-sm mt-2">
-                          Upload 3D models (.ply, .splat) for interactive preview
-                        </p>
-                      </label>
+                      <div className="text-center w-full max-w-md mx-auto px-6">
+                        {uploading ? (
+                          <div className="space-y-4">
+                            <div className="text-6xl text-white mb-4">📤</div>
+                            <p className="text-white text-center mb-4">
+                              Uploading 3D Model...
+                            </p>
+                            {/* Progress Bar */}
+                            <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
+                              <div 
+                                className="bg-blue-500 h-3 rounded-full transition-all duration-300 ease-out"
+                                style={{ width: `${uploadProgress}%` }}
+                              ></div>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              {Math.round(uploadProgress)}% complete
+                            </p>
+                          </div>
+                        ) : (
+                          <label className="cursor-pointer flex flex-col items-center">
+                            <input
+                              type="file"
+                              accept=".ply,.splat,image/*"
+                              onChange={handleHeroImageUpload}
+                              className="hidden"
+                              disabled={uploading}
+                            />
+                            <div className="text-6xl text-white mb-4">🎯</div>
+                            <p className="text-white text-center">
+                              Click to upload .ply or .splat file
+                            </p>
+                            <p className="text-gray-300 text-sm mt-2">
+                              Upload 3D models (.ply, .splat) for interactive preview
+                            </p>
+                          </label>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ) : (
