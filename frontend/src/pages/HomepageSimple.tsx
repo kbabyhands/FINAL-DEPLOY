@@ -351,6 +351,7 @@ const HomePage = () => {
                       width={640}
                       height={320}
                       autoRotate={true}
+                      enableControls={true}
                       className="mx-auto"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
