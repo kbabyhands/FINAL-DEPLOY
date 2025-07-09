@@ -86,7 +86,14 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
 
         // Load THREE.js
         const THREE = await loadThreeJS();
-        if (!mounted || !THREE) return;
+        if (!mounted || !THREE) {
+          throw new Error('THREE.js failed to load');
+        }
+
+        // Verify THREE.js objects are available
+        if (!THREE.Scene || !THREE.WebGLRenderer || !THREE.PerspectiveCamera) {
+          throw new Error('THREE.js objects not properly initialized');
+        }
 
         setLoadingStep('Initializing 3D scene...');
 
