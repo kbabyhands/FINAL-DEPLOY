@@ -247,6 +247,18 @@ frontend:
         -agent: "main"
         -comment: "Converted the Live 3D Menu Demo section from a static 3-column grid to an interactive carousel. Features include smooth slide transitions, left/right navigation buttons, dot indicators, and preserved admin upload functionality. The carousel shows one item at a time with proper responsive design."
 
+  - task: "Dark Theme Color Scheme"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/HomepageSimple.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "main"
+        -comment: "Updated the entire homepage color scheme from light to dark theme to match the user's reference image. Changes include: dark backgrounds (gray-900, gray-800), white text on dark backgrounds, blue accent buttons for CTAs, dark sections with proper contrast, updated borders and shadows for dark theme, and maintained all existing functionality while providing a professional dark aesthetic."
+
   - task: "Interactive Menu Links in Carousel"
     implemented: true
     working: false
