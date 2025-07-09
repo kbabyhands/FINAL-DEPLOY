@@ -369,22 +369,43 @@ const HomepageEditor = () => {
   const uploadDemoImage = async (file: File, index: number) => {
     try {
       setUploading(`demo-${index}`);
+      setUploadProgress(prev => ({ ...prev, [`demo-${index}`]: 0 }));
+      
       const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${backendUrl}/api/homepage/upload/demo/${index}`, {
-        method: 'POST',
-        body: formData
+      // Create XMLHttpRequest to track upload progress
+      const xhr = new XMLHttpRequest();
+      
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          setUploadProgress(prev => ({ ...prev, [`demo-${index}`]: percentComplete }));
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to upload demo image');
-      }
+      // Handle completion
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error(`Upload failed: ${xhr.statusText}`));
+          }
+        };
+        
+        xhr.onerror = () => reject(new Error('Upload failed'));
+      });
 
-      const result = await response.json();
-      
-      if (content) {
+      // Send request
+      xhr.open('POST', `${backendUrl}/api/homepage/upload/demo/${index}`);
+      xhr.send(formData);
+
+      const result = await uploadPromise;
+
+      if (content && result) {
         const newDemoItems = [...content.demo_items];
         newDemoItems[index] = {
           ...newDemoItems[index],
@@ -395,6 +416,13 @@ const HomepageEditor = () => {
           ...content,
           demo_items: newDemoItems
         });
+        
+        setUploadProgress(prev => ({ ...prev, [`demo-${index}`]: 100 }));
+        
+        // Reset progress after delay
+        setTimeout(() => {
+          setUploadProgress(prev => ({ ...prev, [`demo-${index}`]: 0 }));
+        }, 2000);
       }
 
       toast({
@@ -407,6 +435,7 @@ const HomepageEditor = () => {
         description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       });
+      setUploadProgress(prev => ({ ...prev, [`demo-${index}`]: 0 }));
     } finally {
       setUploading(null);
     }
