@@ -99,15 +99,36 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             
             setLoadingStep('Testing file accessibility...');
             
-            // Test if the file URL is accessible
+            // Test if the file URL is accessible with timeout
             try {
-              const testResponse = await fetch(fileUrl, { method: 'HEAD' });
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+              
+              const testResponse = await fetch(fileUrl, { 
+                method: 'HEAD',
+                signal: controller.signal
+              });
+              clearTimeout(timeoutId);
+              
               if (!testResponse.ok) {
                 throw new Error(`File not accessible: ${testResponse.status} ${testResponse.statusText}`);
               }
-              console.log('File is accessible, size:', testResponse.headers.get('content-length'));
+              
+              const contentLength = testResponse.headers.get('content-length');
+              const fileSizeMB = contentLength ? (parseInt(contentLength) / (1024 * 1024)).toFixed(1) : 'unknown';
+              console.log(`File is accessible, size: ${fileSizeMB}MB`);
+              
+              // Warn if file is very large
+              if (contentLength && parseInt(contentLength) > 50 * 1024 * 1024) {
+                console.warn('Large file detected - may take longer to load');
+                setLoadingStep('Loading large file...');
+              }
+              
             } catch (fetchError) {
               console.error('File access test failed:', fetchError);
+              if (fetchError.name === 'AbortError') {
+                throw new Error('File request timed out - file may be too large or server is slow');
+              }
               throw new Error(`File access failed: ${fetchError.message}`);
             }
             
