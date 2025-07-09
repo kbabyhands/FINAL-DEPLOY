@@ -797,20 +797,12 @@ const HomepageEditor = () => {
                       </Button>
                     </div>
                   </div>
-                  <div>
+                  <div className="md:col-span-2">
                     <Label>Description</Label>
                     <Input
                       value={item.description}
                       onChange={(e) => updateDemoItem(index, 'description', e.target.value)}
                       placeholder="Brief description of the menu"
-                    />
-                  </div>
-                  <div>
-                    <Label>Emoji</Label>
-                    <Input
-                      value={item.emoji}
-                      onChange={(e) => updateDemoItem(index, 'emoji', e.target.value)}
-                      placeholder="🍽️"
                     />
                   </div>
                 </div>
