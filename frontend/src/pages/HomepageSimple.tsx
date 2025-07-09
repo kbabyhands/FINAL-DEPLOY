@@ -495,7 +495,7 @@ const HomePage = () => {
       </section>
 
       {/* How It Works - Dark Theme */}
-      <section className="py-16 bg-gray-900 relative z-10">
+      <section className="py-16 bg-gray-900/85 backdrop-blur-sm relative z-10">
         <div className="max-w-6xl mx-auto px-8 text-center">
           <h2 className="text-4xl font-bold mb-16 text-white">How It Works</h2>
           
