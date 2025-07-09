@@ -261,60 +261,62 @@ const HomePage = () => {
   return (
     <div className="bg-gray-900 text-white min-h-screen font-sans relative overflow-hidden">
       {/* Tech Background Elements */}
-      <div className="fixed inset-0 pointer-events-none z-0">
+      <div className="fixed inset-0 pointer-events-none z-[1]">
         {/* Subtle Grid Pattern */}
-        <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 opacity-30">
           <div className="h-full w-full" style={{
             backgroundImage: `
-              linear-gradient(rgba(59,130,246,0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(59,130,246,0.3) 1px, transparent 1px)
+              linear-gradient(rgba(59,130,246,0.4) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(59,130,246,0.4) 1px, transparent 1px)
             `,
-            backgroundSize: '80px 80px'
+            backgroundSize: '100px 100px'
           }}></div>
         </div>
         
         {/* Floating Tech Particles */}
         <div className="absolute inset-0">
-          {[...Array(8)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 bg-blue-400 rounded-full opacity-40 animate-pulse"
+              className="absolute w-3 h-3 bg-blue-400 rounded-full opacity-60 animate-pulse"
               style={{
-                left: `${15 + i * 10}%`,
-                top: `${15 + i * 8}%`,
-                animationDelay: `${i * 0.7}s`,
-                animationDuration: `${2 + i * 0.3}s`
+                left: `${10 + i * 7}%`,
+                top: `${10 + i * 6}%`,
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: `${2 + i * 0.2}s`
               }}
             ></div>
           ))}
         </div>
         
-        {/* Geometric Shapes */}
-        <div className="absolute top-20 right-20 w-32 h-32 border-2 border-blue-500 opacity-30 rotate-45 animate-spin" style={{ animationDuration: '20s' }}></div>
-        <div className="absolute bottom-40 left-10 w-20 h-20 border-2 border-purple-500 opacity-25 rotate-12"></div>
-        <div className="absolute top-1/3 left-1/4 w-8 h-8 bg-cyan-500 opacity-20 rotate-45 animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/3 w-12 h-12 border-2 border-cyan-400 opacity-30 rounded-full animate-ping" style={{ animationDuration: '3s' }}></div>
-        <div className="absolute top-1/2 right-1/4 w-6 h-6 bg-purple-400 opacity-25 animate-bounce"></div>
+        {/* Large Geometric Shapes */}
+        <div className="absolute top-32 right-32 w-40 h-40 border-2 border-blue-500 opacity-40 rotate-45 animate-spin" style={{ animationDuration: '25s' }}></div>
+        <div className="absolute bottom-32 left-32 w-28 h-28 border-2 border-purple-500 opacity-35 rotate-12 animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-cyan-500 opacity-30 rotate-45 animate-pulse"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-16 h-16 border-2 border-cyan-400 opacity-40 rounded-full animate-ping" style={{ animationDuration: '4s' }}></div>
+        <div className="absolute top-1/3 right-1/3 w-8 h-8 bg-purple-400 opacity-35 animate-bounce"></div>
         
-        {/* Tech Lines/Connections */}
-        <div className="absolute top-1/4 left-1/2 w-32 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-40"></div>
-        <div className="absolute bottom-1/3 right-1/2 w-px h-24 bg-gradient-to-b from-transparent via-purple-400 to-transparent opacity-40"></div>
+        {/* Tech Connection Lines */}
+        <div className="absolute top-1/4 left-1/2 w-48 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-50"></div>
+        <div className="absolute bottom-1/3 right-1/2 w-px h-32 bg-gradient-to-b from-transparent via-purple-400 to-transparent opacity-50"></div>
+        <div className="absolute top-2/3 left-1/3 w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-45 rotate-45"></div>
         
-        {/* Subtle Gradient Overlays */}
-        <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-blue-900/10 to-transparent"></div>
-        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-900/10 to-transparent"></div>
-        
-        {/* Hexagon Pattern */}
-        <div className="absolute top-32 left-1/3 opacity-20">
-          <svg width="60" height="60" viewBox="0 0 60 60" className="text-blue-400 animate-pulse">
-            <polygon points="30,5 50,17.5 50,42.5 30,55 10,42.5 10,17.5" fill="none" stroke="currentColor" strokeWidth="1"/>
+        {/* Hexagon Patterns */}
+        <div className="absolute top-24 left-1/4 opacity-35">
+          <svg width="80" height="80" viewBox="0 0 80 80" className="text-blue-400 animate-pulse">
+            <polygon points="40,5 65,22.5 65,57.5 40,75 15,57.5 15,22.5" fill="none" stroke="currentColor" strokeWidth="2"/>
           </svg>
         </div>
-        <div className="absolute bottom-32 right-1/4 opacity-15">
-          <svg width="40" height="40" viewBox="0 0 40 40" className="text-purple-400">
-            <polygon points="20,3 33,11.5 33,28.5 20,37 7,28.5 7,11.5" fill="none" stroke="currentColor" strokeWidth="1"/>
+        <div className="absolute bottom-24 right-1/3 opacity-30">
+          <svg width="60" height="60" viewBox="0 0 60 60" className="text-purple-400 animate-pulse" style={{ animationDuration: '3s' }}>
+            <polygon points="30,5 50,17.5 50,42.5 30,55 10,42.5 10,17.5" fill="none" stroke="currentColor" strokeWidth="2"/>
           </svg>
         </div>
+        
+        {/* Circuit Dots */}
+        <div className="absolute top-1/3 left-1/2 w-2 h-2 bg-blue-400 rounded-full opacity-50 animate-ping"></div>
+        <div className="absolute bottom-1/2 left-1/3 w-2 h-2 bg-purple-400 rounded-full opacity-45 animate-ping" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-3/4 right-1/2 w-2 h-2 bg-cyan-400 rounded-full opacity-40 animate-ping" style={{ animationDelay: '2s' }}></div>
       </div>
       
       {/* Main Content */}
