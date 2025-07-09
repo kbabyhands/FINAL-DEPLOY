@@ -98,12 +98,19 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             
             setLoadingStep('Creating splat mesh...');
             
-            // Create SplatMesh with SparkJS
-            const splatMesh = new SplatMesh({ url: fileUrl });
+            // Create SplatMesh with SparkJS with optimization settings
+            const splatMesh = new SplatMesh({ 
+              url: fileUrl,
+              // Optimization settings for faster loading
+              alphaTest: 0.1,
+              alphaHash: true,
+              halfFloat: true,
+            });
             
-            // Position the mesh and flip it to face the viewer
+            // Try different rotation combinations to fix orientation
             splatMesh.position.set(0, 0, 0);
-            splatMesh.rotation.x = Math.PI; // 180 degree flip on X-axis
+            splatMesh.rotation.x = Math.PI; // 180 degrees around X
+            splatMesh.rotation.z = Math.PI; // Also try Z-axis rotation
             splatMesh.scale.set(1, 1, 1);
             
             // Add to scene
