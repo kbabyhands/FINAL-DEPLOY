@@ -539,17 +539,32 @@ const HomepageEditor = () => {
             </div>
           </div>
 
-          {/* Hero Image Upload */}
+          {/* Hero 3D Splat Viewer */}
           <div>
-            <Label>Hero Image</Label>
+            <Label>Hero 3D Model</Label>
             <div className="mt-2">
               {content.hero.hero_image_base64 ? (
-                <div className="relative inline-block">
-                  <img 
-                    src={content.hero.hero_image_base64} 
-                    alt="Hero" 
-                    className="w-48 h-32 object-cover rounded-lg border"
-                  />
+                <div className="relative">
+                  {/* Check if it's a splat file or regular image */}
+                  {content.hero.hero_image_base64.includes('splat') ? (
+                    <SplatViewer 
+                      splatUrl={content.hero.hero_image_base64}
+                      width={400}
+                      height={200}
+                      autoRotate={true}
+                    />
+                  ) : (
+                    <div className="relative">
+                      <SplatViewer 
+                        width={400}
+                        height={200}
+                        autoRotate={true}
+                      />
+                      <div className="absolute top-2 left-2 bg-yellow-600 text-white px-2 py-1 rounded text-xs">
+                        Regular image uploaded - Upload .splat for 3D
+                      </div>
+                    </div>
+                  )}
                   <Button
                     size="sm"
                     variant="destructive"
@@ -560,17 +575,16 @@ const HomepageEditor = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="w-48 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">No hero image</p>
-                  </div>
-                </div>
+                <SplatViewer 
+                  width={400}
+                  height={200}
+                  autoRotate={true}
+                />
               )}
-              <div className="mt-2">
+              <div className="mt-2 space-y-2">
                 <input
                   type="file"
-                  accept="image/*,.splat"
+                  accept=".splat,image/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) uploadHeroImage(file);
@@ -579,15 +593,20 @@ const HomepageEditor = () => {
                   id="hero-image-upload"
                   disabled={uploading === 'hero'}
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => document.getElementById('hero-image-upload')?.click()}
-                  disabled={uploading === 'hero'}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  {uploading === 'hero' ? 'Uploading...' : 'Upload Hero Image'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => document.getElementById('hero-image-upload')?.click()}
+                    disabled={uploading === 'hero'}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {uploading === 'hero' ? 'Uploading...' : 'Upload .splat File'}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Upload .splat files for 3D Gaussian Splatting models. Regular images will show a placeholder 3D scene.
+                </p>
               </div>
             </div>
           </div>
