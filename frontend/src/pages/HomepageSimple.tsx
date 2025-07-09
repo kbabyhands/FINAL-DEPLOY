@@ -261,57 +261,60 @@ const HomePage = () => {
   return (
     <div className="bg-gray-900 text-white min-h-screen font-sans relative overflow-hidden">
       {/* Tech Background Elements */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="fixed inset-0 pointer-events-none z-0">
         {/* Subtle Grid Pattern */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-20">
           <div className="h-full w-full" style={{
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+              linear-gradient(rgba(59,130,246,0.3) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(59,130,246,0.3) 1px, transparent 1px)
             `,
-            backgroundSize: '50px 50px'
+            backgroundSize: '80px 80px'
           }}></div>
         </div>
         
         {/* Floating Tech Particles */}
         <div className="absolute inset-0">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-20 animate-pulse"
+              className="absolute w-2 h-2 bg-blue-400 rounded-full opacity-40 animate-pulse"
               style={{
-                left: `${20 + i * 15}%`,
-                top: `${10 + i * 12}%`,
-                animationDelay: `${i * 0.5}s`,
-                animationDuration: `${3 + i * 0.5}s`
+                left: `${15 + i * 10}%`,
+                top: `${15 + i * 8}%`,
+                animationDelay: `${i * 0.7}s`,
+                animationDuration: `${2 + i * 0.3}s`
               }}
             ></div>
           ))}
         </div>
         
         {/* Geometric Shapes */}
-        <div className="absolute top-20 right-20 w-32 h-32 border border-gray-700 opacity-10 rotate-45 animate-spin" style={{ animationDuration: '20s' }}></div>
-        <div className="absolute bottom-40 left-10 w-16 h-16 border border-blue-500 opacity-20 rotate-12"></div>
-        <div className="absolute top-1/3 left-1/4 w-6 h-6 bg-purple-500 opacity-10 rotate-45 animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/3 w-8 h-8 border border-cyan-500 opacity-15 rounded-full"></div>
+        <div className="absolute top-20 right-20 w-32 h-32 border-2 border-blue-500 opacity-30 rotate-45 animate-spin" style={{ animationDuration: '20s' }}></div>
+        <div className="absolute bottom-40 left-10 w-20 h-20 border-2 border-purple-500 opacity-25 rotate-12"></div>
+        <div className="absolute top-1/3 left-1/4 w-8 h-8 bg-cyan-500 opacity-20 rotate-45 animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/3 w-12 h-12 border-2 border-cyan-400 opacity-30 rounded-full animate-ping" style={{ animationDuration: '3s' }}></div>
+        <div className="absolute top-1/2 right-1/4 w-6 h-6 bg-purple-400 opacity-25 animate-bounce"></div>
+        
+        {/* Tech Lines/Connections */}
+        <div className="absolute top-1/4 left-1/2 w-32 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-40"></div>
+        <div className="absolute bottom-1/3 right-1/2 w-px h-24 bg-gradient-to-b from-transparent via-purple-400 to-transparent opacity-40"></div>
         
         {/* Subtle Gradient Overlays */}
-        <div className="absolute top-0 left-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-900/5 to-transparent"></div>
-        <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-gradient-to-tl from-purple-900/5 to-transparent"></div>
+        <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-blue-900/10 to-transparent"></div>
+        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-purple-900/10 to-transparent"></div>
         
-        {/* Tech Circuit Lines */}
-        <svg className="absolute inset-0 w-full h-full opacity-5" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="circuit" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
-              <path d="M50 50h100v100H50z" fill="none" stroke="currentColor" strokeWidth="1"/>
-              <circle cx="50" cy="50" r="3" fill="currentColor"/>
-              <circle cx="150" cy="50" r="3" fill="currentColor"/>
-              <circle cx="150" cy="150" r="3" fill="currentColor"/>
-              <circle cx="50" cy="150" r="3" fill="currentColor"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#circuit)" className="text-blue-400"/>
-        </svg>
+        {/* Hexagon Pattern */}
+        <div className="absolute top-32 left-1/3 opacity-20">
+          <svg width="60" height="60" viewBox="0 0 60 60" className="text-blue-400 animate-pulse">
+            <polygon points="30,5 50,17.5 50,42.5 30,55 10,42.5 10,17.5" fill="none" stroke="currentColor" strokeWidth="1"/>
+          </svg>
+        </div>
+        <div className="absolute bottom-32 right-1/4 opacity-15">
+          <svg width="40" height="40" viewBox="0 0 40 40" className="text-purple-400">
+            <polygon points="20,3 33,11.5 33,28.5 20,37 7,28.5 7,11.5" fill="none" stroke="currentColor" strokeWidth="1"/>
+          </svg>
+        </div>
       </div>
       
       {/* Main Content */}
