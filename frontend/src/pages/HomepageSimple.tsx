@@ -684,11 +684,12 @@ const HomePage = () => {
       )}
 
       {/* Footer - Dark Theme */}
-      <footer className="bg-black text-white py-12">
+      <footer className="bg-black text-white py-12 relative z-10">
         <div className="max-w-6xl mx-auto px-8 text-center">
           <p className="text-gray-400">© {new Date().getFullYear()} TAST3D. All rights reserved.</p>
         </div>
       </footer>
+      </div>
     </div>
   );
 };
