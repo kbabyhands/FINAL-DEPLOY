@@ -210,22 +210,14 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
               controlsRef.current.update();
             }
             
-            // Only auto-rotate if controls are not being actively used
-            const isUserInteracting = controlsRef.current && 
-              (controlsRef.current as any).getUserData?.().isInteracting;
-            
-            if (autoRotate && splatMeshRef.current && !isUserInteracting && enableControls === false) {
-              // Very slow Y-axis rotation only when controls are disabled
+            // Always slowly rotate the splat model
+            if (autoRotate && splatMeshRef.current) {
+              // Slow, steady Y-axis rotation
               splatMeshRef.current.rotation.y += 0.003;
-              
-              // Keep the base X rotation for proper orientation
-              const time = currentTime * 0.001;
-              const baseRotationX = Math.PI; // Maintain 180-degree flip
-              splatMeshRef.current.rotation.x = baseRotationX + Math.sin(time * 0.5) * 0.05;
             }
             
             // Animate default scene particles if it's a group
-            if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children && !isUserInteracting) {
+            if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children) {
               splatMeshRef.current.children.forEach((child: any, index: number) => {
                 if (index > 1) { // Skip sphere and wireframe
                   child.rotation.x += 0.005;
