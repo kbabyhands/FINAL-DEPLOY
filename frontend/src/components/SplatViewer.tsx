@@ -26,6 +26,24 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
   useEffect(() => {
     let mounted = true;
 
+    const loadThreeJS = async () => {
+      // Check if THREE.js is already loaded
+      if ((window as any).THREE) {
+        return (window as any).THREE;
+      }
+
+      // Load THREE.js from CDN
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/three.min.js';
+        script.onload = () => {
+          resolve((window as any).THREE);
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    };
+
     const initializeViewer = async () => {
       if (!mountRef.current) return;
 
@@ -33,42 +51,10 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         setIsLoading(true);
         setError(null);
 
-        // Wait for the import map modules to be available
-        let THREE: any;
-        let SplatMesh: any;
+        // Load THREE.js
+        const THREE = await loadThreeJS();
 
-        try {
-          // Try to import from the import map
-          const threeModule = await import('three');
-          const sparkModule = await import('@sparkjsdev/spark');
-          THREE = threeModule.default || threeModule;
-          SplatMesh = sparkModule.SplatMesh;
-        } catch (importError) {
-          console.log('Import map failed, using CDN fallback');
-          
-          // Fallback: Load THREE.js and SparkJS from CDN directly
-          if (!(window as any).THREE) {
-            await new Promise((resolve, reject) => {
-              const script = document.createElement('script');
-              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/three.min.js';
-              script.onload = resolve;
-              script.onerror = reject;
-              document.head.appendChild(script);
-            });
-          }
-          
-          THREE = (window as any).THREE;
-          
-          if (!THREE) {
-            throw new Error('THREE.js failed to load');
-          }
-
-          // For now, we'll create a simple 3D scene without SparkJS
-          // In production, you might want to load SparkJS differently
-          SplatMesh = null;
-        }
-
-        if (!mounted) return;
+        if (!mounted || !THREE) return;
 
         // Create scene
         const scene = new THREE.Scene();
@@ -99,29 +85,49 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         sceneRef.current = scene;
         rendererRef.current = renderer;
 
-        // Create a placeholder 3D object (sphere with interesting material)
-        const geometry = new THREE.SphereGeometry(0.8, 32, 32);
-        const material = new THREE.MeshPhongMaterial({ 
+        // Create an attractive 3D object representing food/menu
+        const group = new THREE.Group();
+
+        // Main sphere (represents 3D food model)
+        const sphereGeometry = new THREE.SphereGeometry(0.8, 32, 32);
+        const sphereMaterial = new THREE.MeshPhongMaterial({ 
           color: 0x4f46e5,
           transparent: true,
           opacity: 0.8,
           shininess: 100
         });
-        const sphere = new THREE.Mesh(geometry, material);
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        group.add(sphere);
         
-        // Add some visual interest with a wireframe overlay
-        const wireframeGeometry = new THREE.SphereGeometry(0.81, 16, 16);
+        // Wireframe overlay for tech aesthetic
+        const wireframeGeometry = new THREE.SphereGeometry(0.82, 16, 16);
         const wireframeMaterial = new THREE.MeshBasicMaterial({ 
           color: 0x60a5fa, 
           wireframe: true,
           transparent: true,
-          opacity: 0.3
+          opacity: 0.4
         });
         const wireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
-        
-        const group = new THREE.Group();
-        group.add(sphere);
         group.add(wireframe);
+
+        // Add some floating particles around the sphere
+        const particleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
+        const particleMaterial = new THREE.MeshBasicMaterial({ 
+          color: 0x60a5fa,
+          transparent: true,
+          opacity: 0.6
+        });
+
+        for (let i = 0; i < 20; i++) {
+          const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+          particle.position.set(
+            (Math.random() - 0.5) * 3,
+            (Math.random() - 0.5) * 3,
+            (Math.random() - 0.5) * 3
+          );
+          group.add(particle);
+        }
+
         scene.add(group);
         splatMeshRef.current = group;
 
@@ -134,6 +140,14 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           if (autoRotate && splatMeshRef.current) {
             splatMeshRef.current.rotation.y += 0.01;
             splatMeshRef.current.rotation.x += 0.005;
+            
+            // Animate particles
+            splatMeshRef.current.children.forEach((child: any, index: number) => {
+              if (index > 1) { // Skip sphere and wireframe
+                child.rotation.x += 0.02;
+                child.rotation.y += 0.01;
+              }
+            });
           }
           
           renderer.render(scene, camera);
