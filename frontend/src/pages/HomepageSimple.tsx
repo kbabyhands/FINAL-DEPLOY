@@ -385,8 +385,8 @@ const HomePage = () => {
                   homepageContent.hero.hero_image_base64.includes('ply')) ? (
                   <SplatViewer 
                     splatUrl={homepageContent.hero.hero_image_base64}
-                    width={Math.min(640, window.innerWidth - 32)}
-                    height={Math.min(320, (window.innerWidth - 32) * 0.5)}
+                    width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
+                    height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
                     autoRotate={true}
                     enableControls={true}
                     className="mx-auto w-full max-w-full"
