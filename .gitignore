@@ -16,6 +16,10 @@ node_modules/
 !.yarn/releases
 !.yarn/versions
 
+# Yarn lock files (auto-generated)
+yarn.lock
+frontend/yarn.lock
+
 # Testing
 /coverage
 
@@ -72,6 +76,12 @@ agenthub/agents/youtube/db
 *.pack
 *.deb
 *.dylib
+
+# Large 3D model files (exceed GitHub's 100MB limit)
+uploads/*.ply
+uploads/*.splat
+**/*.ply
+**/*.splat
 
 # Build caches
 .cache/
