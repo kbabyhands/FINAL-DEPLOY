@@ -251,9 +251,10 @@ const HomePage = () => {
           <div className="max-w-2xl mx-auto mb-16">
             {homepageContent.hero.hero_image_base64 ? (
               <div className="relative">
-                {/* Check if it's a splat file (base64) or regular image */}
+                  {/* Check if it's a splat/ply file or regular image */}
                 {homepageContent.hero.hero_image_base64.includes('data:') && 
-                 homepageContent.hero.hero_image_base64.includes('splat') ? (
+                 (homepageContent.hero.hero_image_base64.includes('splat') || 
+                  homepageContent.hero.hero_image_base64.includes('ply')) ? (
                   <SplatViewer 
                     splatUrl={homepageContent.hero.hero_image_base64}
                     width={640}
