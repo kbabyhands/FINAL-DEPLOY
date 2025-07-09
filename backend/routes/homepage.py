@@ -271,3 +271,36 @@ async def upload_demo_image(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error uploading demo image: {str(e)}"
         )
+
+@router.get("/uploads/{filename}")
+async def serve_uploaded_file(filename: str):
+    """
+    Serve uploaded files from the uploads directory.
+    """
+    file_path = UPLOAD_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found"
+        )
+    
+    # Determine media type based on file extension
+    file_extension = file_path.suffix.lower()
+    media_type_map = {
+        '.ply': 'application/ply',
+        '.splat': 'application/splat',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp'
+    }
+    
+    media_type = media_type_map.get(file_extension, 'application/octet-stream')
+    
+    return FileResponse(
+        path=file_path,
+        media_type=media_type,
+        filename=filename
+    )
