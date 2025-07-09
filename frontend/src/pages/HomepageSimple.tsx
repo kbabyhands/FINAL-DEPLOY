@@ -153,10 +153,10 @@ const HomePage = () => {
 
   const getFeatureIcon = (iconName) => {
     switch(iconName) {
-      case 'camera': return <Camera className="w-8 h-8 text-gray-600" />;
-      case 'smartphone': return <Smartphone className="w-8 h-8 text-gray-600" />;
-      case 'refresh-cw': return <RefreshCw className="w-8 h-8 text-gray-600" />;
-      default: return <Camera className="w-8 h-8 text-gray-600" />;
+      case 'camera': return <Camera className="w-8 h-8 text-white" />;
+      case 'smartphone': return <Smartphone className="w-8 h-8 text-white" />;
+      case 'refresh-cw': return <RefreshCw className="w-8 h-8 text-white" />;
+      default: return <Camera className="w-8 h-8 text-white" />;
     }
   };
 
