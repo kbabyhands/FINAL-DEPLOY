@@ -170,15 +170,18 @@ backend:
 
   - task: "POST /api/homepage/upload/demo/{index} Endpoint"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/routes/homepage.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: false
         -agent: "main"
         -comment: "Newly implemented demo image upload endpoint. Accepts multipart/form-data file uploads for demo items (index 0-2), converts to base64, and stores in homepage content. Requires admin authentication. Needs testing to verify upload functionality."
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the POST /api/homepage/upload/demo/{index} endpoints for indices 0, 1, and 2. The endpoints successfully accept image file uploads, convert them to base64, and store them in the database. The image_base64 field is correctly updated in the corresponding HomepageDemoItem model. The endpoints return a 200 status code with a message and the base64 image URL. When an invalid index (< 0 or > 2) is provided, the endpoint returns a 500 error with a message indicating that the index must be between 0 and 2. Note that the endpoint doesn't validate file types, so any file type can be uploaded and will be stored with its content type."
 
   - task: "Updated Homepage Models for Base64 Storage"
     implemented: true
