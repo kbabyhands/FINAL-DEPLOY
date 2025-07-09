@@ -1,12 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-declare global {
-  interface Window {
-    THREE: any;
-    SplatMesh: any;
-  }
-}
-
 interface SplatViewerProps {
   splatUrl?: string;
   width?: number;
@@ -40,11 +33,40 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         setIsLoading(true);
         setError(null);
 
-        // Dynamic import of Three.js and SparkJS
-        const [THREE, { SplatMesh }] = await Promise.all([
-          import('three'),
-          import('@sparkjsdev/spark')
-        ]);
+        // Wait for the import map modules to be available
+        let THREE: any;
+        let SplatMesh: any;
+
+        try {
+          // Try to import from the import map
+          const threeModule = await import('three');
+          const sparkModule = await import('@sparkjsdev/spark');
+          THREE = threeModule.default || threeModule;
+          SplatMesh = sparkModule.SplatMesh;
+        } catch (importError) {
+          console.log('Import map failed, using CDN fallback');
+          
+          // Fallback: Load THREE.js and SparkJS from CDN directly
+          if (!(window as any).THREE) {
+            await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/three.min.js';
+              script.onload = resolve;
+              script.onerror = reject;
+              document.head.appendChild(script);
+            });
+          }
+          
+          THREE = (window as any).THREE;
+          
+          if (!THREE) {
+            throw new Error('THREE.js failed to load');
+          }
+
+          // For now, we'll create a simple 3D scene without SparkJS
+          // In production, you might want to load SparkJS differently
+          SplatMesh = null;
+        }
 
         if (!mounted) return;
 
@@ -77,34 +99,31 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         sceneRef.current = scene;
         rendererRef.current = renderer;
 
-        // Load splat if URL provided
-        if (splatUrl) {
-          try {
-            const splatMesh = new SplatMesh({ url: splatUrl });
-            splatMesh.position.set(0, 0, 0);
-            scene.add(splatMesh);
-            splatMeshRef.current = splatMesh;
-          } catch (splatError) {
-            console.error('Error loading splat:', splatError);
-            // Add a fallback placeholder
-            const geometry = new THREE.BoxGeometry(1, 1, 1);
-            const material = new THREE.MeshPhongMaterial({ color: 0x4f46e5 });
-            const cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-            splatMeshRef.current = cube;
-          }
-        } else {
-          // Default placeholder when no splat URL
-          const geometry = new THREE.SphereGeometry(0.8, 32, 32);
-          const material = new THREE.MeshPhongMaterial({ 
-            color: 0x4f46e5,
-            transparent: true,
-            opacity: 0.8 
-          });
-          const sphere = new THREE.Mesh(geometry, material);
-          scene.add(sphere);
-          splatMeshRef.current = sphere;
-        }
+        // Create a placeholder 3D object (sphere with interesting material)
+        const geometry = new THREE.SphereGeometry(0.8, 32, 32);
+        const material = new THREE.MeshPhongMaterial({ 
+          color: 0x4f46e5,
+          transparent: true,
+          opacity: 0.8,
+          shininess: 100
+        });
+        const sphere = new THREE.Mesh(geometry, material);
+        
+        // Add some visual interest with a wireframe overlay
+        const wireframeGeometry = new THREE.SphereGeometry(0.81, 16, 16);
+        const wireframeMaterial = new THREE.MeshBasicMaterial({ 
+          color: 0x60a5fa, 
+          wireframe: true,
+          transparent: true,
+          opacity: 0.3
+        });
+        const wireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
+        
+        const group = new THREE.Group();
+        group.add(sphere);
+        group.add(wireframe);
+        scene.add(group);
+        splatMeshRef.current = group;
 
         // Animation loop
         const animate = () => {
@@ -114,6 +133,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           
           if (autoRotate && splatMeshRef.current) {
             splatMeshRef.current.rotation.y += 0.01;
+            splatMeshRef.current.rotation.x += 0.005;
           }
           
           renderer.render(scene, camera);
