@@ -21,6 +21,7 @@ const HomePage = () => {
   const [homepageContent, setHomepageContent] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     // Check if user is admin
