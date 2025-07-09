@@ -384,6 +384,9 @@ const HomePage = () => {
                             <p className="text-gray-300 text-sm mt-2">
                               Upload 3D models (.ply, .splat) for interactive preview
                             </p>
+                            <p className="text-gray-400 text-xs mt-1">
+                              Maximum file size: 200MB
+                            </p>
                           </label>
                         )}
                       </div>
