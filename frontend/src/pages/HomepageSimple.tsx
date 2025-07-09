@@ -348,13 +348,13 @@ const HomePage = () => {
         </div>
       </header>
 
-      {/* Hero Section - Dark Theme */}
-      <section className="text-center px-8 py-16 bg-gray-900/80 backdrop-blur-sm min-h-[80vh] flex flex-col justify-center relative z-10">
+      {/* Hero Section - Mobile Responsive */}
+      <section className="text-center px-4 sm:px-8 py-8 sm:py-16 bg-gray-900/80 backdrop-blur-sm min-h-[70vh] sm:min-h-[80vh] flex flex-col justify-center relative z-10">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 text-white leading-tight">
             {homepageContent.hero.headline}
           </h1>
-          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-12 max-w-2xl mx-auto px-4 sm:px-0">
             {homepageContent.hero.subheadline}
           </p>
           
