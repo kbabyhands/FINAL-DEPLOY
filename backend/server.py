@@ -23,8 +23,22 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 database = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Create the main app with increased file size limits
+app = FastAPI(
+    title="TAST3D API",
+    description="Restaurant 3D Menu API",
+    version="1.0.0"
+)
+
+# Configure maximum request size (200MB)
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    max_age=3600
+)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
