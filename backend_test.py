@@ -343,10 +343,13 @@ class TestHomepageAPI(unittest.TestCase):
             self.assertTrue(content["demo_items"][index]["image_base64"].startswith("data:image/png;base64,"), f"Stored demo image not in base64 format for index {index}")
         
         # Update content with PUT and verify base64 data is preserved
+        # For this test, we need to include the hero_image_base64 in the update to preserve it
+        hero_image_base64 = content["hero"]["hero_image_base64"]
         updated_content = {
             "hero": {
                 "headline": "Updated Headline",
-                "subheadline": "Updated Subheadline"
+                "subheadline": "Updated Subheadline",
+                "hero_image_base64": hero_image_base64
             }
         }
         
