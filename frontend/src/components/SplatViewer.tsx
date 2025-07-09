@@ -167,32 +167,41 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           createDefaultScene(scene);
         }
 
-        // Animation loop
-        const animate = () => {
+        // Optimized animation loop for Chrome
+        let lastTime = 0;
+        const targetFPS = 60;
+        const frameInterval = 1000 / targetFPS;
+        
+        const animate = (currentTime: number) => {
           if (!mounted) return;
           
-          animationIdRef.current = requestAnimationFrame(animate);
-          
-          if (autoRotate && splatMeshRef.current) {
-            // Very slow Y-axis rotation (main rotation)
-            splatMeshRef.current.rotation.y += 0.003;
-            
-            // Subtle circular movement on X-axis using sine wave (keeping it upright)
-            const time = Date.now() * 0.001; // Convert to seconds
-            splatMeshRef.current.rotation.x = Math.sin(time * 0.5) * 0.05; // Smaller amplitude to prevent flipping
-            
-            // If it's a group with particles, animate them more subtly too
-            if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children) {
-              splatMeshRef.current.children.forEach((child: any, index: number) => {
-                if (index > 1) { // Skip sphere and wireframe
-                  child.rotation.x += 0.005; // Much slower particle rotation
-                  child.rotation.y += 0.003;
-                }
-              });
+          // Throttle animation to target FPS
+          if (currentTime - lastTime >= frameInterval) {
+            if (autoRotate && splatMeshRef.current) {
+              // Very slow Y-axis rotation (main rotation)
+              splatMeshRef.current.rotation.y += 0.003;
+              
+              // Subtle circular movement on X-axis using sine wave (keeping it upright)
+              const time = currentTime * 0.001; // Convert to seconds
+              const baseRotationX = Math.PI; // Keep the 180-degree flip
+              splatMeshRef.current.rotation.x = baseRotationX + Math.sin(time * 0.5) * 0.05;
+              
+              // If it's a group with particles, animate them more subtly too
+              if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children) {
+                splatMeshRef.current.children.forEach((child: any, index: number) => {
+                  if (index > 1) { // Skip sphere and wireframe
+                    child.rotation.x += 0.005; // Much slower particle rotation
+                    child.rotation.y += 0.003;
+                  }
+                });
+              }
             }
+            
+            renderer.render(scene, camera);
+            lastTime = currentTime;
           }
           
-          renderer.render(scene, camera);
+          animationIdRef.current = requestAnimationFrame(animate);
         };
         
         animate();
