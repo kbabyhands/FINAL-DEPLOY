@@ -90,7 +90,7 @@ class TestHomepageAPI(unittest.TestCase):
             "hero": {
                 "headline": "Updated Headline",
                 "subheadline": "Updated Subheadline",
-                "hero_image_url": "https://example.com/image.jpg",
+                "hero_image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
                 "primary_cta_text": "Updated CTA",
                 "primary_cta_url": "/updated",
                 "secondary_cta_text": "Updated Secondary CTA",
@@ -117,7 +117,7 @@ class TestHomepageAPI(unittest.TestCase):
                 {
                     "name": "Updated Item",
                     "description": "Updated item description",
-                    "image_url": "https://example.com/item.jpg",
+                    "image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
                     "emoji": "🍕"
                 }
             ]
