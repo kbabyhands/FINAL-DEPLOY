@@ -14,7 +14,10 @@ import {
   Star, 
   Edit2,
   Eye,
-  Globe
+  Globe,
+  Upload,
+  X,
+  ExternalLink
 } from 'lucide-react';
 
 interface HomepageHeroContent {
