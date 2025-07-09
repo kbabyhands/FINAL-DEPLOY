@@ -537,6 +537,59 @@ const HomepageEditor = () => {
               />
             </div>
           </div>
+
+          {/* Hero Image Upload */}
+          <div>
+            <Label>Hero Image</Label>
+            <div className="mt-2">
+              {content.hero.hero_image_base64 ? (
+                <div className="relative inline-block">
+                  <img 
+                    src={content.hero.hero_image_base64} 
+                    alt="Hero" 
+                    className="w-48 h-32 object-cover rounded-lg border"
+                  />
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={removeHeroImage}
+                    className="absolute top-2 right-2"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="w-48 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500">No hero image</p>
+                  </div>
+                </div>
+              )}
+              <div className="mt-2">
+                <input
+                  type="file"
+                  accept="image/*,.splat"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadHeroImage(file);
+                  }}
+                  className="hidden"
+                  id="hero-image-upload"
+                  disabled={uploading === 'hero'}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => document.getElementById('hero-image-upload')?.click()}
+                  disabled={uploading === 'hero'}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploading === 'hero' ? 'Uploading...' : 'Upload Hero Image'}
+                </Button>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
