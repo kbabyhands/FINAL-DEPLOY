@@ -271,6 +271,18 @@ frontend:
         -agent: "main"
         -comment: "Enhanced the Live 3D Menu Demo carousel to support clickable menu images that link to the actual menu page. Features include: 1) Clickable images with hover effects and 'View Menu' overlay, 2) 'View Full Menu' button for each item, 3) Updated backend model to include menu_link field, 4) Changed demo items to represent actual menu categories (Breakfast, Lunch, Dinner), 5) Enhanced upload placeholders with menu-specific icons and descriptions, 6) Hover animations with scale effects and border color changes."
 
+  - task: "Enhanced Homepage Editor with File Upload"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/admin/HomepageEditor.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "main"
+        -comment: "Enhanced the homepage editor to support file uploads and menu link editing. Features include: 1) Hero image upload with preview and remove functionality, 2) Menu item image upload for each demo item, 3) Menu link editing with external link preview, 4) Updated interfaces to match new base64 storage format, 5) Upload progress indicators and error handling, 6) Visual image previews with delete buttons, 7) Improved UI for managing menu items with proper labels and descriptions."
+
   - task: "SparkJS 3D Splat Viewer Integration"
     implemented: true
     working: false
