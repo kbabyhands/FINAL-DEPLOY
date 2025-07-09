@@ -746,11 +746,11 @@ const HomepageEditor = () => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center">
               <Edit2 className="w-5 h-5 mr-2" />
-              Demo Items
+              Menu Demo Items
             </div>
             <Button size="sm" onClick={addDemoItem}>
               <Plus className="w-4 h-4 mr-2" />
-              Add Demo Item
+              Add Menu Item
             </Button>
           </CardTitle>
         </CardHeader>
@@ -759,7 +759,7 @@ const HomepageEditor = () => {
             {content.demo_items.map((item, index) => (
               <div key={index} className="p-4 border rounded-lg">
                 <div className="flex items-center justify-between mb-3">
-                  <Badge variant="secondary">Demo Item {index + 1}</Badge>
+                  <Badge variant="secondary">Menu Item {index + 1}</Badge>
                   <Button
                     size="sm"
                     variant="outline"
@@ -768,13 +768,41 @@ const HomepageEditor = () => {
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Name</Label>
+                    <Label>Menu Name</Label>
                     <Input
                       value={item.name}
                       onChange={(e) => updateDemoItem(index, 'name', e.target.value)}
-                      placeholder="Dish name"
+                      placeholder="e.g. Breakfast Menu"
+                    />
+                  </div>
+                  <div>
+                    <Label>Menu Link</Label>
+                    <div className="flex">
+                      <Input
+                        value={item.menu_link}
+                        onChange={(e) => updateDemoItem(index, 'menu_link', e.target.value)}
+                        placeholder="/menu"
+                        className="flex-1"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open(item.menu_link, '_blank')}
+                        className="ml-2"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Description</Label>
+                    <Input
+                      value={item.description}
+                      onChange={(e) => updateDemoItem(index, 'description', e.target.value)}
+                      placeholder="Brief description of the menu"
                     />
                   </div>
                   <div>
@@ -782,16 +810,61 @@ const HomepageEditor = () => {
                     <Input
                       value={item.emoji}
                       onChange={(e) => updateDemoItem(index, 'emoji', e.target.value)}
-                      placeholder="🍔"
+                      placeholder="🍽️"
                     />
                   </div>
-                  <div className="md:col-span-2">
-                    <Label>Description</Label>
-                    <Input
-                      value={item.description}
-                      onChange={(e) => updateDemoItem(index, 'description', e.target.value)}
-                      placeholder="Dish description"
-                    />
+                </div>
+
+                {/* Menu Image Upload */}
+                <div className="mt-4">
+                  <Label>Menu Image</Label>
+                  <div className="mt-2">
+                    {item.image_base64 ? (
+                      <div className="relative inline-block">
+                        <img 
+                          src={item.image_base64} 
+                          alt={item.name} 
+                          className="w-48 h-32 object-cover rounded-lg border"
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => removeDemoImage(index)}
+                          className="absolute top-2 right-2"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="w-48 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500">No menu image</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadDemoImage(file, index);
+                        }}
+                        className="hidden"
+                        id={`demo-image-upload-${index}`}
+                        disabled={uploading === `demo-${index}`}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => document.getElementById(`demo-image-upload-${index}`)?.click()}
+                        disabled={uploading === `demo-${index}`}
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        {uploading === `demo-${index}` ? 'Uploading...' : 'Upload Menu Image'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
