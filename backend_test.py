@@ -46,15 +46,23 @@ class TestHomepageAPI(unittest.TestCase):
         hero = content["hero"]
         self.assertIn("headline", hero, "Hero missing 'headline' field")
         self.assertIn("subheadline", hero, "Hero missing 'subheadline' field")
+        self.assertIn("hero_image_base64", hero, "Hero missing 'hero_image_base64' field")
         
         # Check features structure
         features = content["features"]
         self.assertTrue(isinstance(features, list), "Features should be a list")
+        self.assertEqual(len(features), 3, "Features should have exactly 3 items")
         if features:
             feature = features[0]
             self.assertIn("icon", feature, "Feature missing 'icon' field")
             self.assertIn("title", feature, "Feature missing 'title' field")
             self.assertIn("description", feature, "Feature missing 'description' field")
+            
+            # Check for the specific feature titles
+            feature_titles = [f["title"] for f in features]
+            self.assertIn("Real Food Scans", feature_titles, "Missing 'Real Food Scans' feature")
+            self.assertIn("No App Needed", feature_titles, "Missing 'No App Needed' feature")
+            self.assertIn("Live Menu Updates", feature_titles, "Missing 'Live Menu Updates' feature")
         
         # Check testimonials structure
         testimonials = content["testimonials"]
@@ -73,6 +81,7 @@ class TestHomepageAPI(unittest.TestCase):
             self.assertIn("name", demo_item, "Demo item missing 'name' field")
             self.assertIn("description", demo_item, "Demo item missing 'description' field")
             self.assertIn("emoji", demo_item, "Demo item missing 'emoji' field")
+            self.assertIn("image_base64", demo_item, "Demo item missing 'image_base64' field")
 
     def test_update_homepage_content(self):
         """Test PUT /api/homepage/content endpoint"""
