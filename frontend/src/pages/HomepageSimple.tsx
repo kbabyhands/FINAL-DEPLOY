@@ -198,19 +198,19 @@ const HomePage = () => {
   }
 
   return (
-    <div className="bg-white text-gray-900 min-h-screen font-sans">
-      {/* Header - Exact Threekit Layout */}
-      <header className="flex justify-between items-center px-8 py-6 bg-white">
-        <h1 className="text-3xl font-bold text-gray-900">TAST3D</h1>
+    <div className="bg-gray-900 text-white min-h-screen font-sans">
+      {/* Header - Dark Theme */}
+      <header className="flex justify-between items-center px-8 py-6 bg-gray-900 border-b border-gray-800">
+        <h1 className="text-3xl font-bold text-white">TAST3D</h1>
         <div className="flex items-center space-x-4">
           <button 
-            className="border border-gray-400 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            className="border border-gray-600 text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
             onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
           >
             Request Demo
           </button>
           <button 
-            className="border border-gray-400 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            className="border border-gray-600 text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
             onClick={() => {
               localStorage.setItem('isAdmin', 'true');
               window.location.href = "/admin";
@@ -221,39 +221,39 @@ const HomePage = () => {
         </div>
       </header>
 
-      {/* Hero Section - Exact Threekit Layout */}
-      <section className="text-center px-8 py-16 bg-gray-100 min-h-[80vh] flex flex-col justify-center">
+      {/* Hero Section - Dark Theme */}
+      <section className="text-center px-8 py-16 bg-gray-900 min-h-[80vh] flex flex-col justify-center">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 leading-tight">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white leading-tight">
             {homepageContent.hero.headline}
           </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
             {homepageContent.hero.subheadline}
           </p>
           
           <div className="flex justify-center gap-6 mb-16">
             <button 
-              className="border border-gray-400 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               onClick={() => window.location.href = homepageContent.hero.primary_cta_url}
             >
               {homepageContent.hero.primary_cta_text}
             </button>
             <button 
-              className="border border-gray-400 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="border border-gray-600 text-gray-300 px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
               onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
             >
               {homepageContent.hero.secondary_cta_text}
             </button>
           </div>
 
-          {/* Hero Image Upload Area - Exact Threekit Layout */}
+          {/* Hero Image Upload Area - Dark Theme */}
           <div className="max-w-2xl mx-auto mb-16">
             {homepageContent.hero.hero_image_base64 ? (
               <div className="relative">
                 <img 
                   src={homepageContent.hero.hero_image_base64} 
                   alt="Hero Food" 
-                  className="w-full h-80 object-cover rounded-2xl border-2 border-gray-300"
+                  className="w-full h-80 object-cover rounded-2xl border-2 border-gray-700"
                 />
                 {isAdmin && (
                   <button
@@ -265,7 +265,7 @@ const HomePage = () => {
                 )}
               </div>
             ) : (
-              <div className="w-full h-80 border-2 border-gray-300 border-dashed rounded-2xl flex items-center justify-center bg-gray-50">
+              <div className="w-full h-80 border-2 border-gray-700 border-dashed rounded-2xl flex items-center justify-center bg-gray-800">
                 {isAdmin ? (
                   <label className="cursor-pointer flex flex-col items-center">
                     <input
@@ -275,15 +275,15 @@ const HomePage = () => {
                       className="hidden"
                       disabled={uploading}
                     />
-                    <div className="text-6xl text-gray-400 mb-4">✕</div>
-                    <p className="text-gray-500">
+                    <div className="text-6xl text-gray-500 mb-4">✕</div>
+                    <p className="text-gray-400">
                       {uploading ? 'Uploading...' : 'Click to upload splat file or image'}
                     </p>
                   </label>
                 ) : (
                   <div className="text-center">
-                    <div className="text-6xl text-gray-400 mb-4">✕</div>
-                    <p className="text-gray-500">3D Food Model Preview</p>
+                    <div className="text-6xl text-gray-500 mb-4">✕</div>
+                    <p className="text-gray-400">3D Food Model Preview</p>
                   </div>
                 )}
               </div>
@@ -292,61 +292,61 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Features Section - Exact Threekit Layout */}
-      <section className="py-12 bg-white">
+      {/* Features Section - Dark Theme */}
+      <section className="py-12 bg-gray-800">
         <div className="max-w-6xl mx-auto px-8">
           <div className="grid grid-cols-3 gap-8 text-center">
             {homepageContent.features.map((feature, index) => (
               <div key={index}>
-                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center border border-gray-300">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center border border-gray-600">
                   {getFeatureIcon(feature.icon)}
                 </div>
-                <h3 className="font-semibold text-gray-900">{feature.title}</h3>
-                <p className="text-sm text-gray-600 mt-2">{feature.description}</p>
+                <h3 className="font-semibold text-white">{feature.title}</h3>
+                <p className="text-sm text-gray-300 mt-2">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works - Exact Threekit Layout */}
-      <section className="py-16 bg-gray-100">
+      {/* How It Works - Dark Theme */}
+      <section className="py-16 bg-gray-900">
         <div className="max-w-6xl mx-auto px-8 text-center">
-          <h2 className="text-4xl font-bold mb-16 text-gray-900">How It Works</h2>
+          <h2 className="text-4xl font-bold mb-16 text-white">How It Works</h2>
           
           <div className="flex justify-center items-center space-x-12">
             <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-lg flex items-center justify-center border border-gray-300 shadow-sm">
-                <Scan className="w-10 h-10 text-gray-600" />
+              <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
+                <Scan className="w-10 h-10 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">Scan</h3>
+              <h3 className="font-semibold text-white">Scan</h3>
             </div>
             
-            <div className="text-gray-400 text-2xl">→</div>
+            <div className="text-gray-500 text-2xl">→</div>
             
             <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-lg flex items-center justify-center border border-gray-300 shadow-sm">
-                <CheckCircle className="w-10 h-10 text-gray-600" />
+              <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
+                <CheckCircle className="w-10 h-10 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">Approve</h3>
+              <h3 className="font-semibold text-white">Approve</h3>
             </div>
             
-            <div className="text-gray-400 text-2xl">→</div>
+            <div className="text-gray-500 text-2xl">→</div>
             
             <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-lg flex items-center justify-center border border-gray-300 shadow-sm">
-                <Monitor className="w-10 h-10 text-gray-600" />
+              <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
+                <Monitor className="w-10 h-10 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">Display</h3>
+              <h3 className="font-semibold text-white">Display</h3>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Live 3D Menu Demo - Carousel */}
-      <section className="py-16 bg-white">
+      {/* Live 3D Menu Demo - Carousel Dark Theme */}
+      <section className="py-16 bg-gray-800">
         <div className="max-w-6xl mx-auto px-8 text-center">
-          <h2 className="text-4xl font-bold mb-16 text-gray-900">Live 3D Menu Demo</h2>
+          <h2 className="text-4xl font-bold mb-16 text-white">Live 3D Menu Demo</h2>
           
           <div className="relative">
             {/* Carousel Container */}
@@ -363,7 +363,7 @@ const HomePage = () => {
                           <img 
                             src={item.image_base64} 
                             alt={item.name}
-                            className="w-full h-64 object-cover rounded-lg border-2 border-gray-300 mb-4"
+                            className="w-full h-64 object-cover rounded-lg border-2 border-gray-600 mb-4"
                           />
                           {isAdmin && (
                             <button
@@ -375,7 +375,7 @@ const HomePage = () => {
                           )}
                         </div>
                       ) : (
-                        <div className="w-full h-64 border-2 border-gray-300 border-dashed rounded-lg flex items-center justify-center bg-gray-50 mb-4">
+                        <div className="w-full h-64 border-2 border-gray-600 border-dashed rounded-lg flex items-center justify-center bg-gray-700 mb-4">
                           {isAdmin ? (
                             <label className="cursor-pointer flex flex-col items-center">
                               <input
@@ -385,52 +385,52 @@ const HomePage = () => {
                                 className="hidden"
                                 disabled={uploading}
                               />
-                              <div className="text-4xl text-gray-400 mb-2">✕</div>
-                              <p className="text-gray-500 text-sm">
+                              <div className="text-4xl text-gray-500 mb-2">✕</div>
+                              <p className="text-gray-400 text-sm">
                                 {uploading ? 'Uploading...' : 'Upload image'}
                               </p>
                             </label>
                           ) : (
                             <div className="text-center">
-                              <div className="text-4xl text-gray-400 mb-2">✕</div>
-                              <p className="text-gray-500 text-sm">Menu Item Preview</p>
+                              <div className="text-4xl text-gray-500 mb-2">✕</div>
+                              <p className="text-gray-400 text-sm">Menu Item Preview</p>
                             </div>
                           )}
                         </div>
                       )}
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.name}</h3>
-                      <p className="text-gray-600">{item.description}</p>
+                      <h3 className="text-xl font-semibold text-white mb-2">{item.name}</h3>
+                      <p className="text-gray-300">{item.description}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Navigation Buttons */}
+            {/* Navigation Buttons - Dark Theme */}
             <button
               onClick={prevSlide}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-700 shadow-lg rounded-full p-3 hover:bg-gray-600 transition-colors border border-gray-600"
               disabled={homepageContent?.demo_items?.length <= 1}
             >
-              <ChevronLeft className="w-6 h-6 text-gray-600" />
+              <ChevronLeft className="w-6 h-6 text-white" />
             </button>
             
             <button
               onClick={nextSlide}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-700 shadow-lg rounded-full p-3 hover:bg-gray-600 transition-colors border border-gray-600"
               disabled={homepageContent?.demo_items?.length <= 1}
             >
-              <ChevronRight className="w-6 h-6 text-gray-600" />
+              <ChevronRight className="w-6 h-6 text-white" />
             </button>
 
-            {/* Dots Indicator */}
+            {/* Dots Indicator - Dark Theme */}
             <div className="flex justify-center mt-8 space-x-2">
               {homepageContent?.demo_items?.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    index === currentSlide ? 'bg-gray-800' : 'bg-gray-300'
+                    index === currentSlide ? 'bg-blue-500' : 'bg-gray-600'
                   }`}
                 />
               ))}
@@ -439,39 +439,39 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Testimonials - Exact Threekit Layout */}
-      <section className="py-16 bg-gray-100">
+      {/* Testimonials - Dark Theme */}
+      <section className="py-16 bg-gray-900">
         <div className="max-w-6xl mx-auto px-8 text-center">
-          <h2 className="text-4xl font-bold mb-16 text-gray-900">What Our Customers Say</h2>
+          <h2 className="text-4xl font-bold mb-16 text-white">What Our Customers Say</h2>
           
           <div className="grid grid-cols-2 gap-8">
             {homepageContent.testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white p-8 rounded-lg border border-gray-200">
+              <div key={index} className="bg-gray-800 p-8 rounded-lg border border-gray-700">
                 <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gray-300 rounded-full mr-4 flex items-center justify-center">
-                    <span className="text-gray-600 font-semibold">{testimonial.name.charAt(0)}</span>
+                  <div className="w-12 h-12 bg-gray-600 rounded-full mr-4 flex items-center justify-center">
+                    <span className="text-white font-semibold">{testimonial.name.charAt(0)}</span>
                   </div>
                   <div className="text-left">
-                    <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                    <div className="text-sm text-gray-600">{testimonial.title}</div>
+                    <div className="font-semibold text-white">{testimonial.name}</div>
+                    <div className="text-sm text-gray-400">{testimonial.title}</div>
                   </div>
                 </div>
-                <p className="text-gray-700 text-left">"{testimonial.quote}"</p>
+                <p className="text-gray-300 text-left">"{testimonial.quote}"</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Admin Editor Notice */}
+      {/* Admin Editor Notice - Dark Theme */}
       {isAdmin && (
         <div className="fixed bottom-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
           <p className="text-sm font-medium">Admin Only: Homepage Editor Active</p>
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      {/* Footer - Dark Theme */}
+      <footer className="bg-black text-white py-12">
         <div className="max-w-6xl mx-auto px-8 text-center">
           <p className="text-gray-400">© {new Date().getFullYear()} TAST3D. All rights reserved.</p>
         </div>
