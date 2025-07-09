@@ -64,6 +64,7 @@ const HomepageEditor = () => {
   const [content, setContent] = useState<HomepageContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
