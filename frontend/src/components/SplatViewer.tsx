@@ -44,6 +44,19 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
       });
     };
 
+    const loadPLYLoader = async () => {
+      // Load PLYLoader from Three.js examples
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.174.0/examples/js/loaders/PLYLoader.js';
+        script.onload = () => {
+          resolve((window as any).THREE.PLYLoader);
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    };
+
     const initializeViewer = async () => {
       if (!mountRef.current) return;
 
@@ -53,7 +66,6 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
 
         // Load THREE.js
         const THREE = await loadThreeJS();
-
         if (!mounted || !THREE) return;
 
         // Create scene
@@ -85,51 +97,79 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         sceneRef.current = scene;
         rendererRef.current = renderer;
 
-        // Create an attractive 3D object representing food/menu
-        const group = new THREE.Group();
-
-        // Main sphere (represents 3D food model)
-        const sphereGeometry = new THREE.SphereGeometry(0.8, 32, 32);
-        const sphereMaterial = new THREE.MeshPhongMaterial({ 
-          color: 0x4f46e5,
-          transparent: true,
-          opacity: 0.8,
-          shininess: 100
-        });
-        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        group.add(sphere);
-        
-        // Wireframe overlay for tech aesthetic
-        const wireframeGeometry = new THREE.SphereGeometry(0.82, 16, 16);
-        const wireframeMaterial = new THREE.MeshBasicMaterial({ 
-          color: 0x60a5fa, 
-          wireframe: true,
-          transparent: true,
-          opacity: 0.4
-        });
-        const wireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
-        group.add(wireframe);
-
-        // Add some floating particles around the sphere
-        const particleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
-        const particleMaterial = new THREE.MeshBasicMaterial({ 
-          color: 0x60a5fa,
-          transparent: true,
-          opacity: 0.6
-        });
-
-        for (let i = 0; i < 20; i++) {
-          const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-          particle.position.set(
-            (Math.random() - 0.5) * 3,
-            (Math.random() - 0.5) * 3,
-            (Math.random() - 0.5) * 3
-          );
-          group.add(particle);
+        // Check if we have a PLY file to load
+        if (splatUrl && (splatUrl.includes('.ply') || splatUrl.includes('application/ply'))) {
+          try {
+            // Load PLYLoader
+            await loadPLYLoader();
+            const PLYLoader = (window as any).THREE.PLYLoader;
+            
+            if (PLYLoader) {
+              const loader = new PLYLoader();
+              
+              // For base64 data, we need to convert it to a blob URL
+              let fileUrl = splatUrl;
+              if (splatUrl.startsWith('data:')) {
+                const response = await fetch(splatUrl);
+                const blob = await response.blob();
+                fileUrl = URL.createObjectURL(blob);
+              }
+              
+              loader.load(
+                fileUrl,
+                (geometry: any) => {
+                  // Create material for the PLY mesh
+                  const material = new THREE.MeshPhongMaterial({ 
+                    color: 0x4f46e5,
+                    transparent: true,
+                    opacity: 0.9,
+                    shininess: 100,
+                    side: THREE.DoubleSide
+                  });
+                  
+                  // Create mesh from geometry
+                  const mesh = new THREE.Mesh(geometry, material);
+                  
+                  // Center and scale the model
+                  geometry.computeBoundingBox();
+                  const box = geometry.boundingBox;
+                  const center = box.getCenter(new THREE.Vector3());
+                  geometry.translate(-center.x, -center.y, -center.z);
+                  
+                  // Scale to fit in view
+                  const size = box.getSize(new THREE.Vector3());
+                  const maxDim = Math.max(size.x, size.y, size.z);
+                  const scale = 1.5 / maxDim;
+                  mesh.scale.multiplyScalar(scale);
+                  
+                  scene.add(mesh);
+                  splatMeshRef.current = mesh;
+                  
+                  // Clean up blob URL if created
+                  if (fileUrl !== splatUrl) {
+                    URL.revokeObjectURL(fileUrl);
+                  }
+                },
+                (progress: any) => {
+                  console.log('PLY loading progress:', progress);
+                },
+                (error: any) => {
+                  console.error('PLY loading error:', error);
+                  // Fall back to default 3D object
+                  createDefaultScene(THREE, scene);
+                }
+              );
+            } else {
+              createDefaultScene(THREE, scene);
+            }
+          } catch (plyError) {
+            console.error('PLY loader failed:', plyError);
+            createDefaultScene(THREE, scene);
+          }
+        } else {
+          // Create default scene for non-PLY files or no file
+          createDefaultScene(THREE, scene);
         }
-
-        scene.add(group);
-        splatMeshRef.current = group;
 
         // Animation loop
         const animate = () => {
@@ -141,13 +181,15 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             splatMeshRef.current.rotation.y += 0.01;
             splatMeshRef.current.rotation.x += 0.005;
             
-            // Animate particles
-            splatMeshRef.current.children.forEach((child: any, index: number) => {
-              if (index > 1) { // Skip sphere and wireframe
-                child.rotation.x += 0.02;
-                child.rotation.y += 0.01;
-              }
-            });
+            // If it's a group with particles, animate them too
+            if (splatMeshRef.current.children) {
+              splatMeshRef.current.children.forEach((child: any, index: number) => {
+                if (index > 1) { // Skip sphere and wireframe
+                  child.rotation.x += 0.02;
+                  child.rotation.y += 0.01;
+                }
+              });
+            }
           }
           
           renderer.render(scene, camera);
@@ -161,6 +203,54 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         setError('Failed to initialize 3D viewer');
         setIsLoading(false);
       }
+    };
+
+    // Helper function to create default scene
+    const createDefaultScene = (THREE: any, scene: any) => {
+      const group = new THREE.Group();
+
+      // Main sphere (represents 3D food model)
+      const sphereGeometry = new THREE.SphereGeometry(0.8, 32, 32);
+      const sphereMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0x4f46e5,
+        transparent: true,
+        opacity: 0.8,
+        shininess: 100
+      });
+      const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+      group.add(sphere);
+      
+      // Wireframe overlay for tech aesthetic
+      const wireframeGeometry = new THREE.SphereGeometry(0.82, 16, 16);
+      const wireframeMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x60a5fa, 
+        wireframe: true,
+        transparent: true,
+        opacity: 0.4
+      });
+      const wireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
+      group.add(wireframe);
+
+      // Add some floating particles around the sphere
+      const particleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
+      const particleMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x60a5fa,
+        transparent: true,
+        opacity: 0.6
+      });
+
+      for (let i = 0; i < 20; i++) {
+        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+        particle.position.set(
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3
+        );
+        group.add(particle);
+      }
+
+      scene.add(group);
+      splatMeshRef.current = group;
     };
 
     initializeViewer();
