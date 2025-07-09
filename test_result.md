@@ -287,7 +287,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/components/SplatViewer.tsx"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: true
     status_history:
