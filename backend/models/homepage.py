@@ -68,19 +68,22 @@ class HomepageContent(BaseModel):
     ])
     demo_items: List[HomepageDemoItem] = Field(default_factory=lambda: [
         HomepageDemoItem(
-            name="Cheeseburger",
-            description="Classic beef burger with cheese",
-            emoji="🍔"
+            name="Breakfast Menu",
+            description="Fresh morning selections and coffee",
+            emoji="🍳",
+            menu_link="/menu"
         ),
         HomepageDemoItem(
-            name="Caesar Salad",
-            description="Fresh romaine with parmesan",
-            emoji="🥗"
+            name="Lunch Menu",
+            description="Hearty midday meals and sandwiches",
+            emoji="🥪",
+            menu_link="/menu"
         ),
         HomepageDemoItem(
-            name="Chocolate Donut",
-            description="Glazed chocolate donut",
-            emoji="🍩"
+            name="Dinner Menu",
+            description="Premium evening dining experience",
+            emoji="🍽️",
+            menu_link="/menu"
         )
     ])
     updated_at: datetime = Field(default_factory=datetime.now)
