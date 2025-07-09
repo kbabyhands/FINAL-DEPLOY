@@ -713,7 +713,7 @@ const HomepageEditor = () => {
                 )}
                 
                 <p className="text-xs text-gray-500">
-                  Upload .ply or .splat files for 3D models. Regular images will show a placeholder 3D scene.
+                  Upload .ply or .splat files for 3D models (max 200MB). Regular images will show a placeholder 3D scene.
                 </p>
               </div>
             </div>
