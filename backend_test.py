@@ -3,8 +3,10 @@ import json
 import unittest
 import os
 import base64
+import time
 from datetime import datetime
 from io import BytesIO
+import random
 
 # Get the backend URL from the frontend .env file
 with open('/app/frontend/.env', 'r') as f:
