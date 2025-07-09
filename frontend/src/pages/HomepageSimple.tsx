@@ -459,7 +459,7 @@ const HomePage = () => {
                               Maximum file size: 200MB
                             </p>
                           </label>
-                        )}}
+                        )}
                       </div>
                     </div>
                   </div>
