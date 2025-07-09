@@ -139,15 +139,22 @@ async def upload_hero_image(
     current_user: dict = Depends(get_admin_user)
 ):
     """
-    Upload hero image for homepage (admin only).
+    Upload hero image/splat for homepage (admin only).
     """
     try:
         # Read file content
         file_content = await file.read()
         
-        # Convert to base64
-        base64_content = base64.b64encode(file_content).decode('utf-8')
-        data_url = f"data:{file.content_type};base64,{base64_content}"
+        # Determine if it's a splat file or regular image
+        if file.filename and file.filename.endswith('.splat'):
+            # For .splat files, we'll store them as base64 with a special prefix
+            base64_content = base64.b64encode(file_content).decode('utf-8')
+            data_url = f"data:application/splat;base64,{base64_content}"
+        else:
+            # For regular images, use the content type
+            content_type = file.content_type or 'image/jpeg'
+            base64_content = base64.b64encode(file_content).decode('utf-8')
+            data_url = f"data:{content_type};base64,{base64_content}"
         
         # Get existing content
         existing_content = await db.homepage_content.find_one({"id": "main"})
@@ -169,12 +176,13 @@ async def upload_hero_image(
             upsert=True
         )
         
-        return {"message": "Hero image uploaded successfully", "image_url": data_url}
+        file_type = "3D Splat Model" if file.filename and file.filename.endswith('.splat') else "Image"
+        return {"message": f"Hero {file_type.lower()} uploaded successfully", "image_url": data_url, "file_type": file_type}
         
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error uploading hero image: {str(e)}"
+            detail=f"Error uploading hero file: {str(e)}"
         )
 
 @router.post("/upload/demo/{index}")
