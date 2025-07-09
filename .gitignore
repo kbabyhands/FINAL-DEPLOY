@@ -78,8 +78,10 @@ agenthub/agents/youtube/db
 *.dylib
 
 # Large 3D model files (exceed GitHub's 100MB limit)
-uploads/*.ply
-uploads/*.splat
+uploads/
+uploads/*
+*.ply
+*.splat
 **/*.ply
 **/*.splat
 
