@@ -296,6 +296,19 @@ const HomepageEditor = () => {
 
   const uploadHeroImage = async (file: File) => {
     try {
+      // Check file size on frontend (200MB limit)
+      const MAX_SIZE = 200 * 1024 * 1024; // 200MB
+      const fileSizeMB = file.size / (1024 * 1024);
+      
+      if (file.size > MAX_SIZE) {
+        toast({
+          title: "File too large",
+          description: `File size (${fileSizeMB.toFixed(1)}MB) exceeds maximum allowed size of 200MB`,
+          variant: "destructive"
+        });
+        return;
+      }
+
       setUploading('hero');
       setUploadProgress({ ...uploadProgress, hero: 0 });
       
@@ -362,7 +375,7 @@ const HomepageEditor = () => {
 
       toast({
         title: "Hero model uploaded",
-        description: "The hero 3D model has been uploaded successfully!",
+        description: `The hero 3D model has been uploaded successfully! ${result.file_size || ''}`,
       });
     } catch (error) {
       toast({
