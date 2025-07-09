@@ -97,8 +97,7 @@ async def update_homepage_content(
 
 @router.post("/content/reset", response_model=HomepageContent)
 async def reset_homepage_content(
-    db: AsyncIOMotorDatabase = Depends(get_database),
-    current_user: dict = Depends(get_admin_user)
+    db: AsyncIOMotorDatabase = Depends(get_database)
 ):
     """
     Reset homepage content to default values.
