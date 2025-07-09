@@ -297,22 +297,43 @@ const HomepageEditor = () => {
   const uploadHeroImage = async (file: File) => {
     try {
       setUploading('hero');
+      setUploadProgress({ ...uploadProgress, hero: 0 });
+      
       const backendUrl = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${backendUrl}/api/homepage/upload/hero`, {
-        method: 'POST',
-        body: formData
+      // Create XMLHttpRequest to track upload progress
+      const xhr = new XMLHttpRequest();
+      
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          setUploadProgress(prev => ({ ...prev, hero: percentComplete }));
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to upload hero image');
-      }
+      // Handle completion
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error(`Upload failed: ${xhr.statusText}`));
+          }
+        };
+        
+        xhr.onerror = () => reject(new Error('Upload failed'));
+      });
 
-      const result = await response.json();
-      
-      if (content) {
+      // Send request
+      xhr.open('POST', `${backendUrl}/api/homepage/upload/hero`);
+      xhr.send(formData);
+
+      const result = await uploadPromise;
+
+      if (content && result) {
         setContent({
           ...content,
           hero: {
@@ -320,18 +341,26 @@ const HomepageEditor = () => {
             hero_image_base64: result.image_url
           }
         });
+        
+        setUploadProgress(prev => ({ ...prev, hero: 100 }));
+        
+        // Reset progress after delay
+        setTimeout(() => {
+          setUploadProgress(prev => ({ ...prev, hero: 0 }));
+        }, 2000);
       }
 
       toast({
-        title: "Hero image uploaded",
-        description: "The hero image has been uploaded successfully!",
+        title: "Hero model uploaded",
+        description: "The hero 3D model has been uploaded successfully!",
       });
     } catch (error) {
       toast({
-        title: "Error uploading hero image",
+        title: "Error uploading hero model",
         description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       });
+      setUploadProgress(prev => ({ ...prev, hero: 0 }));
     } finally {
       setUploading(null);
     }
