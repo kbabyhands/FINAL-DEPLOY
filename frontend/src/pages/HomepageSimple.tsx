@@ -403,9 +403,9 @@ const HomePage = () => {
                 {isAdmin && (
                   <button
                     onClick={removeHeroImage}
-                    className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors z-10"
+                    className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-red-500 text-white p-1 sm:p-2 rounded-full hover:bg-red-600 transition-colors z-10"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3 h-3 sm:w-4 sm:h-4" />
                   </button>
                 )}
               </div>
