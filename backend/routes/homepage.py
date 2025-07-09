@@ -131,3 +131,103 @@ async def preview_homepage_content(
     Get homepage content for preview (public endpoint).
     """
     return await get_homepage_content(db)
+
+@router.post("/upload/hero")
+async def upload_hero_image(
+    file: UploadFile = File(...),
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    current_user: dict = Depends(get_admin_user)
+):
+    """
+    Upload hero image for homepage (admin only).
+    """
+    try:
+        # Read file content
+        file_content = await file.read()
+        
+        # Convert to base64
+        base64_content = base64.b64encode(file_content).decode('utf-8')
+        data_url = f"data:{file.content_type};base64,{base64_content}"
+        
+        # Get existing content
+        existing_content = await db.homepage_content.find_one({"id": "main"})
+        
+        if existing_content:
+            current_content = HomepageContent(**existing_content)
+        else:
+            current_content = HomepageContent(id="main")
+        
+        # Update hero image
+        current_content.hero.hero_image_base64 = data_url
+        current_content.updated_at = datetime.now()
+        
+        # Save to database
+        content_dict = current_content.dict()
+        await db.homepage_content.update_one(
+            {"id": "main"},
+            {"$set": content_dict},
+            upsert=True
+        )
+        
+        return {"message": "Hero image uploaded successfully", "image_url": data_url}
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error uploading hero image: {str(e)}"
+        )
+
+@router.post("/upload/demo/{index}")
+async def upload_demo_image(
+    index: int,
+    file: UploadFile = File(...),
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    current_user: dict = Depends(get_admin_user)
+):
+    """
+    Upload demo image for homepage (admin only).
+    """
+    try:
+        # Validate index
+        if index < 0 or index > 2:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Demo image index must be between 0 and 2"
+            )
+        
+        # Read file content
+        file_content = await file.read()
+        
+        # Convert to base64
+        base64_content = base64.b64encode(file_content).decode('utf-8')
+        data_url = f"data:{file.content_type};base64,{base64_content}"
+        
+        # Get existing content
+        existing_content = await db.homepage_content.find_one({"id": "main"})
+        
+        if existing_content:
+            current_content = HomepageContent(**existing_content)
+        else:
+            current_content = HomepageContent(id="main")
+        
+        # Update demo image
+        if index < len(current_content.demo_items):
+            current_content.demo_items[index].image_base64 = data_url
+        
+        current_content.updated_at = datetime.now()
+        
+        # Save to database
+        content_dict = current_content.dict()
+        await db.homepage_content.update_one(
+            {"id": "main"},
+            {"$set": content_dict},
+            upsert=True
+        )
+        
+        return {"message": f"Demo image {index} uploaded successfully", "image_url": data_url}
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error uploading demo image: {str(e)}"
+        )
