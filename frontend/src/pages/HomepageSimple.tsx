@@ -330,6 +330,7 @@ const HomePage = () => {
                     width={640}
                     height={320}
                     autoRotate={true}
+                    enableControls={true}
                     className="mx-auto"
                   />
                 )}
