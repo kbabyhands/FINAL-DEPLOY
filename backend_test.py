@@ -206,9 +206,15 @@ class TestHomepageAPI(unittest.TestCase):
         
         # Check default values
         self.assertEqual(content["hero"]["headline"], "Bring Your Menu to Life in 3D", "Hero headline not reset to default")
-        self.assertEqual(len(content["features"]), 4, "Features not reset to default count")
+        self.assertEqual(len(content["features"]), 3, "Features not reset to default count")
         self.assertEqual(len(content["testimonials"]), 2, "Testimonials not reset to default count")
         self.assertEqual(len(content["demo_items"]), 3, "Demo items not reset to default count")
+        
+        # Check feature titles
+        feature_titles = [f["title"] for f in content["features"]]
+        self.assertIn("Real Food Scans", feature_titles, "Missing 'Real Food Scans' feature")
+        self.assertIn("No App Needed", feature_titles, "Missing 'No App Needed' feature")
+        self.assertIn("Live Menu Updates", feature_titles, "Missing 'Live Menu Updates' feature")
 
     def test_cors_headers(self):
         """Test CORS headers are present"""
