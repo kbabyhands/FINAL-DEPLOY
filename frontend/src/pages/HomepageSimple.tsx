@@ -114,6 +114,9 @@ const HomePage = () => {
     } catch (error) {
       console.error('Upload failed:', error);
       setUploadProgress(0);
+      
+      // Show error message to user
+      alert(`Upload failed: ${error.message || 'Unknown error occurred'}`);
     } finally {
       setUploading(false);
     }
