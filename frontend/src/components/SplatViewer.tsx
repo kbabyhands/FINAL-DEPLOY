@@ -133,9 +133,9 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             // Very slow Y-axis rotation (main rotation)
             splatMeshRef.current.rotation.y += 0.003;
             
-            // Subtle circular movement on X-axis using sine wave
+            // Subtle circular movement on X-axis using sine wave (keeping it upright)
             const time = Date.now() * 0.001; // Convert to seconds
-            splatMeshRef.current.rotation.x = Math.sin(time * 0.5) * 0.1; // Gentle oscillation
+            splatMeshRef.current.rotation.x = Math.sin(time * 0.5) * 0.05; // Smaller amplitude to prevent flipping
             
             // If it's a group with particles, animate them more subtly too
             if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children) {
