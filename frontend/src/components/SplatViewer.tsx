@@ -88,17 +88,27 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         sceneRef.current = scene;
         rendererRef.current = renderer;
 
-        // Add orbit controls for manual spinning
+        // Add orbit controls for full 360° rotation
         if (enableControls) {
           const controls = new OrbitControls(camera, renderer.domElement);
+          
+          // Remove all constraints for free rotation
           controls.enableDamping = true; // Smooth controls
           controls.dampingFactor = 0.05;
           controls.screenSpacePanning = false;
-          controls.minDistance = 1;
-          controls.maxDistance = 10;
-          controls.maxPolarAngle = Math.PI; // Allow full rotation
-          controls.autoRotate = autoRotate;
-          controls.autoRotateSpeed = 0.5; // Slow auto rotation
+          
+          // Allow unlimited rotation in all directions
+          controls.minDistance = 0.5;
+          controls.maxDistance = 20;
+          controls.minPolarAngle = 0; // Allow full vertical rotation
+          controls.maxPolarAngle = Math.PI; // Allow full vertical rotation
+          controls.minAzimuthAngle = -Infinity; // Allow unlimited horizontal rotation
+          controls.maxAzimuthAngle = Infinity; // Allow unlimited horizontal rotation
+          
+          // Disable auto-rotate from controls to prevent conflicts
+          controls.autoRotate = false;
+          controls.autoRotateSpeed = 0;
+          
           controlsRef.current = controls;
         }
 
