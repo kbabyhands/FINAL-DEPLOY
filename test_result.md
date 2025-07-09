@@ -223,6 +223,18 @@ frontend:
         -agent: "main"
         -comment: "Updated homepage to use backend API calls instead of localStorage. Integrated GET /api/homepage/content for loading content and PUT /api/homepage/content for updates. Added proper error handling and loading states."
 
+  - task: "Admin-Only File Upload Functionality"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/HomepageSimple.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "main"
+        -comment: "Implemented file upload functionality for hero image (.splat and image files) and 3 demo images (images only). Upload areas are visible only to admin users. Uses FormData for proper file upload to backend endpoints."
+
   - task: "Live 3D Menu Demo Carousel"
     implemented: true
     working: false
