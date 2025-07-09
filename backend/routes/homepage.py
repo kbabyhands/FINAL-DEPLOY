@@ -139,22 +139,29 @@ async def upload_hero_image(
     current_user: dict = Depends(get_admin_user)
 ):
     """
-    Upload hero image/splat for homepage (admin only).
+    Upload hero image/splat/ply for homepage (admin only).
     """
     try:
         # Read file content
         file_content = await file.read()
         
-        # Determine if it's a splat file or regular image
+        # Determine file type and set appropriate MIME type
         if file.filename and file.filename.endswith('.splat'):
-            # For .splat files, we'll store them as base64 with a special prefix
+            # For .splat files
             base64_content = base64.b64encode(file_content).decode('utf-8')
             data_url = f"data:application/splat;base64,{base64_content}"
+            file_type = "3D Splat Model"
+        elif file.filename and file.filename.endswith('.ply'):
+            # For .ply files (3D mesh/point cloud)
+            base64_content = base64.b64encode(file_content).decode('utf-8')
+            data_url = f"data:application/ply;base64,{base64_content}"
+            file_type = "3D PLY Model"
         else:
-            # For regular images, use the content type
+            # For regular images
             content_type = file.content_type or 'image/jpeg'
             base64_content = base64.b64encode(file_content).decode('utf-8')
             data_url = f"data:{content_type};base64,{base64_content}"
+            file_type = "Image"
         
         # Get existing content
         existing_content = await db.homepage_content.find_one({"id": "main"})
@@ -176,7 +183,6 @@ async def upload_hero_image(
             upsert=True
         )
         
-        file_type = "3D Splat Model" if file.filename and file.filename.endswith('.splat') else "Image"
         return {"message": f"Hero {file_type.lower()} uploaded successfully", "image_url": data_url, "file_type": file_type}
         
     except Exception as e:
