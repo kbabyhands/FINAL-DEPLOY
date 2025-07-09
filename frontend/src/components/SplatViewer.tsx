@@ -132,33 +132,51 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             setLoadingStep('Loading PLY file...');
             
             // Load PLYLoader
-            await loadPLYLoader();
-            const PLYLoader = (window as any).THREE.PLYLoader;
+            const PLYLoader = await loadPLYLoader();
             
-            if (PLYLoader) {
-              const loader = new PLYLoader();
-              
-              // Construct the full URL for file serving
-              let fileUrl = splatUrl;
-              if (splatUrl.startsWith('/uploads/')) {
-                const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
-                fileUrl = `${BACKEND_URL}/api/homepage${splatUrl}`;
-                console.log('Loading PLY from URL:', fileUrl);
-              } else if (splatUrl.startsWith('data:')) {
-                // For base64 data, convert to blob URL
-                const response = await fetch(splatUrl);
-                const blob = await response.blob();
-                fileUrl = URL.createObjectURL(blob);
-                console.log('Loading PLY from blob URL');
+            if (!PLYLoader) {
+              throw new Error('PLYLoader not available');
+            }
+            
+            const loader = new PLYLoader();
+            
+            // Construct the full URL for file serving
+            let fileUrl = splatUrl;
+            if (splatUrl.startsWith('/uploads/')) {
+              const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+              fileUrl = `${BACKEND_URL}/api/homepage${splatUrl}`;
+              console.log('Loading PLY from URL:', fileUrl);
+            } else if (splatUrl.startsWith('data:')) {
+              // For base64 data, convert to blob URL
+              const response = await fetch(splatUrl);
+              const blob = await response.blob();
+              fileUrl = URL.createObjectURL(blob);
+              console.log('Loading PLY from blob URL');
+            }
+            
+            setLoadingStep('Parsing PLY geometry...');
+            
+            // Test if the file URL is accessible
+            try {
+              const testResponse = await fetch(fileUrl, { method: 'HEAD' });
+              if (!testResponse.ok) {
+                throw new Error(`File not accessible: ${testResponse.status} ${testResponse.statusText}`);
               }
-              
-              setLoadingStep('Parsing PLY geometry...');
-              
-              loader.load(
-                fileUrl,
-                (geometry: any) => {
-                  console.log('PLY loaded successfully', geometry);
-                  setLoadingStep('Creating 3D mesh...');
+            } catch (fetchError) {
+              throw new Error(`File access failed: ${fetchError.message}`);
+            }
+            
+            loader.load(
+              fileUrl,
+              (geometry: any) => {
+                console.log('PLY loaded successfully', geometry);
+                setLoadingStep('Creating 3D mesh...');
+                
+                try {
+                  // Verify geometry is valid
+                  if (!geometry || !geometry.attributes) {
+                    throw new Error('Invalid geometry data received');
+                  }
                   
                   // Create material for the PLY mesh
                   const material = new THREE.MeshPhongMaterial({ 
@@ -175,39 +193,43 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
                   // Center and scale the model
                   geometry.computeBoundingBox();
                   const box = geometry.boundingBox;
-                  const center = box.getCenter(new THREE.Vector3());
-                  geometry.translate(-center.x, -center.y, -center.z);
                   
-                  // Scale to fit in view
-                  const size = box.getSize(new THREE.Vector3());
-                  const maxDim = Math.max(size.x, size.y, size.z);
-                  const scale = 1.5 / maxDim;
-                  mesh.scale.multiplyScalar(scale);
+                  if (box) {
+                    const center = box.getCenter(new THREE.Vector3());
+                    geometry.translate(-center.x, -center.y, -center.z);
+                    
+                    // Scale to fit in view
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 1.5 / maxDim;
+                    mesh.scale.multiplyScalar(scale);
+                  }
                   
                   scene.add(mesh);
                   splatMeshRef.current = mesh;
                   
                   setLoadingStep('Complete!');
+                  console.log('PLY mesh added to scene successfully');
                   
-                  // Clean up blob URL if created
-                  if (fileUrl !== splatUrl && fileUrl.startsWith('blob:')) {
-                    URL.revokeObjectURL(fileUrl);
-                  }
-                },
-                (progress: any) => {
-                  console.log('PLY loading progress:', progress);
-                  setLoadingStep('Loading PLY file...');
-                },
-                (error: any) => {
-                  console.error('PLY loading error:', error);
-                  setError(`PLY loading failed: ${error.message || 'Unknown error'}`);
-                  // Fall back to default 3D object
-                  createDefaultScene(THREE, scene);
+                } catch (meshError) {
+                  console.error('Mesh creation error:', meshError);
+                  throw new Error(`Mesh creation failed: ${meshError.message}`);
                 }
-              );
-            } else {
-              throw new Error('PLYLoader not available');
-            }
+                
+                // Clean up blob URL if created
+                if (fileUrl !== splatUrl && fileUrl.startsWith('blob:')) {
+                  URL.revokeObjectURL(fileUrl);
+                }
+              },
+              (progress: any) => {
+                console.log('PLY loading progress:', progress);
+                setLoadingStep('Loading PLY file...');
+              },
+              (error: any) => {
+                console.error('PLY loading error:', error);
+                throw new Error(`PLY loading failed: ${error.message || 'Unknown PLY error'}`);
+              }
+            );
           } catch (plyError) {
             console.error('PLY setup failed:', plyError);
             setError(`PLY setup failed: ${plyError.message || 'Unknown error'}`);
