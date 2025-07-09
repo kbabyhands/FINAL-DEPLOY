@@ -653,7 +653,7 @@ const HomePage = () => {
       </section>
 
       {/* Testimonials - Dark Theme */}
-      <section className="py-16 bg-gray-900">
+      <section className="py-16 bg-gray-900 relative z-10">
         <div className="max-w-6xl mx-auto px-8 text-center">
           <h2 className="text-4xl font-bold mb-16 text-white">What Our Customers Say</h2>
           
