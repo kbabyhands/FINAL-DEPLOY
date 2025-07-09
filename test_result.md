@@ -297,6 +297,9 @@ frontend:
         -working: false
         -agent: "main"
         -comment: "Debugging THREE.js initialization issues. Fixed backend file serving to support HEAD requests (405 Method Not Allowed error). Improved THREE.js and PLYLoader loading with better error handling, increased timeouts, and more robust object verification. Changed from HEAD to GET request for file accessibility testing. Added detailed loading steps and error messages to help debug the exact failure point."
+        -working: false
+        -agent: "main"
+        -comment: "Completely rewrote SplatViewer to use proper SparkJS integration. Issues were caused by using THREE.js PLYLoader instead of SparkJS SplatMesh. Fixed by: 1) Using import maps for ES modules, 2) Proper SparkJS SplatMesh import from '@sparkjsdev/spark', 3) Support for .ply, .splat, .spz, and .ksplat formats, 4) Correct SparkJS initialization pattern with dynamic imports, 5) Following SparkJS documentation for proper module loading."
 
   - task: "Upload Progress Bar Integration"
     implemented: true
