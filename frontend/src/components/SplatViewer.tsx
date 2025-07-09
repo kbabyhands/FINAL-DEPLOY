@@ -161,10 +161,9 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
               halfFloat: true,
             });
             
-            // Try different rotation combinations to fix orientation
+            // Fix orientation: Rotate 180 degrees around X-axis to make it upright
             splatMesh.position.set(0, 0, 0);
-            splatMesh.rotation.x = Math.PI; // 180 degrees around X
-            splatMesh.rotation.z = Math.PI; // Also try Z-axis rotation
+            splatMesh.rotation.x = Math.PI; // 180 degrees around X-axis only
             splatMesh.scale.set(1, 1, 1);
             
             // Add to scene
