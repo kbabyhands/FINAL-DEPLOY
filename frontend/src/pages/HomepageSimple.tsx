@@ -414,28 +414,28 @@ const HomePage = () => {
                 {isAdmin ? (
                   <div className="relative">
                     <SplatViewer 
-                      width={640}
-                      height={320}
+                      width={Math.min(640, window.innerWidth - 32)}
+                      height={Math.min(320, (window.innerWidth - 32) * 0.5)}
                       autoRotate={true}
                       enableControls={true}
-                      className="mx-auto"
+                      className="mx-auto w-full max-w-full"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
-                      <div className="text-center w-full max-w-md mx-auto px-6">
+                      <div className="text-center w-full max-w-md mx-auto px-4 sm:px-6">
                         {uploading ? (
                           <div className="space-y-4">
-                            <div className="text-6xl text-white mb-4">📤</div>
-                            <p className="text-white text-center mb-4">
+                            <div className="text-4xl sm:text-6xl text-white mb-4">📤</div>
+                            <p className="text-white text-center mb-4 text-sm sm:text-base">
                               Uploading 3D Model...
                             </p>
                             {/* Progress Bar */}
-                            <div className="w-full bg-gray-700 rounded-full h-3 mb-2">
+                            <div className="w-full bg-gray-700 rounded-full h-2 sm:h-3 mb-2">
                               <div 
-                                className="bg-blue-500 h-3 rounded-full transition-all duration-300 ease-out"
+                                className="bg-blue-500 h-2 sm:h-3 rounded-full transition-all duration-300 ease-out"
                                 style={{ width: `${uploadProgress}%` }}
                               ></div>
                             </div>
-                            <p className="text-gray-300 text-sm">
+                            <p className="text-gray-300 text-xs sm:text-sm">
                               {Math.round(uploadProgress)}% complete
                             </p>
                           </div>
@@ -448,18 +448,18 @@ const HomePage = () => {
                               className="hidden"
                               disabled={uploading}
                             />
-                            <div className="text-6xl text-white mb-4">🎯</div>
-                            <p className="text-white text-center">
+                            <div className="text-4xl sm:text-6xl text-white mb-4">🎯</div>
+                            <p className="text-white text-center text-sm sm:text-base">
                               Click to upload .ply or .splat file
                             </p>
-                            <p className="text-gray-300 text-sm mt-2">
+                            <p className="text-gray-300 text-xs sm:text-sm mt-2">
                               Upload 3D models (.ply, .splat) for interactive preview
                             </p>
                             <p className="text-gray-400 text-xs mt-1">
                               Maximum file size: 200MB
                             </p>
                           </label>
-                        )}
+                        )}}
                       </div>
                     </div>
                   </div>
