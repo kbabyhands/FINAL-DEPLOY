@@ -477,55 +477,57 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Features Section - Dark Theme */}
-      <section className="py-12 bg-gray-800/85 backdrop-blur-sm relative z-10">
-        <div className="max-w-6xl mx-auto px-8">
-          <div className="grid grid-cols-3 gap-8 text-center">
+      {/* Features Section - Mobile Responsive */}
+      <section className="py-8 sm:py-12 bg-gray-800/85 backdrop-blur-sm relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center">
             {homepageContent.features.map((feature, index) => (
-              <div key={index}>
-                <div className="w-16 h-16 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center border border-gray-600">
+              <div key={index} className="mb-6 sm:mb-0">
+                <div className="w-12 sm:w-16 h-12 sm:h-16 mx-auto mb-3 sm:mb-4 bg-gray-700 rounded-full flex items-center justify-center border border-gray-600">
                   {getFeatureIcon(feature.icon)}
                 </div>
-                <h3 className="font-semibold text-white">{feature.title}</h3>
-                <p className="text-sm text-gray-300 mt-2">{feature.description}</p>
+                <h3 className="font-semibold text-white text-lg sm:text-xl mb-2">{feature.title}</h3>
+                <p className="text-sm sm:text-base text-gray-300 mt-2 px-4 sm:px-0">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works - Dark Theme */}
-      <section className="py-16 bg-gray-900/85 backdrop-blur-sm relative z-10">
-        <div className="max-w-6xl mx-auto px-8 text-center">
-          <h2 className="text-4xl font-bold mb-16 text-white">How It Works</h2>
+      {/* How It Works - Mobile Responsive */}
+      <section className="py-12 sm:py-16 bg-gray-900/85 backdrop-blur-sm relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-8 sm:mb-16 text-white">How It Works</h2>
           
-          <div className="flex justify-center items-center space-x-12">
+          <div className="flex flex-col sm:flex-row justify-center items-center space-y-8 sm:space-y-0 sm:space-x-8 lg:space-x-12">
             <div className="text-center max-w-xs">
-              <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
-                <Scan className="w-10 h-10 text-blue-400" />
+              <div className="w-16 sm:w-20 h-16 sm:h-20 mx-auto mb-3 sm:mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
+                <Scan className="w-8 sm:w-10 h-8 sm:h-10 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-white mb-2">Scan</h3>
-              <p className="text-sm text-gray-300">Capture your dishes with our advanced 3D scanning technology</p>
+              <h3 className="font-semibold text-white mb-2 text-lg sm:text-xl">Scan</h3>
+              <p className="text-sm sm:text-base text-gray-300 px-4 sm:px-0">Capture your dishes with our advanced 3D scanning technology</p>
             </div>
             
-            <div className="text-gray-500 text-2xl">→</div>
+            <div className="text-gray-500 text-xl sm:text-2xl hidden sm:block">→</div>
+            <div className="text-gray-500 text-xl sm:text-2xl block sm:hidden">↓</div>
             
             <div className="text-center max-w-xs">
-              <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
-                <CheckCircle className="w-10 h-10 text-blue-400" />
+              <div className="w-16 sm:w-20 h-16 sm:h-20 mx-auto mb-3 sm:mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
+                <CheckCircle className="w-8 sm:w-10 h-8 sm:h-10 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-white mb-2">Approve</h3>
-              <p className="text-sm text-gray-300">Review and approve your 3D models before they go live</p>
+              <h3 className="font-semibold text-white mb-2 text-lg sm:text-xl">Approve</h3>
+              <p className="text-sm sm:text-base text-gray-300 px-4 sm:px-0">Review and approve your 3D models before they go live</p>
             </div>
             
-            <div className="text-gray-500 text-2xl">→</div>
+            <div className="text-gray-500 text-xl sm:text-2xl hidden sm:block">→</div>
+            <div className="text-gray-500 text-xl sm:text-2xl block sm:hidden">↓</div>
             
             <div className="text-center max-w-xs">
-              <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
-                <Monitor className="w-10 h-10 text-blue-400" />
+              <div className="w-16 sm:w-20 h-16 sm:h-20 mx-auto mb-3 sm:mb-4 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 shadow-sm">
+                <Monitor className="w-8 sm:w-10 h-8 sm:h-10 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-white mb-2">Display</h3>
-              <p className="text-sm text-gray-300">Your 3D menu items are now live for customers to explore</p>
+              <h3 className="font-semibold text-white mb-2 text-lg sm:text-xl">Display</h3>
+              <p className="text-sm sm:text-base text-gray-300 px-4 sm:px-0">Your 3D menu items are now live for customers to explore</p>
             </div>
           </div>
         </div>
