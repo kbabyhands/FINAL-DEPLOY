@@ -292,17 +292,17 @@ const HomePage = () => {
                       <label className="cursor-pointer flex flex-col items-center">
                         <input
                           type="file"
-                          accept=".splat,image/*"
+                          accept=".ply,.splat,image/*"
                           onChange={handleHeroImageUpload}
                           className="hidden"
                           disabled={uploading}
                         />
                         <div className="text-6xl text-white mb-4">🎯</div>
                         <p className="text-white text-center">
-                          {uploading ? 'Uploading...' : 'Click to upload .splat file'}
+                          {uploading ? 'Uploading...' : 'Click to upload .ply or .splat file'}
                         </p>
                         <p className="text-gray-300 text-sm mt-2">
-                          Upload 3D Gaussian Splatting files for interactive preview
+                          Upload 3D models (.ply, .splat) for interactive preview
                         </p>
                       </label>
                     </div>
