@@ -27,7 +27,7 @@ class HomepageTestimonial(BaseModel):
 class HomepageDemoItem(BaseModel):
     name: str
     description: str
-    image_url: Optional[str] = Field(default=None)
+    image_base64: Optional[str] = Field(default=None)
     emoji: str = Field(default="🍔")
 
 class HomepageContent(BaseModel):
