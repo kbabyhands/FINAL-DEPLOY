@@ -326,18 +326,18 @@ const HomePage = () => {
       
       {/* Main Content */}
       <div className="relative z-10">
-      {/* Header - Dark Theme */}
-      <header className="flex justify-between items-center px-8 py-6 bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 relative z-20">
-        <h1 className="text-3xl font-bold text-white">TAST3D</h1>
-        <div className="flex items-center space-x-4">
+      {/* Header - Mobile Responsive */}
+      <header className="flex flex-col sm:flex-row justify-between items-center px-4 sm:px-8 py-4 sm:py-6 bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 relative z-20">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-0">TAST3D</h1>
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
           <button 
-            className="border border-gray-600 text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+            className="w-full sm:w-auto border border-gray-600 text-gray-300 px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm sm:text-base"
             onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
           >
             Request Demo
           </button>
           <button 
-            className="border border-gray-600 text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+            className="w-full sm:w-auto border border-gray-600 text-gray-300 px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm sm:text-base"
             onClick={() => {
               localStorage.setItem('isAdmin', 'true');
               window.location.href = "/admin";
