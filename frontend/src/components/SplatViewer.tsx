@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
+import { SplatMesh } from '@sparkjsdev/spark';
 
 interface SplatViewerProps {
   splatUrl?: string;
@@ -16,9 +18,9 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
   autoRotate = true 
 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<any>(null);
-  const rendererRef = useRef<any>(null);
-  const splatMeshRef = useRef<any>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const splatMeshRef = useRef<SplatMesh | THREE.Group | null>(null);
   const animationIdRef = useRef<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,14 +36,6 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
         setIsLoading(true);
         setError(null);
         setLoadingStep('Initializing SparkJS...');
-
-        // Dynamic import of THREE.js and SparkJS using the import map
-        const [THREE, { SplatMesh }] = await Promise.all([
-          import('three'),
-          import('@sparkjsdev/spark')
-        ]);
-
-        if (!mounted) return;
 
         console.log('SparkJS modules loaded successfully');
         setLoadingStep('Creating 3D scene...');
@@ -121,12 +115,12 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
           } catch (splatError) {
             console.error('Splat loading failed:', splatError);
             setError(`3D model loading failed: ${splatError.message || 'Unknown error'}`);
-            createDefaultScene(THREE, scene);
+            createDefaultScene(scene);
           }
         } else {
           // Create default scene for non-splat files or no file
           setLoadingStep('Creating default scene...');
-          createDefaultScene(THREE, scene);
+          createDefaultScene(scene);
         }
 
         // Animation loop
@@ -140,7 +134,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
             splatMeshRef.current.rotation.x += 0.005;
             
             // If it's a group with particles, animate them too
-            if (splatMeshRef.current.children) {
+            if (splatMeshRef.current instanceof THREE.Group && splatMeshRef.current.children) {
               splatMeshRef.current.children.forEach((child: any, index: number) => {
                 if (index > 1) { // Skip sphere and wireframe
                   child.rotation.x += 0.02;
@@ -164,7 +158,7 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
     };
 
     // Helper function to create default scene
-    const createDefaultScene = async (THREE: any, scene: any) => {
+    const createDefaultScene = (scene: THREE.Scene) => {
       const group = new THREE.Group();
 
       // Main sphere (represents 3D food model)
@@ -211,10 +205,8 @@ const SplatViewer: React.FC<SplatViewerProps> = ({
       splatMeshRef.current = group;
     };
 
-    // Initialize after a small delay to ensure import map is loaded
-    setTimeout(() => {
-      initializeViewer();
-    }, 100);
+    // Initialize the viewer
+    initializeViewer();
 
     return () => {
       mounted = false;
