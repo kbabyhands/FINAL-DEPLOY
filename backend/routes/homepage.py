@@ -138,10 +138,21 @@ async def upload_hero_image(
 ):
     """
     Upload hero image/splat/ply for homepage.
+    Supports files up to 200MB.
     """
     try:
+        # Check file size (200MB limit)
+        MAX_SIZE = 200 * 1024 * 1024  # 200MB in bytes
+        
         # Read file content
         file_content = await file.read()
+        file_size = len(file_content)
+        
+        if file_size > MAX_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File size ({file_size / (1024*1024):.1f}MB) exceeds maximum allowed size of 200MB"
+            )
         
         # Determine file type and set appropriate MIME type
         if file.filename and file.filename.endswith('.splat'):
@@ -181,8 +192,16 @@ async def upload_hero_image(
             upsert=True
         )
         
-        return {"message": f"Hero {file_type.lower()} uploaded successfully", "image_url": data_url, "file_type": file_type}
+        return {
+            "message": f"Hero {file_type.lower()} uploaded successfully", 
+            "image_url": data_url, 
+            "file_type": file_type,
+            "file_size": f"{file_size / (1024*1024):.1f}MB"
+        }
         
+    except HTTPException:
+        # Re-raise HTTP exceptions (like file size errors)
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
