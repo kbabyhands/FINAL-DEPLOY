@@ -14,7 +14,7 @@ import {
   ChevronRight,
   User
 } from 'lucide-react';
-import LazySparkJS from '../components/LazySparkJS';
+import LazyPlayCanvas from '../components/LazyPlayCanvas';
 
 const BACKEND_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
 
