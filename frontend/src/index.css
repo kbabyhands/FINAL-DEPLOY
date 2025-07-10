@@ -1,33 +1,62 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    /* ScaleFast Brand Colors - Exact Implementation */
+    --bg-page: #FFFFFF;                    /* Main page background */
+    --bg-card: #FFFFFF;                    /* All card backgrounds */
+    --bg-section: rgba(243, 234, 255, 0.3); /* Subtle section backgrounds */
+    
+    /* Text - Exact ScaleFast Colors */
+    --text-primary: rgb(24, 24, 24);       /* Main headings and content */
+    --text-secondary: rgb(112, 112, 112);  /* Supporting text */
+    --text-muted: rgb(143, 143, 143);      /* Captions, timestamps */
+    
+    /* Borders - Exact ScaleFast Colors */
+    --border-light: rgba(24, 24, 24, 0.1); /* Subtle separators */
+    --border-medium: rgba(24, 24, 24, 0.2); /* Standard borders */
+    --border-strong: rgba(24, 24, 24, 0.3); /* Emphasized borders */
+    
+    /* MAIN BRAND COLORS - ScaleFast Brand Colors Only */
+    --brand-primary: rgb(0, 128, 255);     /* Main brand blue for links */
+    --brand-hover: rgb(0, 153, 255);       /* Hover state */
+    --brand-active: rgb(0, 102, 204);      /* Active/pressed state */
+
+    /* Hero Gradients - Use ONLY for major sections */
+    --gradient-hero: linear-gradient(135deg, 
+      rgba(243, 234, 255, 0.8) 0%, 
+      rgba(255, 232, 240, 0.8) 25%, 
+      rgba(232, 244, 255, 0.8) 50%, 
+      rgba(255, 232, 213, 0.8) 75%, 
+      rgba(243, 234, 255, 0.8) 100%);
+      
+    /* Button Gradients - For CTAs only */
+    --gradient-button: linear-gradient(168deg, 
+      rgb(67, 67, 67) -63%, 
+      rgb(0, 0, 0) 100%);
+
+    /* Legacy Variables for Compatibility */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-
     --primary: 240 9% 7%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
-
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-
     --accent: 240 4.8% 95.9%;
     --accent-foreground: 240 5.9% 10%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;
