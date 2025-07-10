@@ -36,7 +36,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     
-    <!-- Resource hints for SparkJS optimization -->
+    <!-- Resource hints for PlayCanvas optimization -->
     <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     
@@ -62,7 +62,7 @@
       }
       
       /* Fallback styles for non-WebGL devices */
-      .webgl-not-supported .sparkjs-container {
+      .webgl-not-supported .homepage-viewer {
         background-color: #1f2937;
         border: 2px solid #374151;
         border-radius: 1rem;
@@ -70,6 +70,13 @@
         align-items: center;
         justify-content: center;
         min-height: 200px;
+      }
+      
+      /* PlayCanvas optimization styles */
+      .homepage-viewer canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: optimize-contrast;
+        image-rendering: crisp-edges;
       }
     </style>
   </head>
