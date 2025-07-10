@@ -338,6 +338,18 @@ backend:
         -agent: "testing"
         -comment: "Tested the updated homepage models with base64 storage. The HomepageHeroContent model now correctly uses hero_image_base64 instead of hero_image_url, and the HomepageDemoItem model uses image_base64 instead of image_url. The default features have been updated to include exactly 3 items: 'Real Food Scans', 'No App Needed', and 'Live Menu Updates', as required. The GET /api/homepage/content endpoint returns the correct model structure with these base64 fields. One issue to note: when updating content with PUT /api/homepage/content, if you update only part of the hero object (e.g., just the headline and subheadline), the hero_image_base64 field will be lost. To preserve the hero_image_base64, it must be included in the update payload."
 
+  - task: "PlayCanvas URL Storage in Hero Section"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/homepage.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the simplified PlayCanvas URL functionality for the homepage hero section. The backend successfully supports storing PlayCanvas URLs (like 'https://playcanv.as/p/3585fc6e') in the hero_image_base64 field instead of requiring file uploads. Key test results: 1) GET /api/homepage/content correctly returns content with hero_image_base64 field, 2) PUT /api/homepage/content successfully stores and retrieves PlayCanvas URLs, 3) URLs can be removed by setting hero_image_base64 to null, 4) Empty strings and various URL formats are accepted without validation, 5) PlayCanvas URLs persist correctly across operations, 6) The specific URL format from the review request works perfectly. All 9 comprehensive test cases passed, confirming the backend fully supports the simplified PlayCanvas approach where admins enter URLs instead of uploading files."
+
 frontend:
   - task: "Threekit-Inspired Homepage Layout"
     implemented: true
