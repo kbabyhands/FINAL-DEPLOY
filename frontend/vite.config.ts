@@ -6,12 +6,12 @@ import path from "path";
 export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'build',
-    // Optimize for SparkJS
+    // Optimize for PlayCanvas
     rollupOptions: {
       output: {
         manualChunks: {
-          // Separate SparkJS into its own chunk
-          'sparkjs-core': ['three', '@sparkjsdev/spark', 'three-stdlib'],
+          // Separate PlayCanvas into its own chunk
+          'playcanvas-core': ['playcanvas'],
           // Keep React separate
           'react-vendor': ['react', 'react-dom'],
           // Separate large UI libraries
@@ -50,10 +50,10 @@ export default defineConfig(({ mode }) => ({
     },
   },
   
-  // Optimize dependencies for SparkJS
+  // Optimize dependencies for PlayCanvas
   optimizeDeps: {
-    include: ['three', '@sparkjsdev/spark', 'three-stdlib'],
-    exclude: ['@sparkjsdev/spark/dist/spark.module.js'] // Let Vite handle this
+    include: ['playcanvas'],
+    exclude: [] // Let Vite handle PlayCanvas optimization
   },
   
   // Configure module preloading
