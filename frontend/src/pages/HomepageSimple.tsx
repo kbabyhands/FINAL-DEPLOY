@@ -347,38 +347,22 @@ const HomePage = () => {
             </button>
           </div>
 
-          {/* Hero 3D Viewer Area - Mobile Responsive */}
+          {/* Hero PlayCanvas Viewer Area - Mobile Responsive */}
           <div className="max-w-2xl mx-auto mb-8 sm:mb-16 px-4 sm:px-0">
             {homepageContent.hero.hero_image_base64 ? (
               <div className="relative">
-                  {/* Check if it's a 3D file (file URL or base64) */}
-                {homepageContent.hero.hero_image_base64 && 
-                 (homepageContent.hero.hero_image_base64.includes('.ply') || 
-                  homepageContent.hero.hero_image_base64.includes('.splat') ||
-                  homepageContent.hero.hero_image_base64.includes('.glb') ||
-                  homepageContent.hero.hero_image_base64.includes('.gltf') ||
-                  homepageContent.hero.hero_image_base64.includes('splat') || 
-                  homepageContent.hero.hero_image_base64.includes('ply')) ? (
-                  <LazyPlayCanvas
-                    splatUrl={homepageContent.hero.hero_image_base64}
-                    width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
-                    height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
-                    autoRotate={true}
-                    enableControls={true}
-                    className="mx-auto w-full max-w-full homepage-viewer"
-                  />
-                ) : (
-                  <LazyPlayCanvas
-                    width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
-                    height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
-                    autoRotate={true}
-                    enableControls={true}
-                    className="mx-auto w-full max-w-full homepage-viewer"
-                  />
-                )}
+                {/* Display PlayCanvas experience or fallback */}
+                <LazyPlayCanvas
+                  splatUrl={homepageContent.hero.hero_image_base64}
+                  width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
+                  height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
+                  autoRotate={true}
+                  enableControls={true}
+                  className="mx-auto w-full max-w-full homepage-viewer"
+                />
                 {isAdmin && (
                   <button
-                    onClick={removeHeroImage}
+                    onClick={removeHeroExperience}
                     className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-red-500 text-white p-1 sm:p-2 rounded-full hover:bg-red-600 transition-colors z-10"
                   >
                     <X className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -398,43 +382,65 @@ const HomePage = () => {
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
                       <div className="text-center w-full max-w-md mx-auto px-4 sm:px-6">
-                        {uploading ? (
+                        {showUrlInput ? (
                           <div className="space-y-4">
-                            <div className="text-4xl sm:text-6xl text-white mb-4">📤</div>
+                            <div className="text-4xl sm:text-6xl text-white mb-4">🎮</div>
                             <p className="text-white text-center mb-4 text-sm sm:text-base">
-                              Uploading 3D Model...
+                              Enter PlayCanvas Experience URL
                             </p>
-                            {/* Progress Bar */}
-                            <div className="w-full bg-gray-700 rounded-full h-2 sm:h-3 mb-2">
-                              <div 
-                                className="bg-blue-500 h-2 sm:h-3 rounded-full transition-all duration-300 ease-out"
-                                style={{ width: `${uploadProgress}%` }}
-                              ></div>
-                            </div>
-                            <p className="text-gray-300 text-xs sm:text-sm">
-                              {Math.round(uploadProgress)}% complete
-                            </p>
-                          </div>
-                        ) : (
-                          <label className="cursor-pointer flex flex-col items-center">
                             <input
-                              type="file"
-                              accept=".ply,.splat,.glb,.gltf,image/*"
-                              onChange={handleHeroImageUpload}
-                              className="hidden"
+                              type="url"
+                              value={playcanvasUrl}
+                              onChange={(e) => setPlaycanvasUrl(e.target.value)}
+                              placeholder="https://playcanv.as/p/..."
+                              className="w-full px-3 py-2 text-black rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                               disabled={uploading}
                             />
-                            <div className="text-4xl sm:text-6xl text-white mb-4">🎯</div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={handlePlayCanvasUrlSubmit}
+                                disabled={uploading || !playcanvasUrl.trim()}
+                                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {uploading ? 'Updating...' : 'Add Experience'}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowUrlInput(false);
+                                  setPlaycanvasUrl('');
+                                }}
+                                disabled={uploading}
+                                className="px-4 py-2 border border-gray-400 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            {uploading && (
+                              <div className="w-full bg-gray-700 rounded-full h-2 sm:h-3 mb-2">
+                                <div 
+                                  className="bg-blue-500 h-2 sm:h-3 rounded-full transition-all duration-300 ease-out"
+                                  style={{ width: `${uploadProgress}%` }}
+                                ></div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowUrlInput(true)}
+                            disabled={uploading}
+                            className="cursor-pointer flex flex-col items-center w-full"
+                          >
+                            <div className="text-4xl sm:text-6xl text-white mb-4">🎮</div>
                             <p className="text-white text-center text-sm sm:text-base">
-                              Click to upload 3D model
+                              Add PlayCanvas Experience
                             </p>
                             <p className="text-gray-300 text-xs sm:text-sm mt-2">
-                              Upload 3D models (.ply, .splat, .glb, .gltf) for interactive preview
+                              Click to add a PlayCanvas experience URL
                             </p>
                             <p className="text-gray-400 text-xs mt-1">
-                              Maximum file size: 200MB
+                              e.g., https://playcanv.as/p/3585fc6e
                             </p>
-                          </label>
+                          </button>
                         )}
                       </div>
                     </div>
