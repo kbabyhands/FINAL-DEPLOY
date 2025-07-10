@@ -640,14 +640,14 @@ const HomePage = () => {
           <div className="scalefast-grid">
             {homepageContent.testimonials.map((testimonial, index) => (
               <div key={index} className="service-card text-left">
-                <p className="body-medium mb-6 italic">"{testimonial.text}"</p>
+                <p className="body-medium mb-6 italic">"{testimonial.quote}"</p>
                 <div className="flex items-center">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ background: 'var(--bg-section)' }}>
                     <User className="w-6 h-6" style={{ color: 'var(--brand-primary)' }} />
                   </div>
                   <div>
                     <div className="heading-3 text-sm">{testimonial.name}</div>
-                    <div className="body-medium text-xs" style={{ color: 'var(--text-muted)' }}>{testimonial.role}</div>
+                    <div className="body-medium text-xs" style={{ color: 'var(--text-muted)' }}>{testimonial.title}</div>
                   </div>
                 </div>
               </div>
