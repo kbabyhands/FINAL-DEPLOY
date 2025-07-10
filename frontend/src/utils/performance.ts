@@ -1,4 +1,4 @@
-// Performance monitoring for SparkJS homepage
+// Performance monitoring for PlayCanvas homepage
 import { useEffect } from 'react';
 
 interface PerformanceMetrics {
@@ -7,8 +7,8 @@ interface PerformanceMetrics {
   lcp: number;  // Largest Contentful Paint
   fid: number;  // First Input Delay
   cls: number;  // Cumulative Layout Shift
-  sparkjsLoadTime?: number;
-  sparkjsRenderTime?: number;
+  playcanvasLoadTime?: number;
+  playcanvasRenderTime?: number;
 }
 
 class PerformanceMonitor {
@@ -104,12 +104,12 @@ class PerformanceMonitor {
     }
   }
 
-  public recordSparkJSLoadTime(loadTime: number) {
-    this.metrics.sparkjsLoadTime = loadTime;
+  public recordPlayCanvasLoadTime(loadTime: number) {
+    this.metrics.playcanvasLoadTime = loadTime;
   }
 
-  public recordSparkJSRenderTime(renderTime: number) {
-    this.metrics.sparkjsRenderTime = renderTime;
+  public recordPlayCanvasRenderTime(renderTime: number) {
+    this.metrics.playcanvasRenderTime = renderTime;
   }
 
   public getMetrics(): Partial<PerformanceMetrics> {
@@ -136,14 +136,14 @@ class PerformanceMonitor {
     // Example: Send to Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'performance_metrics', {
-        event_category: 'SparkJS',
+        event_category: 'PlayCanvas',
         ttfb: metrics.ttfb,
         fcp: metrics.fcp,
         lcp: metrics.lcp,
         fid: metrics.fid,
         cls: metrics.cls,
-        sparkjs_load_time: metrics.sparkjsLoadTime,
-        sparkjs_render_time: metrics.sparkjsRenderTime
+        playcanvas_load_time: metrics.playcanvasLoadTime,
+        playcanvas_render_time: metrics.playcanvasRenderTime
       });
     }
   }
@@ -202,16 +202,16 @@ export const measureTimeToInteractive = (): Promise<number> => {
   });
 };
 
-// Utility function to measure SparkJS specific metrics
-export const measureSparkJSPerformance = async (
+// Utility function to measure PlayCanvas specific metrics
+export const measurePlayCanvasPerformance = async (
   loadStartTime: number,
   renderStartTime: number
 ): Promise<{ loadTime: number; renderTime: number }> => {
   const loadTime = performance.now() - loadStartTime;
   const renderTime = performance.now() - renderStartTime;
   
-  performanceMonitor.recordSparkJSLoadTime(loadTime);
-  performanceMonitor.recordSparkJSRenderTime(renderTime);
+  performanceMonitor.recordPlayCanvasLoadTime(loadTime);
+  performanceMonitor.recordPlayCanvasRenderTime(renderTime);
   
   return { loadTime, renderTime };
 };
