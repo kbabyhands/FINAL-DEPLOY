@@ -374,7 +374,7 @@ const HomePage = () => {
             </button>
           </div>
 
-          {/* Hero 3D Splat Viewer Area - Mobile Responsive */}
+          {/* Hero 3D Viewer Area - Mobile Responsive */}
           <div className="max-w-2xl mx-auto mb-8 sm:mb-16 px-4 sm:px-0">
             {homepageContent.hero.hero_image_base64 ? (
               <div className="relative">
@@ -382,23 +382,25 @@ const HomePage = () => {
                 {homepageContent.hero.hero_image_base64 && 
                  (homepageContent.hero.hero_image_base64.includes('.ply') || 
                   homepageContent.hero.hero_image_base64.includes('.splat') ||
+                  homepageContent.hero.hero_image_base64.includes('.glb') ||
+                  homepageContent.hero.hero_image_base64.includes('.gltf') ||
                   homepageContent.hero.hero_image_base64.includes('splat') || 
                   homepageContent.hero.hero_image_base64.includes('ply')) ? (
-                  <LazySparkJS
+                  <LazyPlayCanvas
                     splatUrl={homepageContent.hero.hero_image_base64}
                     width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
                     height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
                     autoRotate={true}
                     enableControls={true}
-                    className="mx-auto w-full max-w-full sparkjs-container"
+                    className="mx-auto w-full max-w-full homepage-viewer"
                   />
                 ) : (
-                  <LazySparkJS
+                  <LazyPlayCanvas
                     width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
                     height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
                     autoRotate={true}
                     enableControls={true}
-                    className="mx-auto w-full max-w-full sparkjs-container"
+                    className="mx-auto w-full max-w-full homepage-viewer"
                   />
                 )}
                 {isAdmin && (
@@ -414,12 +416,12 @@ const HomePage = () => {
               <div className="relative">
                 {isAdmin ? (
                   <div className="relative">
-                    <LazySparkJS
+                    <LazyPlayCanvas
                       width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
                       height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
                       autoRotate={true}
                       enableControls={true}
-                      className="mx-auto w-full max-w-full sparkjs-container"
+                      className="mx-auto w-full max-w-full homepage-viewer"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
                       <div className="text-center w-full max-w-md mx-auto px-4 sm:px-6">
@@ -444,17 +446,17 @@ const HomePage = () => {
                           <label className="cursor-pointer flex flex-col items-center">
                             <input
                               type="file"
-                              accept=".ply,.splat,image/*"
+                              accept=".ply,.splat,.glb,.gltf,image/*"
                               onChange={handleHeroImageUpload}
                               className="hidden"
                               disabled={uploading}
                             />
                             <div className="text-4xl sm:text-6xl text-white mb-4">🎯</div>
                             <p className="text-white text-center text-sm sm:text-base">
-                              Click to upload .ply or .splat file
+                              Click to upload 3D model
                             </p>
                             <p className="text-gray-300 text-xs sm:text-sm mt-2">
-                              Upload 3D models (.ply, .splat) for interactive preview
+                              Upload 3D models (.ply, .splat, .glb, .gltf) for interactive preview
                             </p>
                             <p className="text-gray-400 text-xs mt-1">
                               Maximum file size: 200MB
@@ -465,11 +467,11 @@ const HomePage = () => {
                     </div>
                   </div>
                 ) : (
-                  <LazySparkJS
+                  <LazyPlayCanvas
                     width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
                     height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
                     autoRotate={true}
-                    className="mx-auto w-full max-w-full sparkjs-container"
+                    className="mx-auto w-full max-w-full homepage-viewer"
                   />
                 )}
               </div>
