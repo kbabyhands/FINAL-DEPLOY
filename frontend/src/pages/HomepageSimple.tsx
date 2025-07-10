@@ -52,86 +52,59 @@ const HomePage = () => {
     }
   };
 
-  const handleHeroImageUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [playcanvasUrl, setPlaycanvasUrl] = useState('');
 
-    // Check file size on frontend (200MB limit)
-    const MAX_SIZE = 200 * 1024 * 1024; // 200MB
-    const fileSizeMB = file.size / (1024 * 1024);
-    
-    if (file.size > MAX_SIZE) {
-      alert(`File size (${fileSizeMB.toFixed(1)}MB) exceeds maximum allowed size of 200MB. Please use a smaller file.`);
+  const handlePlayCanvasUrlSubmit = async () => {
+    if (!playcanvasUrl.trim()) {
+      alert('Please enter a PlayCanvas URL');
+      return;
+    }
+
+    // Validate PlayCanvas URL format
+    if (!playcanvasUrl.includes('playcanv.as')) {
+      alert('Please enter a valid PlayCanvas URL (should contain "playcanv.as")');
       return;
     }
 
     setUploading(true);
-    setUploadProgress(0);
+    setUploadProgress(50);
     
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Create XMLHttpRequest to track upload progress
-      const xhr = new XMLHttpRequest();
-      
-      // Track upload progress
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = (e.loaded / e.total) * 100;
-          setUploadProgress(percentComplete);
+      const updateData = {
+        hero: {
+          ...homepageContent.hero,
+          hero_image_base64: playcanvasUrl.trim() // Store the URL directly
         }
+      };
+
+      const response = await fetch(`${BACKEND_URL}/api/homepage/content`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
       });
 
-      // Handle completion
-      const uploadPromise = new Promise((resolve, reject) => {
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              resolve(JSON.parse(xhr.responseText));
-            } catch (parseError) {
-              reject(new Error('Invalid server response'));
-            }
-          } else {
-            // Try to parse error response
-            try {
-              const errorResponse = JSON.parse(xhr.responseText);
-              reject(new Error(errorResponse.detail || `Upload failed: ${xhr.statusText}`));
-            } catch (parseError) {
-              reject(new Error(`Upload failed: ${xhr.statusText} (${xhr.status})`));
-            }
-          }
-        };
-        
-        xhr.onerror = () => reject(new Error('Network error during upload'));
-      });
-
-      // Send request
-      xhr.open('POST', `${BACKEND_URL}/api/homepage/upload/hero`);
-      xhr.send(formData);
-
-      const result = await uploadPromise;
-      
-      if (result) {
+      if (response.ok) {
         await loadHomepageContent(); // Reload content
         setUploadProgress(100);
-        
-        // Show success message with file info
-        if (result.file_size) {
-          alert(`Upload successful! ${result.file_type} (${result.file_size}) uploaded.`);
-        }
+        setShowUrlInput(false);
+        setPlaycanvasUrl('');
+        alert('PlayCanvas experience updated successfully!');
         
         // Reset progress after a short delay
         setTimeout(() => {
           setUploadProgress(0);
         }, 2000);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to update PlayCanvas URL');
       }
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error('Update failed:', error);
       setUploadProgress(0);
-      
-      // Show error message to user
-      alert(`Upload failed: ${error.message || 'Unknown error occurred'}`);
+      alert(`Update failed: ${error.message || 'Unknown error occurred'}`);
     } finally {
       setUploading(false);
     }
