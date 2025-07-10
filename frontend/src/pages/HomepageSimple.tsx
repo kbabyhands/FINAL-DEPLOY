@@ -98,6 +98,326 @@ const HomePage = () => {
           setUploadProgress(0);
         }, 2000);
       } else {
+        throw new Error('Failed to update');
+      }
+    } catch (error) {
+      console.error('Error updating PlayCanvas URL:', error);
+      alert('Error updating PlayCanvas experience. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeHeroExperience = async () => {
+    if (!confirm('Are you sure you want to remove this experience?')) {
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      const updateData = {
+        hero: {
+          ...homepageContent.hero,
+          hero_image_base64: null
+        }
+      };
+
+      const response = await fetch(`${BACKEND_URL}/api/homepage/content`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      if (response.ok) {
+        await loadHomepageContent();
+        alert('Experience removed successfully!');
+      } else {
+        throw new Error('Failed to remove');
+      }
+    } catch (error) {
+      console.error('Error removing experience:', error);
+      alert('Error removing experience. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const getFeatureIcon = (iconName) => {
+    const iconClass = "w-8 h-8";
+    const iconColor = "var(--brand-primary)";
+    const iconStyle = { color: iconColor };
+    
+    switch (iconName) {
+      case 'camera':
+        return <Camera className={iconClass} style={iconStyle} />;
+      case 'smartphone':
+        return <Smartphone className={iconClass} style={iconStyle} />;
+      case 'zap':
+        return <Zap className={iconClass} style={iconStyle} />;
+      default:
+        return <Camera className={iconClass} style={iconStyle} />;
+    }
+  };
+
+  const uploadDemoImage = async (index, file) => {
+    if (!file) return;
+    
+    setUploading(true);
+    const xhr = new XMLHttpRequest();
+    
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        const progressPercent = Math.round((e.loaded / e.total) * 100);
+        setUploadProgress(progressPercent);
+      }
+    });
+
+    xhr.onload = async () => {
+      if (xhr.status === 200) {
+        await loadHomepageContent();
+        setUploadProgress(100);
+        alert('Demo image uploaded successfully!');
+        setTimeout(() => {
+          setUploadProgress(0);
+        }, 2000);
+      } else {
+        alert('Error uploading image. Please try again.');
+      }
+      setUploading(false);
+    };
+
+    xhr.onerror = () => {
+      alert('Error uploading image. Please try again.');
+      setUploading(false);
+    };
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    xhr.open('POST', `${BACKEND_URL}/api/homepage/upload/demo/${index}`);
+    xhr.send(formData);
+  };
+
+  const nextSlide = () => {
+    if (homepageContent?.demo_items) {
+      setCurrentSlide((prev) => (prev + 1) % homepageContent.demo_items.length);
+    }
+  };
+
+  const prevSlide = () => {
+    if (homepageContent?.demo_items) {
+      setCurrentSlide((prev) => (prev - 1 + homepageContent.demo_items.length) % homepageContent.demo_items.length);
+    }
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
+  if (loading) {
+    return (
+      <div style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }} className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: 'var(--brand-primary)' }}></div>
+          <p style={{ color: 'var(--text-secondary)' }} className="body-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!homepageContent) {
+    return (
+      <div style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }} className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p style={{ color: 'var(--text-secondary)' }} className="body-medium">Error loading homepage content</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }} className="min-h-screen relative overflow-hidden">
+      {/* Header - ScaleFast Design */}
+      <header className="flex flex-col sm:flex-row justify-between items-center px-6 py-4 sm:py-6 relative z-20" style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border-light)' }}>
+        <h1 className="heading-3 mb-4 sm:mb-0" style={{ color: 'var(--text-primary)' }}>TAST3D</h1>
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+          <button 
+            className="btn-secondary w-full sm:w-auto"
+            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            Request Demo
+          </button>
+          <button 
+            className="btn-primary w-full sm:w-auto"
+            onClick={() => {
+              localStorage.setItem('isAdmin', 'true');
+              window.location.href = "/admin";
+            }}
+          >
+            Restaurant Login
+          </button>
+        </div>
+      </header>
+
+      {/* Hero Section - ScaleFast Gradient Background (only for hero) */}
+      <section className="hero-section">
+        <div className="container text-center">
+          <h1 className="heading-1 mb-6">
+            {homepageContent.hero.headline}
+          </h1>
+          <p className="body-large mb-12 max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+            {homepageContent.hero.subheadline}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
+            <button 
+              className="btn-primary"
+              onClick={() => window.location.href = homepageContent.hero.primary_cta_url}
+            >
+              {homepageContent.hero.primary_cta_text}
+            </button>
+            <button 
+              className="btn-secondary"
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              {homepageContent.hero.secondary_cta_text}
+            </button>
+          </div>
+
+          {/* Hero PlayCanvas Viewer Area */}
+          <div className="max-w-2xl mx-auto mb-16">
+            {homepageContent.hero.hero_image_base64 ? (
+              <div className="relative">
+                <LazyPlayCanvas
+                  splatUrl={homepageContent.hero.hero_image_base64}
+                  width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
+                  height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
+                  autoRotate={true}
+                  enableControls={true}
+                  className="mx-auto w-full max-w-full homepage-viewer"
+                />
+                {isAdmin && (
+                  <button
+                    onClick={removeHeroExperience}
+                    className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors z-10"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="relative">
+                {isAdmin ? (
+                  <div className="relative">
+                    <LazyPlayCanvas
+                      width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
+                      height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
+                      autoRotate={true}
+                      enableControls={true}
+                      className="mx-auto w-full max-w-full homepage-viewer"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
+                      <div className="text-center w-full max-w-md mx-auto px-6">
+                        {showUrlInput ? (
+                          <div className="space-y-4">
+                            <div className="text-6xl text-white mb-4">🎮</div>
+                            <p className="text-white text-center mb-4">
+                              Enter PlayCanvas Experience URL
+                            </p>
+                            <input
+                              type="url"
+                              value={playcanvasUrl}
+                              onChange={(e) => setPlaycanvasUrl(e.target.value)}
+                              placeholder="https://playcanv.as/p/..."
+                              className="w-full px-3 py-2 text-black rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              disabled={uploading}
+                              style={{ borderRadius: '8px' }}
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={handlePlayCanvasUrlSubmit}
+                                disabled={uploading || !playcanvasUrl.trim()}
+                                className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {uploading ? 'Updating...' : 'Add Experience'}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowUrlInput(false);
+                                  setPlaycanvasUrl('');
+                                }}
+                                disabled={uploading}
+                                className="btn-secondary disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            {uploading && (
+                              <div className="w-full bg-gray-300 rounded-full h-3 mb-2">
+                                <div 
+                                  className="rounded-full h-3 transition-all duration-300 ease-out"
+                                  style={{ 
+                                    width: `${uploadProgress}%`,
+                                    background: 'var(--brand-primary)'
+                                  }}
+                                ></div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowUrlInput(true)}
+                            disabled={uploading}
+                            className="cursor-pointer flex flex-col items-center w-full"
+                          >
+                            <div className="text-6xl text-white mb-4">🎮</div>
+                            <p className="text-white text-center">
+                              Add PlayCanvas Experience
+                            </p>
+                            <p className="text-gray-300 text-sm mt-2">
+                              Click to add a PlayCanvas experience URL
+                            </p>
+                            <p className="text-gray-400 text-xs mt-1">
+                              e.g., https://playcanv.as/p/3585fc6e
+                            </p>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <LazyPlayCanvas
+                    width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
+                    height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
+                    autoRotate={true}
+                    className="mx-auto w-full max-w-full homepage-viewer"
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Clean White Background */}
+      <section className="py-16" style={{ background: 'var(--bg-card)' }}>
+        <div className="container">
+          <div className="scalefast-grid text-center">
+            {homepageContent.features.map((feature, index) => (
+              <div key={index} className="service-card text-center">
+                <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--bg-section)', borderRadius: '12px' }}>
+                  {getFeatureIcon(feature.icon)}
+                </div>
+                <h3 className="heading-3 mb-4">{feature.title}</h3>
+                <p className="body-medium">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
         const errorData = await response.json();
         throw new Error(errorData.detail || 'Failed to update PlayCanvas URL');
       }
