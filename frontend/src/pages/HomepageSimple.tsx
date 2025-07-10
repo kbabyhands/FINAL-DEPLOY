@@ -136,7 +136,7 @@ const HomePage = () => {
     }
   };
 
-  const removeHeroImage = async () => {
+  const removeHeroExperience = async () => {
     try {
       const updateData = {
         hero: {
@@ -157,7 +157,7 @@ const HomePage = () => {
         await loadHomepageContent();
       }
     } catch (error) {
-      console.error('Error removing hero image:', error);
+      console.error('Error removing PlayCanvas experience:', error);
     }
   };
 
