@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -128,7 +127,7 @@ const MenuCard = ({
       <DialogTrigger asChild>
         <Card 
           ref={cardRef} 
-          className={`cursor-pointer transition-all duration-500 card-elevated border-0 rounded-2xl bg-white/95 backdrop-blur-sm overflow-hidden group ${cardHeight} flex flex-col shadow-lg hover:shadow-xl hover:bg-white`}
+          className={`service-card cursor-pointer transition-all duration-500 overflow-hidden group ${cardHeight} flex flex-col`}
           onClick={handleOpenDialog}
           role="button"
           tabIndex={0}
@@ -143,17 +142,18 @@ const MenuCard = ({
                   alt={title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
+                  style={{ borderRadius: '12px 12px 0 0' }}
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
-                  <span className="text-muted-foreground text-sm">No Image</span>
+                <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-section)', borderRadius: '12px 12px 0 0' }}>
+                  <span className="body-medium" style={{ color: 'var(--text-muted)' }}>No Image</span>
                 </div>
               )}
               
               {/* 3D Model Indicator Badge */}
               {has3DModel && (
                 <div className="absolute top-3 left-3">
-                  <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  <div className="text-white text-xs font-bold px-2 py-1 rounded-full" style={{ background: 'var(--brand-primary)' }}>
                     3D
                   </div>
                 </div>
@@ -164,13 +164,13 @@ const MenuCard = ({
             <div className={`${contentPadding} flex flex-col justify-between flex-grow`}>
               <div className="flex-grow">
                 {/* Title - Dynamic Height */}
-                <h3 className={`font-semibold ${titleSize} text-foreground mb-2 line-clamp-2 ${titleHeight} flex items-start`}>
+                <h3 className={`font-semibold ${titleSize} mb-2 line-clamp-2 ${titleHeight} flex items-start`} style={{ color: 'var(--text-primary)' }}>
                   {title}
                 </h3>
                 
                 {/* Description - Dynamic Height */}
                 <div className={`${descriptionHeight} mb-3`}>
-                  <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed">
+                  <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                     {description || '\u00A0'}
                   </p>
                 </div>
@@ -179,11 +179,11 @@ const MenuCard = ({
                 <div className={`${reviewHeight} mb-3`}>
                   {reviewCount !== undefined && reviewCount > 0 ? (
                     <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-medium text-foreground">
+                      <Star className="w-4 h-4 fill-current" style={{ color: 'var(--brand-primary)' }} />
+                      <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                         {averageRating?.toFixed(1) || '0.0'}
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                         ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
                       </span>
                     </div>
@@ -195,7 +195,7 @@ const MenuCard = ({
 
               {/* Price and Dietary Badges Row - Fixed at Bottom */}
               <div className="flex items-center justify-between mt-auto">
-                <div className={`${priceSize} font-bold text-foreground`}>
+                <div className={`${priceSize} font-bold`} style={{ color: 'var(--text-primary)' }}>
                   {formatPrice(price)}
                 </div>
                 
