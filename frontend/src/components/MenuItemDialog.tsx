@@ -84,8 +84,8 @@ const MenuItemDialog = ({
 
           {/* Large 3D Viewer - Main Focus */}
           <div 
-            className="service-card p-6 overflow-hidden"
-            style={{ height: '500px', borderRadius: '20px' }}
+            className="service-card p-4 overflow-hidden"
+            style={{ height: '650px', borderRadius: '20px' }}
           >
             <ViewerToggle
               splatUrl={splatUrl}
