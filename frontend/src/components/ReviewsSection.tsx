@@ -116,32 +116,35 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
       {/* Reviews Summary */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-serif font-light text-amber-900 mb-2 flex items-center gap-2">
-            <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
+          <h3 className="heading-3 mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             Customer Reviews
           </h3>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               {renderStars(averageRating, "md")}
-              <span className="font-semibold text-lg text-amber-900">
+              <span className="font-semibold text-lg" style={{ color: 'var(--text-primary)' }}>
                 {averageRating > 0 ? averageRating.toFixed(1) : "No ratings"}
               </span>
             </div>
-            <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+            <div 
+              className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1"
+              style={{ 
+                background: 'var(--bg-section)', 
+                color: 'var(--text-primary)' 
+              }}
+            >
               <MessageSquare className="w-3 h-3" />
               {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
             </div>
           </div>
         </div>
         
-        <Button
-          variant="outline"
-          size="sm"
+        <button
           onClick={() => setShowReviewForm(true)}
-          className="bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200 rounded-xl font-medium"
+          className="btn-secondary text-sm"
         >
           Write a Review
-        </Button>
+        </button>
       </div>
 
       {/* Review Form Modal */}
@@ -158,26 +161,41 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
       {reviews.length > 0 ? (
         <div className="space-y-4 max-h-64 overflow-y-auto">
           {reviews.map((review) => (
-            <Card key={review.id} className="bg-white/80 border-amber-200 rounded-xl shadow-sm border-l-4 border-l-amber-500">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      {renderStars(review.rating)}
-                      <span className="font-medium text-sm text-amber-900">{review.customer_name}</span>
-                    </div>
-                    <p className="text-xs text-amber-600">{formatDate(review.created_at)}</p>
+            <div 
+              key={review.id} 
+              className="service-card p-4 border-l-4"
+              style={{ borderLeftColor: 'var(--brand-primary)' }}
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    {renderStars(review.rating)}
+                    <span className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{review.customer_name}</span>
                   </div>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatDate(review.created_at)}</p>
                 </div>
-                {review.review_text && (
-                  <p className="text-sm text-amber-800 mt-2 leading-relaxed">{review.review_text}</p>
-                )}
-              </CardContent>
-            </Card>
+              </div>
+              {review.review_text && (
+                <p className="text-sm mt-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{review.review_text}</p>
+              )}
+            </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 bg-amber-50 rounded-xl border border-amber-200">
+        <div 
+          className="text-center py-8 rounded-xl border"
+          style={{ 
+            background: 'var(--bg-section)', 
+            borderColor: 'var(--border-light)' 
+          }}
+        >
+          <MessageSquare className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
+          <p className="body-medium mb-2" style={{ color: 'var(--text-primary)' }}>No reviews yet</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Be the first to review {menuItemTitle}!</p>
+        </div>
+      )}
+    </div>
+  );
           <MessageSquare className="w-8 h-8 mx-auto mb-2 text-amber-600" />
           <p className="text-sm text-amber-700 font-medium">No reviews yet. Be the first to review this item!</p>
         </div>
