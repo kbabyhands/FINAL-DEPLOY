@@ -240,21 +240,21 @@ const MenuCard = ({
               <div className="flex-grow">
                 {/* Premium Title */}
                 <h3 
-                  className={`font-bold ${titleSize} mb-3 line-clamp-2 ${titleHeight} flex items-start leading-tight`} 
+                  className={`font-bold ${titleSize} mb-2 line-clamp-2 ${titleHeight} flex items-start leading-tight`} 
                   style={{ color: 'var(--text-primary)' }}
                 >
                   {title}
                 </h3>
                 
                 {/* Premium Description */}
-                <div className={`${descriptionHeight} mb-4`}>
+                <div className={`${descriptionHeight} mb-3`}>
                   <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                     {description || 'A delicious dish crafted with care and premium ingredients.'}
                   </p>
                 </div>
 
                 {/* Premium Review Section */}
-                <div className={`${reviewHeight} mb-4`}>
+                <div className={`${reviewHeight} mb-2`}>
                   {reviewCount !== undefined && reviewCount > 0 ? (
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
@@ -292,7 +292,7 @@ const MenuCard = ({
               </div>
 
               {/* Premium Bottom Section */}
-              <div className="flex items-center justify-between mt-auto pt-6 border-t" style={{ borderColor: 'var(--border-light)' }}>
+              <div className="flex items-center justify-between mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-light)' }}>
                 <div className="flex flex-col">
                   <span className="text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Starting at</span>
                   <div className={`${priceSize} font-bold leading-tight`} style={{ color: 'var(--brand-primary)' }}>
