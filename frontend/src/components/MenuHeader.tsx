@@ -34,38 +34,50 @@ export const MenuHeader = ({ restaurant }: MenuHeaderProps) => {
   };
 
   return (
-    <header className="relative" style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border-light)' }}>
-      {/* Top Navigation */}
-      <div className="container">
-        <div className="flex items-center justify-between py-6">
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="btn-secondary">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Link>
-            <Link to="/admin" className="btn-secondary">
-              <Settings className="w-4 h-4 mr-2" />
-              Admin
-            </Link>
-          </div>
-          <ShareButton restaurantName={restaurant?.name} />
-        </div>
-      </div>
+    <header className="relative overflow-hidden">
+      {/* Luxury Restaurant Background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1687945512099-400cbe94460c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjByZXN0YXVyYW50fGVufDB8fHx8MTc1MjE5NDUzOXww&ixlib=rb-4.1.0&q=85')`,
+          filter: 'blur(1px) brightness(0.4)'
+        }}
+      />
 
-      {/* Hero Content */}
-      <div className="hero-section" style={{ minHeight: '400px' }}>
-        <div className="container text-center">
-          <h1 className="heading-1 mb-6">
+      {/* Content Overlay */}
+      <div className="relative z-10">
+        {/* Top Navigation */}
+        <div className="container">
+          <div className="flex items-center justify-between py-6">
+            <div className="flex items-center space-x-4">
+              <Link to="/" className="btn-secondary" style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Link>
+            </div>
+            <div className="flex items-center space-x-4">
+              <ShareButton restaurantName={restaurant?.name} />
+              <Link to="/admin" className="btn-secondary" style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                <Settings className="w-4 h-4 mr-2" />
+                Admin
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Content with Luxury Background */}
+        <div className="container text-center py-20">
+          <h1 className="heading-1 mb-6 text-white">
             {restaurant?.name || 'Acadiana Superettte'}
           </h1>
           
           <div className="flex items-center justify-center space-x-2 mb-6">
-            <Star className="w-6 h-6 fill-current" style={{ color: 'var(--brand-primary)' }} />
-            <span className="heading-3">4.6</span>
-            <span className="body-medium" style={{ color: 'var(--text-secondary)' }}>(500+ ratings)</span>
+            <Star className="w-6 h-6 fill-current text-yellow-400" />
+            <span className="heading-3 text-white">4.6</span>
+            <span className="body-medium text-white/80">(500+ ratings)</span>
           </div>
           
-          <p className="body-large max-w-2xl mx-auto mb-12" style={{ color: 'var(--text-secondary)' }}>
+          <p className="body-large max-w-2xl mx-auto mb-12 text-white/90">
             Locally loved. Crafted with care. Tap a dish to explore it in 3D.
           </p>
 
@@ -73,7 +85,7 @@ export const MenuHeader = ({ restaurant }: MenuHeaderProps) => {
             <button className="btn-primary">
               Order Online
             </button>
-            <button className="btn-secondary">
+            <button className="btn-secondary" style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
               Reserve Table
             </button>
           </div>

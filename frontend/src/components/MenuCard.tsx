@@ -238,23 +238,23 @@ const MenuCard = ({
             {/* Premium Content Section */}
             <div className={`${contentPadding} flex flex-col justify-between flex-grow`}>
               <div className="flex-grow">
-                {/* Premium Title */}
+                {/* Premium Title - Reduced margin */}
                 <h3 
-                  className={`font-bold ${titleSize} mb-2 line-clamp-2 ${titleHeight} flex items-start leading-tight`} 
+                  className={`font-bold ${titleSize} mb-1 line-clamp-2 ${titleHeight} flex items-start leading-tight`} 
                   style={{ color: 'var(--text-primary)' }}
                 >
                   {title}
                 </h3>
                 
-                {/* Premium Description */}
-                <div className={`${descriptionHeight} mb-3`}>
+                {/* Premium Description - Reduced margin */}
+                <div className={`${descriptionHeight} mb-2`}>
                   <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                     {description || 'A delicious dish crafted with care and premium ingredients.'}
                   </p>
                 </div>
 
-                {/* Premium Review Section */}
-                <div className={`${reviewHeight} mb-2`}>
+                {/* Premium Review Section - Reduced margin */}
+                <div className={`${reviewHeight} mb-1`}>
                   {reviewCount !== undefined && reviewCount > 0 ? (
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
@@ -291,8 +291,8 @@ const MenuCard = ({
                 </div>
               </div>
 
-              {/* Premium Bottom Section */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-light)' }}>
+              {/* Premium Bottom Section - Reduced padding */}
+              <div className="flex items-center justify-between mt-2 pt-3 border-t" style={{ borderColor: 'var(--border-light)' }}>
                 <div className="flex flex-col">
                   <span className="text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Starting at</span>
                   <div className={`${priceSize} font-bold leading-tight`} style={{ color: 'var(--brand-primary)' }}>
