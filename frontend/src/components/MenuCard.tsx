@@ -40,7 +40,7 @@ const MenuCard = ({
 }: MenuCardProps) => {
   // Size-specific styling
   const isFeatured = size === 'featured';
-  const cardHeight = isFeatured ? 'h-[380px]' : 'h-[480px]';
+  const cardHeight = isFeatured ? 'h-[440px]' : 'h-[540px]'; // Increased heights
   const imageHeight = isFeatured ? 'h-44' : 'h-56';
   const contentPadding = isFeatured ? 'p-5' : 'p-6';
   const titleSize = isFeatured ? 'text-lg' : 'text-xl';
