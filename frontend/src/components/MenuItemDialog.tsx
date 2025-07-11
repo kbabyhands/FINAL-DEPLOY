@@ -68,12 +68,12 @@ const MenuItemDialog = ({
       </div>
 
       {/* Main Content Grid - 3D Viewer Takes Center Stage */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 p-3">
         
         {/* Left Column - Large 3D Viewer (Takes 3/4 of space) */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className="lg:col-span-3 space-y-3">
           {/* Title Section */}
-          <div className="mb-4">
+          <div className="mb-3">
             <h1 className="heading-2 mb-2" style={{ color: 'var(--text-primary)' }}>
               {title}
             </h1>
@@ -84,8 +84,8 @@ const MenuItemDialog = ({
 
           {/* Large 3D Viewer - Main Focus */}
           <div 
-            className="service-card p-4 overflow-hidden"
-            style={{ height: '450px', borderRadius: '20px' }}
+            className="service-card p-3 overflow-hidden"
+            style={{ height: '400px', borderRadius: '20px' }}
           >
             <ViewerToggle
               splatUrl={splatUrl}
@@ -97,11 +97,8 @@ const MenuItemDialog = ({
             />
           </div>
 
-          {/* Reviews Section */}
-          <div className="service-card">
-            <h3 className="heading-3 mb-4" style={{ color: 'var(--text-primary)' }}>
-              Customer Reviews
-            </h3>
+          {/* Reviews Section - Remove duplicate heading */}
+          <div className="service-card py-3 px-4">
             <ReviewsSection menuItemId={menuItemId} menuItemTitle={title} />
           </div>
         </div>
