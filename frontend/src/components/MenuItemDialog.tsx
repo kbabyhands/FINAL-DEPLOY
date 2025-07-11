@@ -107,12 +107,12 @@ const MenuItemDialog = ({
         </div>
 
         {/* Right Column - Compact Details (Takes 1/4 of space) */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           
           {/* Price Display */}
-          <div className="service-card text-center">
+          <div className="service-card text-center py-4 px-3">
             <div 
-              className="text-3xl font-bold mb-2 px-4 py-3 rounded-xl"
+              className="text-2xl font-bold mb-1 px-3 py-2 rounded-xl"
               style={{ 
                 color: 'var(--brand-primary)',
                 background: 'var(--bg-section)'
@@ -120,14 +120,14 @@ const MenuItemDialog = ({
             >
               {formatPrice(price)}
             </div>
-            <p className="body-medium" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
               Premium Quality
             </p>
           </div>
 
           {/* Dietary Information */}
-          <div className="service-card">
-            <h4 className="heading-3 mb-4" style={{ color: 'var(--brand-primary)' }}>
+          <div className="service-card py-4 px-3">
+            <h4 className="text-sm font-semibold mb-3" style={{ color: 'var(--brand-primary)' }}>
               🌿 Dietary Info
             </h4>
             <DietaryBadges
@@ -139,19 +139,19 @@ const MenuItemDialog = ({
           </div>
           
           {/* Allergen Information */}
-          <div className="service-card">
-            <h4 className="heading-3 mb-4 flex items-center gap-2" style={{ color: 'var(--brand-primary)' }}>
-              <Shield className="w-5 h-5" />
+          <div className="service-card py-4 px-3">
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--brand-primary)' }}>
+              <Shield className="w-4 h-4" />
               Allergens
             </h4>
             <div 
-              className="p-4 rounded-xl border"
+              className="p-3 rounded-xl border"
               style={{ 
                 background: 'var(--bg-section)',
                 borderColor: 'var(--border-light)'
               }}
             >
-              <p className="body-medium" style={{ color: 'var(--text-primary)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-primary)' }}>
                 <span className="font-semibold">Contains:</span>{' '}
                 {allergens?.length > 0 ? (
                   <span className="text-red-600">
@@ -165,32 +165,32 @@ const MenuItemDialog = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="space-y-3">
-            <button className="btn-primary w-full">
+          <div className="space-y-2">
+            <button className="btn-primary w-full text-sm py-2">
               Add to Order
             </button>
-            <button className="btn-secondary w-full">
+            <button className="btn-secondary w-full text-sm py-2">
               Share Item
             </button>
           </div>
 
           {/* Quick Details */}
-          <div className="service-card">
-            <h4 className="heading-3 mb-4" style={{ color: 'var(--text-primary)' }}>
+          <div className="service-card py-4 px-3">
+            <h4 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
               Details
             </h4>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="body-medium" style={{ color: 'var(--text-secondary)' }}>Category</span>
-                <span className="body-medium font-medium" style={{ color: 'var(--text-primary)' }}>Food</span>
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Category</span>
+                <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>Food</span>
               </div>
               <div className="flex justify-between">
-                <span className="body-medium" style={{ color: 'var(--text-secondary)' }}>Prep Time</span>
-                <span className="body-medium font-medium" style={{ color: 'var(--text-primary)' }}>5-8 min</span>
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Prep Time</span>
+                <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>5-8 min</span>
               </div>
               <div className="flex justify-between">
-                <span className="body-medium" style={{ color: 'var(--text-secondary)' }}>Calories</span>
-                <span className="body-medium font-medium" style={{ color: 'var(--text-primary)' }}>~300</span>
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Calories</span>
+                <span className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>~300</span>
               </div>
             </div>
           </div>
