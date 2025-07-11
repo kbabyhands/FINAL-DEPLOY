@@ -74,19 +74,28 @@ const ReviewsSection = ({ menuItemId, menuItemTitle }: ReviewsSectionProps) => {
   };
 
   const renderStars = (rating: number, size: "sm" | "md" = "sm") => {
-    const sizeClass = size === "sm" ? "w-4 h-4" : "w-5 h-5";
+    const stars = [];
+    const iconSize = size === "md" ? "w-5 h-5" : "w-4 h-4";
+    
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Star
+          key={i}
+          className={`${iconSize} ${
+            i <= rating 
+              ? "fill-current"
+              : ""
+          }`}
+          style={{ 
+            color: i <= rating ? 'var(--brand-primary)' : 'var(--border-medium)'
+          }}
+        />
+      );
+    }
+
     return (
-      <div className="flex">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`${sizeClass} ${
-              star <= rating
-                ? "text-yellow-400 fill-yellow-400"
-                : "text-gray-300"
-            }`}
-          />
-        ))}
+      <div className="flex items-center gap-0.5" role="img" aria-label={`${rating} out of 5 stars`}>
+        {stars}
       </div>
     );
   };
