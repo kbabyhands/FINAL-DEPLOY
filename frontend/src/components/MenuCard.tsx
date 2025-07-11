@@ -292,10 +292,10 @@ const MenuCard = ({
               </div>
 
               {/* Premium Bottom Section */}
-              <div className="flex items-center justify-between mt-auto pt-4 border-t" style={{ borderColor: 'var(--border-light)' }}>
+              <div className="flex items-center justify-between mt-auto pt-6 border-t" style={{ borderColor: 'var(--border-light)' }}>
                 <div className="flex flex-col">
                   <span className="text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Starting at</span>
-                  <div className={`${priceSize} font-bold`} style={{ color: 'var(--brand-primary)' }}>
+                  <div className={`${priceSize} font-bold leading-tight`} style={{ color: 'var(--brand-primary)' }}>
                     {formatPrice(price)}
                   </div>
                 </div>
