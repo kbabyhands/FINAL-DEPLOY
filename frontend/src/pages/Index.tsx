@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import CategoryFilter from "@/components/CategoryFilter";
 import DietaryFilter from "@/components/DietaryFilter";
@@ -67,21 +66,28 @@ const Index = () => {
   }, [restaurant]);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }} className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: 'var(--brand-primary)' }}></div>
+          <p style={{ color: 'var(--text-secondary)' }} className="body-medium">Loading menu...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen premium-background-with-texture">
+    <div style={{ background: 'var(--bg-page)' }} className="min-h-screen">
       <MenuHeader restaurant={restaurant} />
 
       {/* Featured Items Section */}
       <FeaturedItems />
 
       {/* Main Menu Section */}
-      <section className="py-12 menu-section-background">
+      <section className="py-16" style={{ background: 'var(--bg-card)' }}>
         {/* Filters Section */}
-        <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-border/20 py-4 mb-8 shadow-sm">
-          <div className="max-w-6xl mx-auto px-6">
+        <div className="sticky top-0 z-40 py-6 mb-8" style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border-light)' }}>
+          <div className="container">
             <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-8">
               <CategoryFilter 
                 categories={categories}

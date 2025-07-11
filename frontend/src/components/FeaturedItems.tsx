@@ -21,8 +21,13 @@ const FeaturedItems = () => {
   if (loading) {
     return (
       <div className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <LoadingSpinner />
+        <div className="container">
+          <div style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }} className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: 'var(--brand-primary)' }}></div>
+              <p style={{ color: 'var(--text-secondary)' }} className="body-medium">Loading featured items...</p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -34,15 +39,15 @@ const FeaturedItems = () => {
   }
 
   return (
-    <section className="featured-background py-16">
-      <div className="max-w-6xl mx-auto px-6">
+    <section className="py-16" style={{ background: 'var(--bg-section)' }}>
+      <div className="container">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-serif font-light text-foreground mb-2">
+          <h2 className="heading-2 mb-4">
             Featured Items
           </h2>
-          <span className="text-lg text-muted-foreground">
+          <p className="body-large" style={{ color: 'var(--text-secondary)' }}>
             Highest rated dishes
-          </span>
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
