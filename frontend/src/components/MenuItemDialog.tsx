@@ -73,11 +73,11 @@ const MenuItemDialog = ({
         {/* Left Column - Large 3D Viewer (Takes 3/4 of space) */}
         <div className="lg:col-span-3 space-y-6">
           {/* Title Section */}
-          <div>
-            <h1 className="heading-1 mb-4" style={{ color: 'var(--text-primary)' }}>
+          <div className="mb-4">
+            <h1 className="heading-2 mb-2" style={{ color: 'var(--text-primary)' }}>
               {title}
             </h1>
-            <p className="body-large" style={{ color: 'var(--text-secondary)' }}>
+            <p className="body-medium" style={{ color: 'var(--text-secondary)' }}>
               {description}
             </p>
           </div>
