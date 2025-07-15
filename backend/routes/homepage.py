@@ -22,7 +22,7 @@ async def get_admin_user():
     return {"user_id": "admin", "is_admin": True}
 
 def get_database():
-    from backend.server import database
+    from server import database
     return database
 
 @router.get("/content", response_model=HomepageContent)
