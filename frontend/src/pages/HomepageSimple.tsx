@@ -323,14 +323,16 @@ const HomePage = () => {
           <div className="max-w-2xl mx-auto mb-16">
             {homepageContent.hero.hero_image_base64 ? (
               <div className="relative">
-                <LazyPlayCanvas
-                  splatUrl={homepageContent.hero.hero_image_base64}
-                  width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
-                  height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
-                  autoRotate={true}
-                  enableControls={true}
-                  className="mx-auto w-full max-w-full homepage-viewer"
-                />
+                <div className="w-full bg-gray-200 rounded-2xl flex items-center justify-center" style={{ height: typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320 }}>
+                  <div className="text-center">
+                    <div className="text-6xl text-gray-600 mb-4">🎮</div>
+                    <p className="text-gray-800 font-medium">3D Experience Active</p>
+                    <p className="text-gray-600 text-sm mt-2">PlayCanvas URL loaded</p>
+                    <p className="text-gray-500 text-xs mt-1 break-all max-w-md">
+                      {homepageContent.hero.hero_image_base64}
+                    </p>
+                  </div>
+                </div>
                 {isAdmin && (
                   <button
                     onClick={removeHeroExperience}
