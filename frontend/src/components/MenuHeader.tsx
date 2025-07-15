@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Settings, Share, Star, ArrowLeft } from "lucide-react";
+import { Settings, Share, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { shareViaText } from "@/utils/shareMenu";
 import { Restaurant } from "@/hooks/useMenuData";
