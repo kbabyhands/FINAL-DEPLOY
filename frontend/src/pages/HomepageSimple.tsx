@@ -321,54 +321,76 @@ const HomePage = () => {
           {/* Hero PlayCanvas Viewer Area */}
           <div className="max-w-2xl mx-auto mb-16">
             <div className="relative">
-              <div className="w-full bg-gray-100 rounded-2xl flex items-center justify-center" style={{ height: typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320 }}>
-                <div className="text-center w-full max-w-md mx-auto px-6">
-                  {showUrlInput ? (
-                    <div className="space-y-4">
-                      <div className="text-6xl text-gray-600 mb-4">🎮</div>
-                      <p className="text-gray-800 text-center mb-4">Enter PlayCanvas Experience URL</p>
-                      <input
-                        type="url"
-                        value={playcanvasUrl}
-                        onChange={(e) => setPlaycanvasUrl(e.target.value)}
-                        placeholder="https://playcanv.as/p/..."
-                        className="w-full px-3 py-2 text-black rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        disabled={uploading}
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handlePlayCanvasUrlSubmit}
-                          disabled={uploading || !playcanvasUrl.trim()}
-                          className="btn-primary flex-1 disabled:opacity-50"
-                        >
-                          {uploading ? 'Updating...' : 'Add Experience'}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowUrlInput(false);
-                            setPlaycanvasUrl('');
-                          }}
-                          disabled={uploading}
-                          className="btn-secondary disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setShowUrlInput(true)}
-                      disabled={uploading}
-                      className="cursor-pointer flex flex-col items-center w-full hover:bg-gray-200 p-6 rounded-lg transition-colors"
-                    >
-                      <div className="text-6xl text-gray-600 mb-4">🎮</div>
-                      <p className="text-gray-800 text-center font-medium">Add 3D Experience</p>
-                      <p className="text-gray-600 text-sm mt-2">Click to add a PlayCanvas experience URL</p>
-                      <p className="text-gray-500 text-xs mt-1">e.g., https://playcanv.as/p/3585fc6e</p>
-                    </button>
-                  )}
+              {homepageContent.hero.hero_image_base64 ? (
+                <div className="w-full bg-gray-100 rounded-2xl overflow-hidden" style={{ height: typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320 }}>
+                  <iframe
+                    src={homepageContent.hero.hero_image_base64}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 'none', borderRadius: '1rem' }}
+                    allowFullScreen
+                    title="PlayCanvas 3D Experience"
+                  />
+                  <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                    3D Experience Active
+                  </div>
+                  <button
+                    onClick={removeHeroExperience}
+                    className="absolute top-2 left-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors z-10"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-              </div>
+              ) : (
+                <div className="w-full bg-gray-100 rounded-2xl flex items-center justify-center" style={{ height: typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320 }}>
+                  <div className="text-center w-full max-w-md mx-auto px-6">
+                    {showUrlInput ? (
+                      <div className="space-y-4">
+                        <div className="text-6xl text-gray-600 mb-4">🎮</div>
+                        <p className="text-gray-800 text-center mb-4">Enter PlayCanvas Experience URL</p>
+                        <input
+                          type="url"
+                          value={playcanvasUrl}
+                          onChange={(e) => setPlaycanvasUrl(e.target.value)}
+                          placeholder="https://playcanv.as/p/..."
+                          className="w-full px-3 py-2 text-black rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          disabled={uploading}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handlePlayCanvasUrlSubmit}
+                            disabled={uploading || !playcanvasUrl.trim()}
+                            className="btn-primary flex-1 disabled:opacity-50"
+                          >
+                            {uploading ? 'Updating...' : 'Add Experience'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowUrlInput(false);
+                              setPlaycanvasUrl('');
+                            }}
+                            disabled={uploading}
+                            className="btn-secondary disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowUrlInput(true)}
+                        disabled={uploading}
+                        className="cursor-pointer flex flex-col items-center w-full hover:bg-gray-200 p-6 rounded-lg transition-colors"
+                      >
+                        <div className="text-6xl text-gray-600 mb-4">🎮</div>
+                        <p className="text-gray-800 text-center font-medium">Add 3D Experience</p>
+                        <p className="text-gray-600 text-sm mt-2">Click to add a PlayCanvas experience URL</p>
+                        <p className="text-gray-500 text-xs mt-1">e.g., https://playcanv.as/p/3585fc6e</p>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
