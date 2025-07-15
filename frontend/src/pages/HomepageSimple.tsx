@@ -347,49 +347,49 @@ const HomePage = () => {
                   <div className="text-center w-full max-w-md mx-auto px-6">
                     {showUrlInput ? (
                       <div className="space-y-4">
-                            <div className="text-6xl text-gray-600 mb-4">🎮</div>
-                            <p className="text-gray-800 text-center mb-4">
-                              Enter PlayCanvas Experience URL
-                            </p>
-                            <input
-                              type="url"
-                              value={playcanvasUrl}
-                              onChange={(e) => setPlaycanvasUrl(e.target.value)}
-                              placeholder="https://playcanv.as/p/..."
-                              className="w-full px-3 py-2 text-black rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              disabled={uploading}
-                              style={{ borderRadius: '8px' }}
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                onClick={handlePlayCanvasUrlSubmit}
-                                disabled={uploading || !playcanvasUrl.trim()}
-                                className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                {uploading ? 'Updating...' : 'Add Experience'}
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setShowUrlInput(false);
-                                  setPlaycanvasUrl('');
-                                }}
-                                disabled={uploading}
-                                className="btn-secondary disabled:opacity-50"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                            {uploading && (
-                              <div className="w-full bg-gray-300 rounded-full h-3 mb-2">
-                                <div 
-                                  className="rounded-full h-3 transition-all duration-300 ease-out"
-                                  style={{ 
-                                    width: `${uploadProgress}%`,
-                                    background: 'var(--brand-primary)'
-                                  }}
-                                ></div>
-                              </div>
-                            )}
+                        <div className="text-6xl text-gray-600 mb-4">🎮</div>
+                        <p className="text-gray-800 text-center mb-4">
+                          Enter PlayCanvas Experience URL
+                        </p>
+                        <input
+                          type="url"
+                          value={playcanvasUrl}
+                          onChange={(e) => setPlaycanvasUrl(e.target.value)}
+                          placeholder="https://playcanv.as/p/..."
+                          className="w-full px-3 py-2 text-black rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          disabled={uploading}
+                          style={{ borderRadius: '8px' }}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handlePlayCanvasUrlSubmit}
+                            disabled={uploading || !playcanvasUrl.trim()}
+                            className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {uploading ? 'Updating...' : 'Add Experience'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowUrlInput(false);
+                              setPlaycanvasUrl('');
+                            }}
+                            disabled={uploading}
+                            className="btn-secondary disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        {uploading && (
+                          <div className="w-full bg-gray-300 rounded-full h-3 mb-2">
+                            <div 
+                              className="rounded-full h-3 transition-all duration-300 ease-out"
+                              style={{ 
+                                width: `${uploadProgress}%`,
+                                background: 'var(--brand-primary)'
+                              }}
+                            ></div>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <button
