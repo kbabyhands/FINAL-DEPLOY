@@ -390,9 +390,9 @@ const HomePage = () => {
                                 ></div>
                               </div>
                             )}
-                          </div>
-                        ) : (
-                          <button
+                      </div>
+                    ) : (
+                      <button
                             onClick={() => setShowUrlInput(true)}
                             disabled={uploading}
                             className="cursor-pointer flex flex-col items-center w-full hover:bg-gray-200 p-6 rounded-lg transition-colors"
