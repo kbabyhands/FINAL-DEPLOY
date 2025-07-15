@@ -407,9 +407,9 @@ const HomePage = () => {
                             <p className="text-gray-500 text-xs mt-1">
                               e.g., https://playcanv.as/p/3585fc6e
                             </p>
-                          </button>
-                        )}
-                      </div>
+                      </button>
+                    )}
+                  </div>
                     </div>
                   </div>
                 )}
