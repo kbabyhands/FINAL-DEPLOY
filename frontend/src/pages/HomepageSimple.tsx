@@ -393,20 +393,20 @@ const HomePage = () => {
                       </div>
                     ) : (
                       <button
-                            onClick={() => setShowUrlInput(true)}
-                            disabled={uploading}
-                            className="cursor-pointer flex flex-col items-center w-full hover:bg-gray-200 p-6 rounded-lg transition-colors"
-                          >
-                            <div className="text-6xl text-gray-600 mb-4">🎮</div>
-                            <p className="text-gray-800 text-center font-medium">
-                              Add 3D Experience
-                            </p>
-                            <p className="text-gray-600 text-sm mt-2">
-                              Click to add a PlayCanvas experience URL
-                            </p>
-                            <p className="text-gray-500 text-xs mt-1">
-                              e.g., https://playcanv.as/p/3585fc6e
-                            </p>
+                        onClick={() => setShowUrlInput(true)}
+                        disabled={uploading}
+                        className="cursor-pointer flex flex-col items-center w-full hover:bg-gray-200 p-6 rounded-lg transition-colors"
+                      >
+                        <div className="text-6xl text-gray-600 mb-4">🎮</div>
+                        <p className="text-gray-800 text-center font-medium">
+                          Add 3D Experience
+                        </p>
+                        <p className="text-gray-600 text-sm mt-2">
+                          Click to add a PlayCanvas experience URL
+                        </p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          e.g., https://playcanv.as/p/3585fc6e
+                        </p>
                       </button>
                     )}
                   </div>
