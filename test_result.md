@@ -368,15 +368,18 @@ frontend:
 
   - task: "Backend API Integration"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/pages/HomepageSimple.tsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: false
         -agent: "main"
         -comment: "Updated homepage to use backend API calls instead of localStorage. Integrated GET /api/homepage/content for loading content and PUT /api/homepage/content for updates. Added proper error handling and loading states."
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the backend API integration and confirmed it's working correctly. The homepage successfully loads content from the backend API (GET /api/homepage/content) and displays all sections with proper data. The PlayCanvas URL submission functionality works correctly, sending PUT requests to update the hero_image_base64 field. No API errors were observed during testing."
 
   - task: "Admin-Only File Upload Functionality"
     implemented: true
