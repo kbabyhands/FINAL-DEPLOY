@@ -342,19 +342,12 @@ const HomePage = () => {
               </div>
             ) : (
               <div className="relative">
-                <LazyPlayCanvas
-                  width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
-                  height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
-                  autoRotate={true}
-                  enableControls={true}
-                  className="mx-auto w-full max-w-full homepage-viewer"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
+                <div className="w-full bg-gray-100 rounded-2xl flex items-center justify-center" style={{ height: typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320 }}>
                   <div className="text-center w-full max-w-md mx-auto px-6">
                         {showUrlInput ? (
                           <div className="space-y-4">
-                            <div className="text-6xl text-white mb-4">🎮</div>
-                            <p className="text-white text-center mb-4">
+                            <div className="text-6xl text-gray-600 mb-4">🎮</div>
+                            <p className="text-gray-800 text-center mb-4">
                               Enter PlayCanvas Experience URL
                             </p>
                             <input
@@ -401,16 +394,16 @@ const HomePage = () => {
                           <button
                             onClick={() => setShowUrlInput(true)}
                             disabled={uploading}
-                            className="cursor-pointer flex flex-col items-center w-full"
+                            className="cursor-pointer flex flex-col items-center w-full hover:bg-gray-200 p-6 rounded-lg transition-colors"
                           >
-                            <div className="text-6xl text-white mb-4">🎮</div>
-                            <p className="text-white text-center">
-                              Add PlayCanvas Experience
+                            <div className="text-6xl text-gray-600 mb-4">🎮</div>
+                            <p className="text-gray-800 text-center font-medium">
+                              Add 3D Experience
                             </p>
-                            <p className="text-gray-300 text-sm mt-2">
+                            <p className="text-gray-600 text-sm mt-2">
                               Click to add a PlayCanvas experience URL
                             </p>
-                            <p className="text-gray-400 text-xs mt-1">
+                            <p className="text-gray-500 text-xs mt-1">
                               e.g., https://playcanv.as/p/3585fc6e
                             </p>
                           </button>
