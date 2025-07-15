@@ -71,12 +71,6 @@ export const MenuHeader = ({ restaurant }: MenuHeaderProps) => {
             {restaurant?.name || 'Acadiana Superettte'}
           </h1>
           
-          <div className="flex items-center justify-center space-x-2 mb-6">
-            <Star className="w-6 h-6 fill-current text-yellow-400" />
-            <span className="heading-3 text-white">4.6</span>
-            <span className="body-medium text-white/80">(500+ ratings)</span>
-          </div>
-          
           <p className="body-large max-w-2xl mx-auto mb-12 text-white/90">
             Locally loved. Crafted with care. Tap a dish to explore it in 3D.
           </p>
