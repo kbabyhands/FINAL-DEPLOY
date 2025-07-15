@@ -342,17 +342,15 @@ const HomePage = () => {
               </div>
             ) : (
               <div className="relative">
-                {isAdmin ? (
-                  <div className="relative">
-                    <LazyPlayCanvas
-                      width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
-                      height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
-                      autoRotate={true}
-                      enableControls={true}
-                      className="mx-auto w-full max-w-full homepage-viewer"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
-                      <div className="text-center w-full max-w-md mx-auto px-6">
+                <LazyPlayCanvas
+                  width={typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640}
+                  height={typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320}
+                  autoRotate={true}
+                  enableControls={true}
+                  className="mx-auto w-full max-w-full homepage-viewer"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
+                  <div className="text-center w-full max-w-md mx-auto px-6">
                         {showUrlInput ? (
                           <div className="space-y-4">
                             <div className="text-6xl text-white mb-4">🎮</div>
