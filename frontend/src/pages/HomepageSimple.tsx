@@ -345,8 +345,8 @@ const HomePage = () => {
               <div className="relative">
                 <div className="w-full bg-gray-100 rounded-2xl flex items-center justify-center" style={{ height: typeof window !== 'undefined' ? Math.min(320, Math.max(200, (window.innerWidth - 32) * 0.5)) : 320 }}>
                   <div className="text-center w-full max-w-md mx-auto px-6">
-                        {showUrlInput ? (
-                          <div className="space-y-4">
+                    {showUrlInput ? (
+                      <div className="space-y-4">
                             <div className="text-6xl text-gray-600 mb-4">🎮</div>
                             <p className="text-gray-800 text-center mb-4">
                               Enter PlayCanvas Experience URL
